@@ -1,3 +1,5 @@
+This is the github from the experiment described in this LinkedIn blog post.
+https://www.linkedin.com/feed/update/urn:li:activity:7208897952885436416
 
 The code provided is a good starting point for building an immersive spatial knowledge graph using Blender and Python. Let's go through the main components and discuss their roles:
 
