@@ -10,7 +10,7 @@ class MarkdownParseException(Exception):
 
 # Node class represents each node in the knowledge graph
 class Node:
-    def __init__(self, id, name, position=(0, 0, 0), weight=1.0, velocity=(0, 0, 0), pinned=False, block_content='', link_types=[]):
+    def __init__(self, id, name, position=(0, 0, 0), weight=1.0, velocity=(0, 0, 0), pinned=False, block_content='', link_types=[], file_size=0):
         self.id = id
         self.name = name
         self.position = position
@@ -19,6 +19,7 @@ class Node:
         self.pinned = pinned
         self.block_content = block_content
         self.link_types = link_types
+        self.file_size = file_size  # File size in bytes
 
     def to_dict(self):
         """Convert Node object to dictionary"""
@@ -30,7 +31,8 @@ class Node:
             'velocity': self.velocity,
             'pinned': self.pinned,
             'block_content': self.block_content,
-            'link_types': self.link_types
+            'link_types': self.link_types,
+            'file_size': self.file_size  # Include file size in JSON
         }
 
 # Edge class represents relationships in the knowledge graph
@@ -68,31 +70,40 @@ def parse_markdown_files(folder_path):
 
     # Use glob to find markdown files
     for file_path in glob.glob(os.path.join(folder_path, '*.md')):
-        with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-            if not content.strip():
-                continue  # Skip empty files
-            file_name = os.path.basename(file_path)
-            node_id = file_name
-            node_name = file_name.split('.')[0]
-            block_content = content
-            link_types = re.findall(r'\[\[([^\]]+)\]\]', content)
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                if not content.strip():
+                    continue  # Skip empty files
 
-            node = Node(
-                id=node_id,
-                name=node_name,
-                block_content=block_content,
-                link_types=link_types
-            )
-            nodes.append(node)
-            node_dict[node_name] = node
+                # Extract node information
+                file_name = os.path.basename(file_path)
+                node_id = file_name
+                node_name = file_name.split('.')[0]
+                block_content = content
+                link_types = re.findall(r'\[\[([^\]]+)\]\]', content)
+                file_size = os.path.getsize(file_path)  # Get file size in bytes
 
-            # Extract edges
-            for link in link_types:
-                if link in node_dict:
-                    edges.append(Edge(start_node=node_dict[node_name], end_node=node_dict[link], link_type='link'))
-                else:
-                    print(f"Link target '{link}' not found for node '{node_name}'")
+                # Create a Node instance
+                node = Node(
+                    id=node_id,
+                    name=node_name,
+                    block_content=block_content,
+                    link_types=link_types,
+                    file_size=file_size
+                )
+                nodes.append(node)
+                node_dict[node_name] = node
+
+                # Extract edges based on links
+                for link in link_types:
+                    if link in node_dict:
+                        edges.append(Edge(start_node=node_dict[node_name], end_node=node_dict[link], link_type='link'))
+                    else:
+                        print(f"Link target '{link}' not found for node '{node_name}'")
+
+        except (IOError, OSError) as e:
+            print(f"Error reading file {file_path}: {e}")
 
     return nodes, edges
 
