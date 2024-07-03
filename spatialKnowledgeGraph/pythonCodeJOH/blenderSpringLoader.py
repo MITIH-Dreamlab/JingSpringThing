@@ -101,8 +101,10 @@ class Edge:
             # Update cylinder transformation to match the new positions
             direction = self.end_node.position - self.start_node.position
             distance = direction.length()
-            self.blender_object.scale = (0.005, 0.005, distance)  # Adjust cylinder radius
-            self.blender_object.rotation_euler = direction.normalize().to_tuple()
+            self.blender_object.scale = (0.005, 0.005, distance / 2)
+            # Calculate rotation direction
+            rotation_matrix = direction.normalize().to_tuple()
+            self.blender_object.rotation_euler = (direction.normalize().to_tuple())
 
 # World class: Manages the entire graph data
 class World:
@@ -205,7 +207,6 @@ class World:
             end_loc = edge.end_node.position.to_tuple()
             bpy.ops.mesh.primitive_cylinder_add(radius=0.005, depth=1)  # Adjust cylinder radius as needed (smaller radius)
             obj = bpy.context.object
-            obj.name = f"{edge.start_node.name}_to_{edge.end_node.name}"
             edge.blender_object = obj
 
             # Position the cylinder correctly
@@ -215,11 +216,30 @@ class World:
             # Scale and rotate the cylinder to align between the two nodes
             direction = edge.end_node.position - edge.start_node.position
             distance = direction.length()
-            obj.scale = (0.005, 0.005, distance)  # Adjust cylinder radius
+            obj.rotation_mode = 'QUATERNION'  # Use quaternion for accurate rotation
+            obj.scale = (0.005, 0.005, distance / 2)
             obj.rotation_euler = direction.normalize().to_tuple()
+            obj.name = f"{edge.start_node.name}_to_{edge.end_node.name}"
+
+def clear_scene():
+    # Delete all objects in the scene
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete()
+
+def enable_material_shading():
+    # Enable material shading in the viewport
+    for area in bpy.context.screen.areas:
+        if area.type == 'VIEW_3D':
+            for space in area.spaces:
+                if space.type == 'VIEW_3D':
+                    space.shading.type = 'MATERIAL'
+                    break
 
 def main(folder_path):
     try:
+        # Clear the default cube and other objects in the scene
+        clear_scene()
+
         # Create a World instance and load Logseq data
         world = World()
         world.load_logseq_data(folder_path)
@@ -227,6 +247,9 @@ def main(folder_path):
 
         # Integrate with Blender
         world.create_blender_objects()
+
+        # Enable material shading for better visualization
+        enable_material_shading()
 
         # Run the simulation
         steps = 1000  # Number of simulation steps
