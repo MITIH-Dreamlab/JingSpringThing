@@ -1,1 +1,1542 @@
-[]
+[
+    {
+        "start_node": "Agents.md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Bitcoin.md",
+        "end_node": "Bitcoin Technical Overview.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Artificial Intelligence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Bitcoin Value Proposition.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Bitcoin Technical Overview.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Bitcoin Mining and Energy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Bitcoin Value Proposition.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Bitcoin As Money.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Agentic Metaverse for Global Creatives.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Blockchain.md",
+        "end_node": "Agentic Mycelia.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Calculating Empires.md",
+        "end_node": "Artificial Intelligence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Coding support.md",
+        "end_node": "ChatGPT.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "AnimateDiff.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "Artificial Intelligence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "collaborative.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "ComfyUI.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Conspiracies.md",
+        "end_node": "California AI bill.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Death of the Internet.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Decentralised Web.md",
+        "end_node": "Decentralised Web.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Deepfakes and fraudulent content.md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Definitions and frameworks for Metaverse.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Digital Asset Risks.md",
+        "end_node": "Bitcoin ETF.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Digital Objects.md",
+        "end_node": "Digital Objects.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Digital Objects.md",
+        "end_node": "Digital Asset Risks.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Ethereum.md",
+        "end_node": "Blockchain.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Ethereum.md",
+        "end_node": "Bitcoin.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Gaussian splatting and Similar.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Hardware and Edge.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Hardware and Edge.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Introduction to me.md",
+        "end_node": "Convergence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Introduction to me.md",
+        "end_node": "Bitcoin.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Landscape.md",
+        "end_node": "Landscape.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Landscape.md",
+        "end_node": "Landscape.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Large language models.md",
+        "end_node": "Base models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Leopold Aschenbrenner.md",
+        "end_node": "Artificial Intelligence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Leopold Aschenbrenner.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Lightning and Similar L2.md",
+        "end_node": "Cashu.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Medical AI.md",
+        "end_node": "Medical AI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Anthropic Claude.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Gemini.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "ChatGPT.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Knowledge Graphing.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Bitcoin.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Lightning and Similar L2.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Cashu.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Metaverse Ontology.md",
+        "end_node": "Agentic Mycelia.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Microsoft CoPilot.md",
+        "end_node": "Microsoft CoPilot.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Mixed reality.md",
+        "end_node": "Humans, Avatars , Character.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Mixed reality.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Mixed reality.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Mixed reality.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Mixed reality.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "multimodal.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "multimodal.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "multimodal.md",
+        "end_node": "Apple.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Music and audio.md",
+        "end_node": "Microsoft CoPilot.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Music and audio.md",
+        "end_node": "Music and audio.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Octave Multi Model Laboratory.md",
+        "end_node": "National Industrial Centre for Virtual Environments.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Octave Multi Model Laboratory.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Open Generative AI tools.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Overview of Machine Learning Techniques.md",
+        "end_node": "GANs.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Overview of Machine Learning Techniques.md",
+        "end_node": "Diffusion Models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Overview of Machine Learning Techniques.md",
+        "end_node": "Non transformer approaches.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Parametric.md",
+        "end_node": "NVIDIA Omniverse.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Politics, Law, Privacy.md",
+        "end_node": "Politics, Law, Privacy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Product and Risk Management.md",
+        "end_node": "Politics, Law, Privacy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Product Design.md",
+        "end_node": "Knowhere.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Product Design.md",
+        "end_node": "Knowhere.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary AI Video.md",
+        "end_node": "latent space.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Image Generation.md",
+        "end_node": "OpenAI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Image Generation.md",
+        "end_node": "Landscape.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "AI Companies.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "Prompt Engineering.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "Microsoft CoPilot.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "Artificial Intelligence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "Proprietary Large Language Models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Large Language Models.md",
+        "end_node": "Proprietary Image Generation.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Video VP & 3D.md",
+        "end_node": "NVIDIA Omniverse.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Proprietary Video VP & 3D.md",
+        "end_node": "Open Generative AI tools.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "qlora.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "ChatGPT.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "RAG.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "Llama.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "RAG.md",
+        "end_node": "Evaluation and leaderboards.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Recent Projects.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Research Tools.md",
+        "end_node": "Research Tools.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Research Tools.md",
+        "end_node": "Research Tools.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Robin Hanson.md",
+        "end_node": "Lead Poisoning Hypothesis.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Safety and alignment.md",
+        "end_node": "Safety and alignment.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Scene Capture and Reconstruction.md",
+        "end_node": "Gaussian splatting and Similar.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Social contract and jobs.md",
+        "end_node": "Singularity.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Social contract and jobs.md",
+        "end_node": "Layoff tracker and threatened roles.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Social contract and jobs.md",
+        "end_node": "Layoff tracker and threatened roles.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Education.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Social contract and jobs.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Diagrams as Code.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "collaborative.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Politics, Law, Privacy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Distributed Identity.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Education.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Agents.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Soon-Next-Later (AI futurology).md",
+        "end_node": "Sam Hammond.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Social contract and jobs.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Product Design.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Large language models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "NVIDIA Omniverse.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Speech and voice.md",
+        "end_node": "Speech and voice.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Stable Diffusion.md",
+        "end_node": "Stable Diffusion.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Hardware and Edge.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Social contract and jobs.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Politics, Law, Privacy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Education.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Proprietary Large Language Models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Death of the Internet.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "State of the art in AI.md",
+        "end_node": "Social contract and jobs.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Octave Multi Model Laboratory.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "National Industrial Centre for Virtual Environments.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Convergence.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Introduction to me.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Semantic Web.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Decentralised Web.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Politics, Law, Privacy.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Blockchain.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Ethereum.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Bitcoin.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Lightning and Similar L2.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "BTC Layer 3.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "RGB.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "nostr.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Digital Asset Risks.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Digital Objects.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Bitcoin As Money.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Money.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Distributed Identity.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Digital Objects.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Definitions and frameworks for Metaverse.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Spatial Computing.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Metaverse and Spatial Risks.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Overview of Machine Learning Techniques.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Proprietary Large Language Models.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Proprietary Image Generation.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Proprietary Video VP & 3D.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Open Generative AI tools.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "State of the art in AI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "AI Adoption.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Suggested Reading Order.md",
+        "end_node": "Soon-Next-Later (AI futurology).md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Surveillance.md",
+        "end_node": "Anthropic Claude.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Text to 3D and 4D.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Trust and Safety.md",
+        "end_node": "Facebook Meta.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Upscaling.md",
+        "end_node": "ComfyUI.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    },
+    {
+        "start_node": "Virtual Production.md",
+        "end_node": "AI Video.md",
+        "weight": 1.0,
+        "is_active": true,
+        "link_type": "link"
+    }
+]
