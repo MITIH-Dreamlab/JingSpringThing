@@ -7,9 +7,9 @@ import random
 import numpy as np
 
 # Constants for scaling
-POSITION_SCALE = 100.0
-SIZE_SCALE = 100000.0
-EDGE_SCALE = 100.0
+POSITION_SCALE = 10.0
+SIZE_SCALE = 1000000.0
+EDGE_SCALE = 10.0
 
 # Vector3 class: Represents a 3D vector with basic operations and includes arithmetic operators
 class Vector3:
@@ -101,7 +101,7 @@ class Edge:
             # Update cylinder transformation to match the new positions
             direction = self.end_node.position - self.start_node.position
             distance = direction.length()
-            self.blender_object.scale = (self.blender_object.scale[0], self.blender_object.scale[1], distance / 2)
+            self.blender_object.scale = (0.005, 0.005, distance)  # Adjust cylinder radius
             self.blender_object.rotation_euler = direction.normalize().to_tuple()
 
 # World class: Manages the entire graph data
@@ -215,7 +215,7 @@ class World:
             # Scale and rotate the cylinder to align between the two nodes
             direction = edge.end_node.position - edge.start_node.position
             distance = direction.length()
-            obj.scale = (obj.scale[0], obj.scale[1], distance / 2)
+            obj.scale = (0.005, 0.005, distance)  # Adjust cylinder radius
             obj.rotation_euler = direction.normalize().to_tuple()
 
 def main(folder_path):
@@ -229,8 +229,8 @@ def main(folder_path):
         world.create_blender_objects()
 
         # Run the simulation
-        steps = 100  # Number of simulation steps
-        delta_time = 0.1  # Time step in seconds
+        steps = 1000  # Number of simulation steps
+        delta_time = 0.01  # Time step in seconds
         world.run_simulation(steps, delta_time)
 
     except Exception as e:
