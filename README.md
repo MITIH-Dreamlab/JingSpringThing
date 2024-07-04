@@ -170,3 +170,55 @@ sequenceDiagram
 2. **Test and Validate**: Continuously test the complete workflow from GitHub data fetching to visualization in Blender.
 3. **Explore Omniverse API**: Once basic functionality is working in Blender, integrate Omniverse for advanced features like materials, physics, and collaboration.
 
+'''mermaid
+classDiagram
+    class Vector3 {
+        +x: float
+        +y: float
+        +z: float
+        +__add__(other: Vector3): Vector3
+        +__sub__(other: Vector3): Vector3
+        +__mul__(scalar: float): Vector3
+        +length(): float
+        +normalize(): Vector3
+        +to_tuple(): tuple
+    }
+
+    class Node {
+        +id: str
+        +name: str
+        +position: Vector3
+        +velocity: Vector3
+        +force: Vector3
+        +file_size: float
+        +link_count: int
+        +blender_object: bpy.types.Object 
+        +apply_force(force: Vector3)
+        +update_position(delta_time: float)
+    }
+
+    class Edge {
+        +start_node: Node
+        +end_node: Node
+        +rest_length: float
+        +blender_object: bpy.types.Object 
+        +apply_spring_force()
+        +update_blender_object() 
+    }
+
+    class World {
+        +nodes: dict[str, Node]
+        +edges: list[Edge]
+        +add_node(node: Node)
+        +add_edge(edge: Edge)
+        +load_logseq_data(folder_path: str)
+        +run_simulation(steps: int, delta_time: float)
+        +create_blender_objects()
+    }
+
+    Node -- Vector3
+    Edge -- Node
+    World -- Node
+    World -- Edge
+'''
+
