@@ -170,7 +170,7 @@ sequenceDiagram
 2. **Test and Validate**: Continuously test the complete workflow from GitHub data fetching to visualization in Blender.
 3. **Explore Omniverse API**: Once basic functionality is working in Blender, integrate Omniverse for advanced features like materials, physics, and collaboration.
 
-'''mermaid
+```mermaid
 classDiagram
     class Vector3 {
         +x: float
@@ -220,5 +220,53 @@ classDiagram
     Edge -- Node
     World -- Node
     World -- Edge
-'''
+```
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant FileLoader
+    participant World
+    participant Node
+    participant Edge
+    participant Blender
+
+    User->>FileLoader: Load Logseq Markdown data
+    FileLoader->>World: Data (nodes, edges, properties)
+    loop for each Node in data
+        World->>Node: Create Node instance
+    end
+    loop for each Edge in data
+        World->>Edge: Create Edge instance 
+    end
+    World->>Blender: Create Blender objects for nodes and edges
+    loop for each simulation step
+        World->>Edge: Apply spring forces
+        Edge->>Node: Apply force to connected nodes
+        World->>Node: Update node positions
+        World->>Blender: Update Blender scene
+    end
+```
+
+File Structure: Organize your Python code into multiple files: vector3.py, node.py, edge.py, world.py, file_loader.py (or similar names).
+Mapping C# Components to Python Functions:
+VSCode.cs:
+SyncSolution(), UpdateSolution(): These functionalities are likely not needed in Blender as you'll interact directly with the scene.
+CallVSCode(): Replace this with Blender-specific scene update functions.
+ScrubSolutionContent(), ScrubProjectContent(), ScrubFile(): These are likely not needed in Python.
+VSCodePreferencesItem(): Replace with a Blender UI panel if you need custom settings.
+OnOpenedAsset(): Not directly applicable, but you might have similar logic for interacting with nodes in Blender.
+CheckForUpdate(), InstallUnityDebugger(): Not needed in Python.
+OnPlaymodeStateChanged(), OnScriptReload(): Blender has different event mechanisms for scene updates.
+WriteWorkspaceSettings(): Not needed in Python.
+World.cs:
+NormalizeEdgeWeights(): Port this logic to the World class in Python.
+CenterCamera(): Implement using Blender's camera API.
+Event handling will need adaptation to Blender's mechanisms.
+Node.cs, Edge.cs, Spring.cs, Cluster.cs, ClusterController.cs:
+Create equivalent classes in Python with similar functionalities.
+Adapt force calculations and spring behavior to work with Blender's physics.
+ThreadDistributer.cs, Parsers, VRActionResponder.cs:
+Port ThreadDistributer if you need multithreading in Python.
+Implement parsing logic for Logseq Markdown files in Python.
+Adapt interaction code to use Omniverse's VR input framework.
