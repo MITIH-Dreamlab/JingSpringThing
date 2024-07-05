@@ -2,8 +2,8 @@ import bpy
 import json
 import os
 import numpy as np
-import random
 import sys
+import time
 
 # Constants for scaling
 POSITION_SCALE = 10.0
@@ -45,14 +45,18 @@ class Vector3:
 # Node class: Represents each node in the knowledge graph
 class Node:
     def __init__(self, data):
-        self.id = data['id']
-        self.name = data['name']
+        self.id = data.get('id')
+        self.name = data.get('name')
         # Assign random positions initially
-        self.position = Vector3(np.random.uniform(-10, 10), np.random.uniform(-10, 10), np.random.uniform(-10, 10))
+        self.position = Vector3(
+            np.random.uniform(-10, 10), 
+            np.random.uniform(-10, 10), 
+            np.random.uniform(-10, 10)
+        )
         self.velocity = Vector3()
         self.force = Vector3()
-        self.file_size = data['file_size']
-        self.link_count = len(data['link_types'])
+        self.file_size = data.get('file_size', 1.0)
+        self.link_count = len(data.get('link_types', []))
         self.blender_object = None
 
     def apply_force(self, force):
@@ -67,14 +71,15 @@ class Node:
         self.position += self.velocity * delta_time
         self.force = Vector3()  # Reset force
 
+        # Update the corresponding Blender object position
         if self.blender_object:
             self.blender_object.location = self.position.to_tuple()
 
 # Edge class: Represents relationships in the knowledge graph
 class Edge:
     def __init__(self, data, nodes_dict):
-        self.start_node = nodes_dict[data['start_node']]
-        self.end_node = nodes_dict[data['end_node']]
+        self.start_node = nodes_dict.get(data.get('start_node'))
+        self.end_node = nodes_dict.get(data.get('end_node'))
         self.rest_length = ((self.start_node.file_size + self.end_node.file_size) * 0.1 / EDGE_SCALE)
         self.blender_object = None
 
@@ -125,21 +130,6 @@ class World:
             edge = Edge(edge_data, self.nodes)
             self.add_edge(edge)
 
-    def run_simulation(self, steps, delta_time):
-        for step in range(steps):
-            for edge in self.edges:
-                edge.apply_spring_force()
-
-            for node in self.nodes.values():
-                node.update_position(delta_time)
-
-            for edge in self.edges:
-                edge.update_blender_object()
-
-            # Update the viewport
-            bpy.context.view_layer.update()
-            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-
     def create_material_for_node(self, link_count):
         # Create a new material
         mat = bpy.data.materials.new(name="NodeMaterial")
@@ -165,36 +155,62 @@ class World:
         return mat
 
     def create_blender_objects(self):
-        for node in self.nodes.values():
-            radius = max(0.01, node.file_size / SIZE_SCALE)  # Adjusting the sphere size based on the file size for visibility (scaled down more)
-            bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, location=node.position.to_tuple())
-            obj = bpy.context.object
-            obj.name = node.name
-            node.blender_object = obj
+        nodes_list = list(self.nodes.values())
+        edges_list = self.edges
 
-            # Assign material based on link count
-            material = self.create_material_for_node(node.link_count)
-            if obj.data.materials:
-                obj.data.materials[0] = material
-            else:
-                obj.data.materials.append(material)
+        def create_node_objects(index=0):
+            try:
+                if index < len(nodes_list):
+                    node = nodes_list[index]
+                    radius = max(0.01, node.file_size / SIZE_SCALE)  # Adjust sphere size based on file size
+                    bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, location=node.position.to_tuple())
+                    obj = bpy.context.object
+                    obj.name = node.name
+                    node.blender_object = obj
 
-        for edge in self.edges:
-            start_loc = edge.start_node.position.to_tuple()
-            end_loc = edge.end_node.position.to_tuple()
-            bpy.ops.mesh.primitive_cylinder_add(radius=0.005, depth=1)  # Adjust the cylinder radius as needed (smaller radius)
-            obj = bpy.context.object
-            edge.blender_object = obj
+                    # Assign material based on link count
+                    material = self.create_material_for_node(node.link_count)
+                    if obj.data.materials:
+                        obj.data.materials[0] = material
+                    else:
+                        obj.data.materials.append(material)
 
-            # Position the cylinder correctly
-            mid_point = [(s + e) / 2 for s, e in zip(start_loc, end_loc)]
-            obj.location = mid_point
+                    # Schedule the creation of the next node
+                    bpy.app.timers.register(lambda: create_node_objects(index + 1), first_interval=0.01)
+            except Exception as e:
+                print(f"Error creating node object at index {index}: {e}")
 
-            # Scale and rotate the cylinder to align between the two nodes
-            direction = edge.end_node.position - edge.start_node.position
-            distance = direction.length()
-            obj.rotation_mode = 'QUATERNION'  # Use quaternion for accurate rotation
-            obj.scale = (0.005, 0.005, distance / 2)
+        def create_edge_objects(index=0):
+            try:
+                if index < len(edges_list):
+                    edge = edges_list[index]
+                    start_loc = edge.start_node.position.to_tuple()
+                    end_loc = edge.end_node.position.to_tuple()
+                    bpy.ops.mesh.primitive_cylinder_add(radius=0.005, depth=1)
+                    obj = bpy.context.object
+                    edge.blender_object = obj
+
+                    # Position the cylinder correctly
+                    mid_point = [(s + e) / 2 for s, e in zip(start_loc, end_loc)]
+                    obj.location = mid_point
+
+                    # Scale and rotate the cylinder to align between the two nodes
+                    direction = edge.end_node.position - edge.start_node.position
+                    distance = direction.length()
+                    obj.rotation_mode = 'QUATERNION'
+                    obj.scale = (0.005, 0.005, distance / 2)
+
+                    # Schedule the creation of the next edge
+                    bpy.app.timers.register(lambda: create_edge_objects(index + 1), first_interval=0.01)
+            except Exception as e:
+                print(f"Error creating edge object at index {index}: {e}")
+        
+        # Start creating node objects
+        print("Starting to create node objects...")
+        create_node_objects()
+
+        # After all nodes are created, start creating edge objects
+        bpy.app.timers.register(lambda: create_edge_objects(), first_interval=0.01)
 
 def load_json(file_path):
     try:
@@ -205,18 +221,58 @@ def load_json(file_path):
         return None
 
 def clear_scene():
-    # Delete all objects in the scene
-    bpy.ops.object.select_all(action='SELECT')
-    bpy.ops.object.delete()
+    try:
+        # Delete all objects in the scene
+        bpy.ops.object.select_all(action='SELECT')
+        bpy.ops.object.delete()
+        print("Scene cleared.")
+    except Exception as e:
+        print(f"Error clearing the scene: {e}")
 
 def enable_material_shading():
-    # Enable material shading in the viewport
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'MATERIAL'
-                    break
+    try:
+        # Enable material shading in the viewport
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    if space.type == 'VIEW_3D':
+                        space.shading.type = 'MATERIAL'
+                        break
+        print("Material shading enabled.")
+    except Exception as e:
+        print(f"Error enabling material shading: {e}")
+
+def run_simulation(world, steps, delta_time):
+    current_step = 0
+
+    def step_simulation():
+        nonlocal current_step
+        try:
+            if current_step < steps:
+                for edge in world.edges:
+                    edge.apply_spring_force()
+
+                for node in world.nodes.values():
+                    node.update_position(delta_time)
+
+                for edge in world.edges:
+                    edge.update_blender_object()
+
+                # Update the viewport
+                bpy.context.view_layer.update()
+
+                current_step += 1
+
+                # Schedule the next step
+                bpy.app.timers.register(step_simulation, first_interval=0.01)
+            else:
+                print(f"Simulation completed after {steps} steps.")
+        except Exception as e:
+            print(f"Error during simulation step {current_step}: {e}")
+
+    # Start the simulation steps
+    print(f"Starting simulation for {steps} steps.")
+    step_simulation()
 
 def main():
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -245,11 +301,14 @@ def main():
     # Enable material shading for better visualization
     enable_material_shading()
 
-    # Run the simulation
+    # Run the simulation using timers
     steps = 1000  # Number of simulation steps
     delta_time = 0.01  # Time step in seconds
-    world.run_simulation(steps, delta_time)
+    bpy.app.timers.register(lambda: run_simulation(world, steps, delta_time), first_interval=1.0)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error in main execution: {e}")
 
