@@ -5,8 +5,8 @@ import numpy as np
 import mathutils
 
 # Constants for node, edge sizes, and position scaling
-NODE_SIZE = 0.05
-EDGE_THICKNESS = 0.005
+NODE_BASE_SIZE = 0.3  # Base size for nodes
+EDGE_THICKNESS = 0.02
 POSITION_SCALE = 10.0
 
 # Vector3 class: Represents a 3D vector with basic operations and includes arithmetic operators
@@ -166,7 +166,9 @@ class World:
             try:
                 if index < len(nodes_list):
                     node = nodes_list[index]
-                    bpy.ops.mesh.primitive_uv_sphere_add(radius=NODE_SIZE, location=node.position.to_tuple())
+                    # Scale node size based on file size
+                    radius = NODE_BASE_SIZE * (node.file_size ** (1 / 3))  # Cube root for better visibility scaling
+                    bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, location=node.position.to_tuple())
                     obj = bpy.context.object
                     obj.name = node.name
                     node.blender_object = obj
@@ -179,7 +181,7 @@ class World:
                         obj.data.materials.append(material)
 
                     # Debug: Print node creation information
-                    print(f"Created node {index + 1}/{len(nodes_list)}: {node.name}")
+                    print(f"Created node {index + 1}/{len(nodes_list)}: {node.name} with radius {radius}")
 
                     # Schedule the creation of the next node
                     bpy.app.timers.register(lambda: create_node_objects(index + 1), first_interval=0.01)
@@ -324,4 +326,3 @@ if __name__ == '__main__':
         main()
     except Exception as e:
         print(f"Error in main execution: {e}")
-
