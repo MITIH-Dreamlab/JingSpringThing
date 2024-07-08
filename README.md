@@ -270,3 +270,58 @@ ThreadDistributer.cs, Parsers, VRActionResponder.cs:
 Port ThreadDistributer if you need multithreading in Python.
 Implement parsing logic for Logseq Markdown files in Python.
 Adapt interaction code to use Omniverse's VR input framework.
+
+
+Here's a mermaid sequence diagram for the main flow of the provided code:
+
+```mermaid
+sequenceDiagram
+    participant Main
+    participant World
+    participant Node
+    participant Edge
+    participant Blender
+
+    Main->>Main: parse_markdown_files()
+    Main->>Main: clear_scene()
+    Main->>World: Create World
+    loop For each node
+        Main->>World: add_node(node)
+    end
+    loop For each edge
+        Main->>World: add_edge(edge)
+    end
+    Main->>World: create_blender_objects()
+    World->>Blender: Create node objects
+    World->>Blender: Create edge objects
+    Main->>Main: enable_material_shading()
+    loop For num_iterations
+        Main->>Main: run_simulation(world, max_steps, delta_time)
+        loop For max_steps
+            Main->>Edge: apply_spring_force()
+            Edge->>Node: apply_force()
+            Main->>Node: update_position(delta_time)
+            Main->>Edge: update_blender_object()
+            Main->>World: calculate_total_energy()
+            Main->>Blender: Update view layer
+        end
+    end
+    Main->>Blender: Final redraw of viewports
+```
+
+This diagram shows the main sequence of operations in the script, including:
+
+1. Parsing Markdown files
+2. Clearing the Blender scene
+3. Creating the World object and populating it with nodes and edges
+4. Creating Blender objects for nodes and edges
+5. Enabling material shading
+6. Running the simulation, which includes:
+   - Applying spring forces
+   - Updating node positions
+   - Updating Blender objects
+   - Calculating system energy
+   - Updating the Blender view
+7. Final redraw of Blender viewports
+
+Note that some details and lower-level operations are omitted for clarity, focusing on the main flow of the script.
