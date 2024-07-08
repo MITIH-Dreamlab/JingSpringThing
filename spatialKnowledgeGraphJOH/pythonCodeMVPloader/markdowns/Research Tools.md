@@ -1,0 +1,36 @@
+public:: true
+
+- #Public page
+	- automatically published
+-
+- [Elicit: The AI Research Assistant](https://elicit.com/)
+	- ## Elicit's Approach and Features
+		- ### AI Research Assistant
+		- Elicit is an AI research assistant that aims to make high quality reasoning abundant
+		- Currently focused on text-based workflows, especially literature summarization and helping users understand what is known on a topic based on existing research
+		- Long-term goal is to go further into reasoning and decision making
+		- ### Systematic Review Automation
+		- Elicit's workflow is inspired by the systematic review or meta-analysis process used to summarize scientific literature
+		- Aims to automate this laborious process which typically involves teams of people working for over a year to find relevant papers, extract data, and summarize findings
+		- Makes this capability more accessible for any research question
+		- ### Key Features
+		- Enter a research question and get back relevant papers along with AI-generated summaries of each paper with respect to the query
+		- Extract structured data from papers into tabular format (e.g. population studied, methods used, interventions, outcomes)
+		- Provide a description or instructions for data to extract, allowing custom extraction
+		- Group or pivot extracted data by arguments, effects, interventions, techniques rather than just by paper
+		- Notebook interface allows users to interactively search for papers, extract data, analyze results, and share templates of analysis with others
+		- ### Approach to Building Elicit
+		- Extensive testing of language model capabilities and designing human evaluation processes before powerful models were available
+		- Breaking down complex reasoning tasks into granular steps that language models can be trained on and evaluated against
+		- Intentionally not just training a model on a large dataset, but defining ideal step-by-step processes an expert would follow
+		- Enables easier evaluation, troubleshooting and transparency into model's reasoning process
+- [[Research Tools]] [Undermind](https://www.undermind.ai/home/)
+- [Perplexity](https://www.perplexity.ai/) for [[Research Tools]].
+	- [Tutorial: Perplexity Basics (youtube.com)](https://www.youtube.com/watch?v=ue4NU-U-hAE)
+- [storm · Streamlit (stanford.edu)](https://storm.genie.stanford.edu/)
+	- https://github.com/stanford-oval/storm
+	- Reader view, then page source then view as html then reflow with Claude
+- [Logseq Copilot (google.com)](https://chromewebstore.google.com/detail/logseq-copilot/hihgfcgbmnbomabfdbajlbpnacndeihl?pli=1)
+- [Logseq Quick Capture (google.com)](https://chromewebstore.google.com/detail/logseq-quick-capture/hdpmdgiddmjppbeahnglgagndmahlanc)
+- [AcademicAI](https://www.academicai.io/)
+-
