@@ -1,0 +1,25 @@
+public:: true
+
+- #Public page automatically published
+- {{video https://www.youtube.com/watch?v=lG3g8mYKfqU}}
+- # Gaussian Splatting
+- [Instantsplat: Unbounded Sparse-view Pose-free Gaussian Splatting in 40 Seconds](https://instantsplat.github.io/)
+- [The Rise Of 3D Gaussian Splatting: What Is It And How Is It Changing The Immersive Media Industry? — Magnopus](https://www.magnopus.com/blog/the-rise-of-3d-gaussian-splatting)
+- 4D [[Gaussian splatting and Similar]] [with time domain](https://github.com/hustvl/4DGaussians)
+- [[Gaussian splatting and Similar]] [gsgen](https://github.com/gsgen3d/gsgen)
+- Room scale [[Gaussian splatting and Similar]] technique for single lens (#SLAM) [[Scene Capture and Reconstruction]]  [Gaussian-SLAM: Photo-realistic Dense SLAM with Gaussian Splatting (vladimiryugay.github.io)](https://vladimiryugay.github.io/gaussian_slam/)
+- [Mip-Splatting (niujinshuchong.github.io)](https://niujinshuchong.github.io/mip-splatting/) reduced artifacts in [[Gaussian splatting and Similar]]
+- [Gaussian-SLAM: Photo-realistic Dense SLAM with Gaussian Splatting (vladimiryugay.github.io)](https://vladimiryugay.github.io/gaussian_slam/)
+- GaussianDiffusion: 3D Gaussian Splatting for Denoising Diffusion Probabilistic Models with Structured Noise
+	- logseq://graph/researchpapers?block-id=6579a51f-5e6d-4570-903f-9458f84e845f
+- Gaussian [[SLAM]] rooms scale scanning
+	- logseq://graph/researchpapers?block-id=6579a880-ce7f-4a79-b3d3-9135ff4348b3
+	- [Gaussian Splatting SLAM (rmurai.co.uk)](https://rmurai.co.uk/projects/GaussianSplattingSLAM/)  is near real-time
+- [Paper page TRIPS: Trilinear Point Splatting for Real-Time Radiance Field Rendering (huggingface.co)](https://huggingface.co/papers/2401.06003)
+- [Deblurring 3D Gaussian Splatting (benhenryl.github.io)](https://benhenryl.github.io/Deblurring-3D-Gaussian-Splatting/)
+- [huggingface/gsplat.js: JavaScript Gaussian Splatting library. (github.com)](https://github.com/huggingface/gsplat.js/)
+- [[Gaussian splatting and Similar]] in Houdini
+- [Triplane Meets Gaussian Splatting: Fast and Generalizable Single-View 3D Reconstruction with Transformers (zouzx.github.io)](https://zouzx.github.io/TriplaneGaussian/) understandable [[Text to 3D and 4D]] from [[Gaussian splatting and Similar]]
+- [dynamic3dgaussians.github.io](https://dynamic3dgaussians.github.io/) using a multi [[Motion Capture]] dome and [[Gaussian splatting and Similar]] for 6DOF [[Human tracking and SLAM capture]]
+- [LangSplat: 3D Language Gaussian Splatting](https://langsplat.github.io/)
+-
