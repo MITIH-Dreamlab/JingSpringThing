@@ -7,10 +7,25 @@
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        #debugOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
     <canvas id="graphCanvas"></canvas>
+    <div id="debugOverlay">
+        <p id="status">Status: Initializing...</p>
+        <p id="nodeCount">Nodes: -</p>
+        <p id="edgeCount">Edges: -</p>
+    </div>
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
