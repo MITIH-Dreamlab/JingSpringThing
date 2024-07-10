@@ -78,70 +78,80 @@ async function fetchMarkdownFiles() {
  * @returns {Object} Object containing nodes and edges for the graph
  */
 function parseMarkdownFiles(files) {
-    const nodes = [];
-    const edges = [];
-    const nodeMap = new Map();
+  const nodes = [];
+  const edges = {}; // Use an object to store edge counts
 
-    files.forEach((file, index) => {
-        const { name, content } = file;
+  files.forEach((file) => {
+    const { name, content } = file;
+    if (!content.includes('public:: true')) {
+      return; 
+    }
 
-        // Ensure debug information is printed
-        console.log(`Parsing file: ${name}`);
-        if (!content.includes('public:: true')) {
-            console.log(`Skipping file (not marked as public): ${name}`);
-            return; // Skip files not marked as public
-        }
+    // Extract ID from the Markdown front matter
+    let fileIdMatch = content.match(/---\n(?:.*\n)?id:\s*([\w-]+)(?:\n.*)?---/);
+    let fileId = fileIdMatch ? fileIdMatch[1] : name.replace('.md', ''); 
 
-        // Extract links from the content
-        const links = (content.match(/\[\[(.+?)\]\]/g) || []).map(link => link.slice(2, -2));
+    if (!edges[fileId]) {
+      edges[fileId] = {};
+    }
 
-        const node = {
-            id: index,
-            name: name,
-            size: content.length,
-            hyperlinks: (content.match(/https?:\/\/[^\s]+/g) || []).length,
-            links: links
-        };
+    const node = {
+      id: fileId, // Use extracted ID
+      name: name,
+      size: content.length,
+      hyperlinks: (content.match(/https?:\/\/[^\s]+/g) || []).length,
+    };
+    nodes.push(node);
 
-        nodes.push(node);
-        nodeMap.set(name, index);
-        console.log(`Node created: ${node.name}, Size: ${node.size}, Hyperlinks: ${node.hyperlinks}`);
+    const links = (content.match(/\[\[(.+?)\]\]/g) || []).map(link => link.slice(2, -2));
+    links.forEach((linkText) => {
+      let targetFileIdMatch = linkText.match(/---\n(?:.*\n)?id:\s*([\w-]+)(?:\n.*)?---/);
+      let targetFileId = targetFileIdMatch ? targetFileIdMatch[1] : linkText.replace('.md', '');
+      if (targetFileId) {
+        edges[fileId][targetFileId] = (edges[fileId][targetFileId] || 0) + 1;
+      }
     });
+  });
 
-    // Create edges based on the links
-    nodes.forEach((node, sourceIndex) => {
-        node.links.forEach(targetName => {
-            if (nodeMap.has(targetName)) {
-                const targetIndex = nodeMap.get(targetName);
-                edges.push({
-                    source: sourceIndex,
-                    target: targetIndex,
-                    weight: 1
-                });
-                console.log(`Edge created between ${nodes[sourceIndex].name} and ${nodes[targetIndex].name}`);
-            }
-        });
-    });
+  // Convert edges object to an array of edges with source, target, and weight
+  const edgeArray = [];
+  for (const source in edges) {
+    for (const target in edges[source]) {
+      edgeArray.push({
+        source: source,
+        target: target,
+        weight: edges[source][target],
+      });
+    }
+  }
 
-    console.log(`Total nodes: ${nodes.length}`);
-    console.log(`Total edges: ${edges.length}`);
-    return { nodes, edges };
+  return { nodes, edges: edgeArray };
 }
-
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
 // API endpoint to get graph data
 app.get('/graph-data', async (req, res) => {
-    try {
-        const files = await fetchMarkdownFiles();
-        const graphData = parseMarkdownFiles(files);
-        res.json(graphData);
-        console.log('Graph data sent to client');
-    } catch (error) {
-        console.error('Error processing graph data:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+  try {
+    const files = await fetchMarkdownFiles();
+    const graphData = parseMarkdownFiles(files);
+
+    // Write graphData to a JSON file inside the volume
+    const jsonData = JSON.stringify(graphData, null, 2); // Pretty-print JSON
+    const filePath = '/usr/src/app/processed_files/graph-data.json'; // Path inside the container
+
+    fs.writeFile(filePath, jsonData, 'utf8', (err) => {
+      if (err) {
+        console.error('Error writing graph data to file:', err);
+      } else {
+        console.log('Graph data saved to:', filePath);
+      }
+    }); 
+
+    res.json(graphData);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Start the HTTPS server

@@ -1,0 +1,5106 @@
+{
+  "nodes": [
+    {
+      "id": "AI Adoption",
+      "name": "AI Adoption.md",
+      "size": 7207,
+      "hyperlinks": 17
+    },
+    {
+      "id": "AI Companies",
+      "name": "AI Companies.md",
+      "size": 7003,
+      "hyperlinks": 7
+    },
+    {
+      "id": "AI Risks",
+      "name": "AI Risks.md",
+      "size": 5071,
+      "hyperlinks": 2
+    },
+    {
+      "id": "AI Video",
+      "name": "AI Video.md",
+      "size": 18148,
+      "hyperlinks": 97
+    },
+    {
+      "id": "Agentic Metaverse for Global Creatives",
+      "name": "Agentic Metaverse for Global Creatives.md",
+      "size": 30725,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Agentic Mycelia",
+      "name": "Agentic Mycelia.md",
+      "size": 27981,
+      "hyperlinks": 36
+    },
+    {
+      "id": "Agents",
+      "name": "Agents.md",
+      "size": 5438,
+      "hyperlinks": 18
+    },
+    {
+      "id": "Ai in Games",
+      "name": "Ai in Games.md",
+      "size": 3116,
+      "hyperlinks": 12
+    },
+    {
+      "id": "Algorithmic Bias and Variance",
+      "name": "Algorithmic Bias and Variance.md",
+      "size": 8599,
+      "hyperlinks": 25
+    },
+    {
+      "id": "AnimateDiff",
+      "name": "AnimateDiff.md",
+      "size": 298,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Anthropic Claude",
+      "name": "Anthropic Claude.md",
+      "size": 1394,
+      "hyperlinks": 12
+    },
+    {
+      "id": "Apple",
+      "name": "Apple.md",
+      "size": 9505,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Artificial Intelligence",
+      "name": "Artificial Intelligence.md",
+      "size": 5698,
+      "hyperlinks": 5
+    },
+    {
+      "id": "Automated Podcast Project",
+      "name": "Automated Podcast Project.md",
+      "size": 10866,
+      "hyperlinks": 1
+    },
+    {
+      "id": "BTC Layer 3",
+      "name": "BTC Layer 3.md",
+      "size": 16564,
+      "hyperlinks": 35
+    },
+    {
+      "id": "Base models",
+      "name": "Base models.md",
+      "size": 84912,
+      "hyperlinks": 142
+    },
+    {
+      "id": "Bitcoin As Money",
+      "name": "Bitcoin As Money.md",
+      "size": 18306,
+      "hyperlinks": 23
+    },
+    {
+      "id": "Bitcoin ETF",
+      "name": "Bitcoin ETF.md",
+      "size": 6110,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Bitcoin Technical Overview",
+      "name": "Bitcoin Technical Overview.md",
+      "size": 34499,
+      "hyperlinks": 65
+    },
+    {
+      "id": "Bitcoin Value Proposition",
+      "name": "Bitcoin Value Proposition.md",
+      "size": 52586,
+      "hyperlinks": 44
+    },
+    {
+      "id": "Bitcoin",
+      "name": "Bitcoin.md",
+      "size": 98246,
+      "hyperlinks": 243
+    },
+    {
+      "id": "Blender",
+      "name": "Blender.md",
+      "size": 168,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Blockchain",
+      "name": "Blockchain.md",
+      "size": 14972,
+      "hyperlinks": 16
+    },
+    {
+      "id": "Calculating Empires",
+      "name": "Calculating Empires.md",
+      "size": 2041,
+      "hyperlinks": 7
+    },
+    {
+      "id": "California AI bill",
+      "name": "California AI bill.md",
+      "size": 4804,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Cashu",
+      "name": "Cashu.md",
+      "size": 4261,
+      "hyperlinks": 8
+    },
+    {
+      "id": "ChatGPT",
+      "name": "ChatGPT.md",
+      "size": 15915,
+      "hyperlinks": 64
+    },
+    {
+      "id": "Client side DCO",
+      "name": "Client side DCO.md",
+      "size": 4897,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Coding support",
+      "name": "Coding support.md",
+      "size": 8852,
+      "hyperlinks": 41
+    },
+    {
+      "id": "Comfy UI for Fashion and Brands",
+      "name": "Comfy UI for Fashion and Brands.md",
+      "size": 11178,
+      "hyperlinks": 28
+    },
+    {
+      "id": "ComfyUI",
+      "name": "ComfyUI.md",
+      "size": 36147,
+      "hyperlinks": 130
+    },
+    {
+      "id": "Comparison of GPT4 and Gemini Ultra",
+      "name": "Comparison of GPT4 and Gemini Ultra.md",
+      "size": 3048,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Comparison of SDXL and Midjourney v6",
+      "name": "Comparison of SDXL and Midjourney v6.md",
+      "size": 731,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Competition in AI",
+      "name": "Competition in AI.md",
+      "size": 2339,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Conspiracies",
+      "name": "Conspiracies.md",
+      "size": 13096,
+      "hyperlinks": 10
+    },
+    {
+      "id": "Controlnet and similar",
+      "name": "Controlnet and similar.md",
+      "size": 8002,
+      "hyperlinks": 28
+    },
+    {
+      "id": "Convergence",
+      "name": "Convergence.md",
+      "size": 10073,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Courses and Training",
+      "name": "Courses and Training.md",
+      "size": 5970,
+      "hyperlinks": 31
+    },
+    {
+      "id": "Create RAG from public pages",
+      "name": "Create RAG from public pages.md",
+      "size": 3251,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Cyber Security and Military",
+      "name": "Cyber Security and Military.md",
+      "size": 7648,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Death of the Internet",
+      "name": "Death of the Internet.md",
+      "size": 22561,
+      "hyperlinks": 78
+    },
+    {
+      "id": "Decentralised Web",
+      "name": "Decentralised Web.md",
+      "size": 68612,
+      "hyperlinks": 119
+    },
+    {
+      "id": "Deep Learning",
+      "name": "Deep Learning.md",
+      "size": 18756,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Deepfakes and fraudulent content",
+      "name": "Deepfakes and fraudulent content.md",
+      "size": 1455,
+      "hyperlinks": 8
+    },
+    {
+      "id": "Deepmind",
+      "name": "Deepmind.md",
+      "size": 14,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Definitions and frameworks for Metaverse",
+      "name": "Definitions and frameworks for Metaverse.md",
+      "size": 47879,
+      "hyperlinks": 41
+    },
+    {
+      "id": "Depth Estimation",
+      "name": "Depth Estimation.md",
+      "size": 862,
+      "hyperlinks": 5
+    },
+    {
+      "id": "Diagrams as Code",
+      "name": "Diagrams as Code.md",
+      "size": 19571,
+      "hyperlinks": 23
+    },
+    {
+      "id": "Diffusion Models",
+      "name": "Diffusion Models.md",
+      "size": 14,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Digital Asset Risks",
+      "name": "Digital Asset Risks.md",
+      "size": 37696,
+      "hyperlinks": 49
+    },
+    {
+      "id": "Digital Objects",
+      "name": "Digital Objects.md",
+      "size": 62498,
+      "hyperlinks": 154
+    },
+    {
+      "id": "Distributed Identity",
+      "name": "Distributed Identity.md",
+      "size": 58768,
+      "hyperlinks": 54
+    },
+    {
+      "id": "EU AI Act",
+      "name": "EU AI Act.md",
+      "size": 3081,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Education",
+      "name": "Education.md",
+      "size": 9163,
+      "hyperlinks": 3
+    },
+    {
+      "id": "Energy and Power",
+      "name": "Energy and Power.md",
+      "size": 23378,
+      "hyperlinks": 58
+    },
+    {
+      "id": "Ethereum",
+      "name": "Ethereum.md",
+      "size": 15106,
+      "hyperlinks": 27
+    },
+    {
+      "id": "Evaluation and leaderboards",
+      "name": "Evaluation and leaderboards.md",
+      "size": 1148,
+      "hyperlinks": 10
+    },
+    {
+      "id": "Facebook Meta",
+      "name": "Facebook Meta.md",
+      "size": 4004,
+      "hyperlinks": 0
+    },
+    {
+      "id": "GANs",
+      "name": "GANs.md",
+      "size": 14,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Gaussian splatting and Similar",
+      "name": "Gaussian splatting and Similar.md",
+      "size": 7754,
+      "hyperlinks": 22
+    },
+    {
+      "id": "Gemini",
+      "name": "Gemini.md",
+      "size": 1952,
+      "hyperlinks": 10
+    },
+    {
+      "id": "Geopolitical hot takes",
+      "name": "Geopolitical hot takes.md",
+      "size": 13872,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Global Inequality",
+      "name": "Global Inequality.md",
+      "size": 35001,
+      "hyperlinks": 12
+    },
+    {
+      "id": "Gold",
+      "name": "Gold.md",
+      "size": 5490,
+      "hyperlinks": 3
+    },
+    {
+      "id": "Hardware and Edge",
+      "name": "Hardware and Edge.md",
+      "size": 29002,
+      "hyperlinks": 66
+    },
+    {
+      "id": "Human tracking and SLAM capture",
+      "name": "Human tracking and SLAM capture.md",
+      "size": 1583,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Human vs AI",
+      "name": "Human vs AI.md",
+      "size": 5106,
+      "hyperlinks": 3
+    },
+    {
+      "id": "Humans, Avatars , Character",
+      "name": "Humans, Avatars , Character.md",
+      "size": 5926,
+      "hyperlinks": 30
+    },
+    {
+      "id": "Hyper personalisation",
+      "name": "Hyper personalisation.md",
+      "size": 3116,
+      "hyperlinks": 1
+    },
+    {
+      "id": "IPAdapter",
+      "name": "IPAdapter.md",
+      "size": 4104,
+      "hyperlinks": 13
+    },
+    {
+      "id": "Inpainting",
+      "name": "Inpainting.md",
+      "size": 59,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Introduction to me",
+      "name": "Introduction to me.md",
+      "size": 3816,
+      "hyperlinks": 8
+    },
+    {
+      "id": "Jailbreaking",
+      "name": "Jailbreaking.md",
+      "size": 909,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Knowhere",
+      "name": "Knowhere.md",
+      "size": 15777,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Knowledge Graphing",
+      "name": "Knowledge Graphing.md",
+      "size": 3333,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Landscape",
+      "name": "Landscape.md",
+      "size": 308,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Large language models",
+      "name": "Large language models.md",
+      "size": 62885,
+      "hyperlinks": 219
+    },
+    {
+      "id": "Layoff tracker and threatened roles",
+      "name": "Layoff tracker and threatened roles.md",
+      "size": 3402,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Lead Poisoning Hypothesis",
+      "name": "Lead Poisoning Hypothesis.md",
+      "size": 3990,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Leopold Aschenbrenner",
+      "name": "Leopold Aschenbrenner.md",
+      "size": 8746,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Lightning and Similar L2",
+      "name": "Lightning and Similar L2.md",
+      "size": 19519,
+      "hyperlinks": 30
+    },
+    {
+      "id": "Llama",
+      "name": "Llama.md",
+      "size": 3429,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Machine Learning",
+      "name": "Machine Learning.md",
+      "size": 11768,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Medical AI",
+      "name": "Medical AI.md",
+      "size": 12283,
+      "hyperlinks": 11
+    },
+    {
+      "id": "Metaverse Ontology",
+      "name": "Metaverse Ontology.md",
+      "size": 36816,
+      "hyperlinks": 21
+    },
+    {
+      "id": "Metaverse and Spatial Risks",
+      "name": "Metaverse and Spatial Risks.md",
+      "size": 2425,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Metaverse and Telecollaboration",
+      "name": "Metaverse and Telecollaboration.md",
+      "size": 114187,
+      "hyperlinks": 74
+    },
+    {
+      "id": "Metaverse as Markets",
+      "name": "Metaverse as Markets.md",
+      "size": 10866,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Microsoft CoPilot",
+      "name": "Microsoft CoPilot.md",
+      "size": 4561,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Microsoft Work Trends Impact 2024",
+      "name": "Microsoft Work Trends Impact 2024.md",
+      "size": 7664,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Mixed reality",
+      "name": "Mixed reality.md",
+      "size": 59817,
+      "hyperlinks": 138
+    },
+    {
+      "id": "Model Optimisation and Performance",
+      "name": "Model Optimisation and Performance.md",
+      "size": 9862,
+      "hyperlinks": 18
+    },
+    {
+      "id": "Money",
+      "name": "Money.md",
+      "size": 80257,
+      "hyperlinks": 79
+    },
+    {
+      "id": "Multi Agent RAG scrapbook",
+      "name": "Multi Agent RAG scrapbook.md",
+      "size": 6498,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Music and audio",
+      "name": "Music and audio.md",
+      "size": 8168,
+      "hyperlinks": 33
+    },
+    {
+      "id": "NVIDIA Omniverse",
+      "name": "NVIDIA Omniverse.md",
+      "size": 8801,
+      "hyperlinks": 3
+    },
+    {
+      "id": "National Industrial Centre for Virtual Environments",
+      "name": "National Industrial Centre for Virtual Environments.md",
+      "size": 2718,
+      "hyperlinks": 5
+    },
+    {
+      "id": "Norbert Wiener",
+      "name": "Norbert Wiener.md",
+      "size": 2434,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Octave Multi Model Laboratory",
+      "name": "Octave Multi Model Laboratory.md",
+      "size": 2220,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Open Generative AI tools",
+      "name": "Open Generative AI tools.md",
+      "size": 2630,
+      "hyperlinks": 8
+    },
+    {
+      "id": "OpenAI",
+      "name": "OpenAI.md",
+      "size": 59,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Overview of Machine Learning Techniques",
+      "name": "Overview of Machine Learning Techniques.md",
+      "size": 7084,
+      "hyperlinks": 19
+    },
+    {
+      "id": "Parametric",
+      "name": "Parametric.md",
+      "size": 2243,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Politics, Law, Privacy",
+      "name": "Politics, Law, Privacy.md",
+      "size": 33561,
+      "hyperlinks": 44
+    },
+    {
+      "id": "Product Design",
+      "name": "Product Design.md",
+      "size": 81217,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Product and Risk Management",
+      "name": "Product and Risk Management.md",
+      "size": 4318,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Prompt Engineering",
+      "name": "Prompt Engineering.md",
+      "size": 13461,
+      "hyperlinks": 32
+    },
+    {
+      "id": "Proprietary AI Video",
+      "name": "Proprietary AI Video.md",
+      "size": 5150,
+      "hyperlinks": 10
+    },
+    {
+      "id": "Proprietary Image Generation",
+      "name": "Proprietary Image Generation.md",
+      "size": 3074,
+      "hyperlinks": 8
+    },
+    {
+      "id": "Proprietary Large Language Models",
+      "name": "Proprietary Large Language Models.md",
+      "size": 6305,
+      "hyperlinks": 11
+    },
+    {
+      "id": "Proprietary Video VP & 3D",
+      "name": "Proprietary Video VP & 3D.md",
+      "size": 6667,
+      "hyperlinks": 29
+    },
+    {
+      "id": "Python to build RAG data page",
+      "name": "Python to build RAG data page.md",
+      "size": 3162,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Python to list nodes",
+      "name": "Python to list nodes.md",
+      "size": 981,
+      "hyperlinks": 0
+    },
+    {
+      "id": "PythonSample1",
+      "name": "PythonSample1.md",
+      "size": 4129,
+      "hyperlinks": 0
+    },
+    {
+      "id": "RAG",
+      "name": "RAG.md",
+      "size": 4090,
+      "hyperlinks": 14
+    },
+    {
+      "id": "RGB",
+      "name": "RGB.md",
+      "size": 8690,
+      "hyperlinks": 29
+    },
+    {
+      "id": "Recent Projects",
+      "name": "Recent Projects.md",
+      "size": 1483,
+      "hyperlinks": 11
+    },
+    {
+      "id": "Research Tools",
+      "name": "Research Tools.md",
+      "size": 2768,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Revision List",
+      "name": "Revision List.md",
+      "size": 3963,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Robin Hanson",
+      "name": "Robin Hanson.md",
+      "size": 4255,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Robotics",
+      "name": "Robotics.md",
+      "size": 1297,
+      "hyperlinks": 11
+    },
+    {
+      "id": "SLAM",
+      "name": "SLAM.md",
+      "size": 312,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Safety and alignment",
+      "name": "Safety and alignment.md",
+      "size": 12086,
+      "hyperlinks": 12
+    },
+    {
+      "id": "Sam Hammond",
+      "name": "Sam Hammond.md",
+      "size": 17935,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Scene Capture and Reconstruction",
+      "name": "Scene Capture and Reconstruction.md",
+      "size": 12424,
+      "hyperlinks": 86
+    },
+    {
+      "id": "Segmentation and Identification",
+      "name": "Segmentation and Identification.md",
+      "size": 5383,
+      "hyperlinks": 19
+    },
+    {
+      "id": "Semantic Web",
+      "name": "Semantic Web.md",
+      "size": 15404,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Singularity",
+      "name": "Singularity.md",
+      "size": 5040,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Social contract and jobs",
+      "name": "Social contract and jobs.md",
+      "size": 36406,
+      "hyperlinks": 53
+    },
+    {
+      "id": "Soon-Next-Later (AI futurology)",
+      "name": "Soon-Next-Later (AI futurology).md",
+      "size": 12822,
+      "hyperlinks": 13
+    },
+    {
+      "id": "Spatial Computing",
+      "name": "Spatial Computing.md",
+      "size": 1826,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Speech and voice",
+      "name": "Speech and voice.md",
+      "size": 13438,
+      "hyperlinks": 59
+    },
+    {
+      "id": "Stable Coins",
+      "name": "Stable Coins.md",
+      "size": 14604,
+      "hyperlinks": 38
+    },
+    {
+      "id": "Stable Diffusion",
+      "name": "Stable Diffusion.md",
+      "size": 49884,
+      "hyperlinks": 276
+    },
+    {
+      "id": "State Space and Other Approaches",
+      "name": "State Space and Other Approaches.md",
+      "size": 25016,
+      "hyperlinks": 9
+    },
+    {
+      "id": "State of the art in AI",
+      "name": "State of the art in AI.md",
+      "size": 8089,
+      "hyperlinks": 18
+    },
+    {
+      "id": "Suggested Reading Order",
+      "name": "Suggested Reading Order.md",
+      "size": 2766,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Surveillance",
+      "name": "Surveillance.md",
+      "size": 40135,
+      "hyperlinks": 13
+    },
+    {
+      "id": "Text to 3D and 4D",
+      "name": "Text to 3D and 4D.md",
+      "size": 8340,
+      "hyperlinks": 56
+    },
+    {
+      "id": "Tim Reutermann",
+      "name": "Tim Reutermann.md",
+      "size": 3620,
+      "hyperlinks": 2
+    },
+    {
+      "id": "Time Series Forecasting",
+      "name": "Time Series Forecasting.md",
+      "size": 863,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Tokenization",
+      "name": "Tokenization.md",
+      "size": 2500,
+      "hyperlinks": 1
+    },
+    {
+      "id": "Training and fine tuning",
+      "name": "Training and fine tuning.md",
+      "size": 4404,
+      "hyperlinks": 11
+    },
+    {
+      "id": "Transformers",
+      "name": "Transformers.md",
+      "size": 2437,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Trust and Safety",
+      "name": "Trust and Safety.md",
+      "size": 16709,
+      "hyperlinks": 9
+    },
+    {
+      "id": "Tuesday 11th of June FRAME reporting",
+      "name": "Tuesday 11th of June FRAME reporting.md",
+      "size": 1281,
+      "hyperlinks": 0
+    },
+    {
+      "id": "Upscaling",
+      "name": "Upscaling.md",
+      "size": 1208,
+      "hyperlinks": 8
+    },
+    {
+      "id": "Vesuvian Scrolls",
+      "name": "Vesuvian Scrolls.md",
+      "size": 2717,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Virtual Production",
+      "name": "Virtual Production.md",
+      "size": 2599,
+      "hyperlinks": 6
+    },
+    {
+      "id": "Vision Pro",
+      "name": "Vision Pro.md",
+      "size": 2841,
+      "hyperlinks": 4
+    },
+    {
+      "id": "Visionflow",
+      "name": "Visionflow.md",
+      "size": 5188,
+      "hyperlinks": 2
+    },
+    {
+      "id": "artificial superintelligence",
+      "name": "artificial superintelligence.md",
+      "size": 2572,
+      "hyperlinks": 9
+    },
+    {
+      "id": "collaborative",
+      "name": "collaborative.md",
+      "size": 14,
+      "hyperlinks": 0
+    },
+    {
+      "id": "contents",
+      "name": "contents.md",
+      "size": 2335,
+      "hyperlinks": 0
+    },
+    {
+      "id": "cypherpunk",
+      "name": "cypherpunk.md",
+      "size": 5427,
+      "hyperlinks": 2
+    },
+    {
+      "id": "ecash",
+      "name": "ecash.md",
+      "size": 4860,
+      "hyperlinks": 1
+    },
+    {
+      "id": "flossverse",
+      "name": "flossverse.md",
+      "size": 3977,
+      "hyperlinks": 2
+    },
+    {
+      "id": "infrastructure",
+      "name": "infrastructure.md",
+      "size": 1153,
+      "hyperlinks": 5
+    },
+    {
+      "id": "latent space",
+      "name": "latent space.md",
+      "size": 1626,
+      "hyperlinks": 0
+    },
+    {
+      "id": "license",
+      "name": "license.md",
+      "size": 356,
+      "hyperlinks": 4
+    },
+    {
+      "id": "multimodal",
+      "name": "multimodal.md",
+      "size": 4585,
+      "hyperlinks": 14
+    },
+    {
+      "id": "nostr",
+      "name": "nostr.md",
+      "size": 25988,
+      "hyperlinks": 30
+    },
+    {
+      "id": "p(doom)",
+      "name": "p(doom).md",
+      "size": 557,
+      "hyperlinks": 1
+    },
+    {
+      "id": "qlora",
+      "name": "qlora.md",
+      "size": 285,
+      "hyperlinks": 1
+    },
+    {
+      "id": "relighting",
+      "name": "relighting.md",
+      "size": 1368,
+      "hyperlinks": 10
+    }
+  ],
+  "edges": [
+    {
+      "source": "AI Adoption",
+      "target": "Fooocus",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "Microsoft Work Trends Impact 2024",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "Mistral",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "LoRA",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "AI Adoption",
+      "target": "State of the art in AI",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Comparison of GPT4 and Gemini Ultra",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "OpenAI",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "ChatGPT",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Mixture of Experts",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "RAG",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Copyright",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "copyright",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Gemini",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "AI Companies",
+      "target": "Infrastructure",
+      "weight": 1
+    },
+    {
+      "source": "AI Risks",
+      "target": "safety and alignment",
+      "weight": 1
+    },
+    {
+      "source": "AI Risks",
+      "target": "Cyber security and Cryptography",
+      "weight": 1
+    },
+    {
+      "source": "AI Risks",
+      "target": "Bio Terror",
+      "weight": 1
+    },
+    {
+      "source": "AI Risks",
+      "target": "Cyber Security and Military",
+      "weight": 2
+    },
+    {
+      "source": "AI Risks",
+      "target": "Death of the Internet",
+      "weight": 1
+    },
+    {
+      "source": "AI Risks",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "AI Video",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "AI Video",
+      "target": "MotionDirector",
+      "weight": 1
+    },
+    {
+      "source": "AI Video",
+      "target": "ComfyUI",
+      "weight": 2
+    },
+    {
+      "source": "AI Video",
+      "target": "LoRA",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Delivery Planning",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Metaverse and Telecollaboration",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Metaverse Ontology",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Trust and Safety",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "open source",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Lightning and Similar L2",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "nostr",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Unreal",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Metaverse for Global Creatives",
+      "target": "Agents",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Google",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Gemini",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Chain of Thought",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Diagrams as Code",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Prompt Engineering",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Anthropic Claude",
+      "weight": 1
+    },
+    {
+      "source": "Agentic Mycelia",
+      "target": "Metaverse Ontology",
+      "weight": 1
+    },
+    {
+      "source": "Agents",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Agents",
+      "target": "Microsoft CoPilot",
+      "weight": 1
+    },
+    {
+      "source": "Agents",
+      "target": "Agents",
+      "weight": 1
+    },
+    {
+      "source": "Ai in Games",
+      "target": "Unreal",
+      "weight": 1
+    },
+    {
+      "source": "Ai in Games",
+      "target": "Roblox",
+      "weight": 1
+    },
+    {
+      "source": "Ai in Games",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Ai in Games",
+      "target": "Disruption",
+      "weight": 1
+    },
+    {
+      "source": "Algorithmic Bias and Variance",
+      "target": "[https://arxiv.org/abs/1607.06520](https://arxiv.org/abs/1607.06520)",
+      "weight": 1
+    },
+    {
+      "source": "Algorithmic Bias and Variance",
+      "target": "<invalid URL removed>",
+      "weight": 1
+    },
+    {
+      "source": "Apple",
+      "target": "Hardware and Edge",
+      "weight": 2
+    },
+    {
+      "source": "Apple",
+      "target": "Gaussian splatting and Similar",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "mcculloch1943logical",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "penrose1990emperor",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "kerskens2022experimental",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "larson2021myth; @searle1980minds",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "butlin2023consciousness",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "sep-turing-test",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "turing1950computing",
+      "weight": 1
+    },
+    {
+      "source": "Artificial Intelligence",
+      "target": "warwick2016can; @french2012moving; @french2000turing; @searle2009turing",
+      "weight": 1
+    },
+    {
+      "source": "Automated Podcast Project",
+      "target": "example podcast dialogue",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin As Money",
+      "target": "ponzi2021alden",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin As Money",
+      "target": "maurel2012keynesian",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin As Money",
+      "target": "cagan1958demand",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin As Money",
+      "target": "Bhatia2021",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Technical Overview",
+      "target": "diffie1976new",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Technical Overview",
+      "target": "gayoso2018secure",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Technical Overview",
+      "target": "schnorr1989efficient",
+      "weight": 2
+    },
+    {
+      "source": "Bitcoin Technical Overview",
+      "target": "harris2020flood",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Technical Overview",
+      "target": "blocksizewars",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "Cashu",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "RGB",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "Lightning and Similar L2",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "piet2022extracting",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "Adams2023",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin Value Proposition",
+      "target": "sood2019implementation; @bechtel2022future",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Nakamoto 2008",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Haber 1990",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Nakamoto 2018",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Ijiri 1986; Faccia 2019",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Chohan 2021; Perez 2019; Grunspan 2018",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Sangster 2015",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "nakamoto2018",
+      "weight": 2
+    },
+    {
+      "source": "Bitcoin",
+      "target": "hulsmann2008ethics",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "selvam2021blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "makarov2021blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "croman2016scaling",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "delgado2018analysis",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "oxford2021salvador",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "katterbauer2022impact",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "rogaway2004cryptographic",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "mora2018bitcoin",
+      "weight": 3
+    },
+    {
+      "source": "Bitcoin",
+      "target": "cross2021greening",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "bitcoinisvenice",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "griffith2021electrify; @ercotimpact2021; @Menati2022",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "bastian2021hedging",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "ibanez2023sok",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "baur2021bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "blandin20203rd",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "de2022revisiting",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "khazzaka2022bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "money",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Bitcoin Technical Overview",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Lightning and Similar L2",
+      "weight": 2
+    },
+    {
+      "source": "Bitcoin",
+      "target": "BTC Layer 3",
+      "weight": 1
+    },
+    {
+      "source": "Bitcoin",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Blender",
+      "target": "Text to 3D and 4D",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "cypherpunk",
+      "weight": 2
+    },
+    {
+      "source": "Blockchain",
+      "target": "Surveillance",
+      "weight": 2
+    },
+    {
+      "source": "Blockchain",
+      "target": "burnham1983rise; @chaum1985security",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Global Inequality",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "lavoie1990prefatory",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "salinCosts; @cypherPunkMailList",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "back2002hashcash",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "dwork1992pricing; @jakobsson1999proofs",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "dai1998b",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "szabo1997formalizing",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "callas1998openpgp",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Nakamoto2008",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "rauchs2018distributed",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "kwon2019impossibility",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "casino2019systematic",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "golumbia2020cryptocurrency",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Public Key Encryption",
+      "weight": 2
+    },
+    {
+      "source": "Blockchain",
+      "target": "gladsteincheck2022",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Artificial Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Deepfakes and fraudulent content",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Agents",
+      "weight": 2
+    },
+    {
+      "source": "Blockchain",
+      "target": "Stable Coins",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Bitcoin Value Proposition",
+      "weight": 2
+    },
+    {
+      "source": "Blockchain",
+      "target": "Artificial Superintelligence",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Bitcoin Technical Overview",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Energy and Power",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Bitcoin As Money",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Agentic Metaverse for Global Creatives",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Agentic Mycelia",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Bitcoin Environmental Issues",
+      "weight": 1
+    },
+    {
+      "source": "Blockchain",
+      "target": "Digital Asset Risks",
+      "weight": 1
+    },
+    {
+      "source": "Calculating Empires",
+      "target": "Artificial Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "Calculating Empires",
+      "target": "Surveillance",
+      "weight": 1
+    },
+    {
+      "source": "Calculating Empires",
+      "target": "education",
+      "weight": 1
+    },
+    {
+      "source": "Calculating Empires",
+      "target": "Cyber Security and Military",
+      "weight": 1
+    },
+    {
+      "source": "Calculating Empires",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "ChatGPT",
+      "target": "MUST 🔴",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Hardware and Edge",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "nostr",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Multimodal",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Training and fine tuning",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "latent space",
+      "weight": 2
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Nostr",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Hyper personalisation",
+      "weight": 2
+    },
+    {
+      "source": "Client side DCO",
+      "target": "Decentralised Web",
+      "weight": 1
+    },
+    {
+      "source": "Coding support",
+      "target": "Vercel",
+      "weight": 1
+    },
+    {
+      "source": "Coding support",
+      "target": "Infrastructure",
+      "weight": 1
+    },
+    {
+      "source": "Coding support",
+      "target": "Microsoft CoPilot",
+      "weight": 2
+    },
+    {
+      "source": "Coding support",
+      "target": "ChatGPT",
+      "weight": 1
+    },
+    {
+      "source": "Coding support",
+      "target": "GPT Engineer",
+      "weight": 1
+    },
+    {
+      "source": "Comfy UI for Fashion and Brands",
+      "target": "Overview of Machine Learning Techniques",
+      "weight": 1
+    },
+    {
+      "source": "Comfy UI for Fashion and Brands",
+      "target": "style transfer",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Node based interface",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Stable Diffusion",
+      "weight": 14
+    },
+    {
+      "source": "ComfyUI",
+      "target": "ComfyUI",
+      "weight": 31
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Gemini",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Google",
+      "weight": 5
+    },
+    {
+      "source": "ComfyUI",
+      "target": "LoRA",
+      "weight": 4
+    },
+    {
+      "source": "ComfyUI",
+      "target": "experiment",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Apple",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "krita",
+      "weight": 4
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Large language models",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Upscaling",
+      "weight": 3
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Inpainting",
+      "weight": 3
+    },
+    {
+      "source": "ComfyUI",
+      "target": "[ComfyUI",
+      "weight": 4
+    },
+    {
+      "source": "ComfyUI",
+      "target": "contents",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "ComfyWorkFlows",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Diffusion Models",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Checkpoints",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Dall-e",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "IPAdapter",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "[Google",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Sampling",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "AnimateDiff",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "krita-plugin",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "stable-diffusion",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Generative AI",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Artificial Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Tips and Tricks",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "json",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "[[license",
+      "weight": 2
+    },
+    {
+      "source": "ComfyUI",
+      "target": "collaborative",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Krita",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Courses and Training",
+      "weight": 1
+    },
+    {
+      "source": "ComfyUI",
+      "target": "Photoshop",
+      "weight": 1
+    },
+    {
+      "source": "Conspiracies",
+      "target": "martin2022dark",
+      "weight": 1
+    },
+    {
+      "source": "Conspiracies",
+      "target": "va2010neoconservatism",
+      "weight": 1
+    },
+    {
+      "source": "Conspiracies",
+      "target": "California AI bill",
+      "weight": 1
+    },
+    {
+      "source": "Conspiracies",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Conspiracies",
+      "target": "Safety and alignment",
+      "weight": 1
+    },
+    {
+      "source": "Convergence",
+      "target": "Artificial General Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "Convergence",
+      "target": "Singularity",
+      "weight": 1
+    },
+    {
+      "source": "Convergence",
+      "target": "Spatial Computing",
+      "weight": 1
+    },
+    {
+      "source": "Courses and Training",
+      "target": "latent space",
+      "weight": 1
+    },
+    {
+      "source": "Create RAG from public pages",
+      "target": "...",
+      "weight": 1
+    },
+    {
+      "source": "Cyber Security and Military",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Death of the Internet",
+      "weight": 7
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Google",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Leopold Aschenbrenner",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Human vs AI",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "legacy media",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "OpenAI",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Agents",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Global Inequality",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "latent space",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Social contract and jobs",
+      "weight": 2
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Deepfakes and fraudulent content",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Surveillance",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Solid",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "webid",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Decentralised Web",
+      "weight": 1
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Trust and Safety",
+      "weight": 2
+    },
+    {
+      "source": "Death of the Internet",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "Semantic Web",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "Solid",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "Solid-Lite",
+      "weight": 2
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "nostr",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "Metaverse and Telecollaboration",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "Decentralised Web",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "semanticWeb",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "costigan2018world",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "torok2017cascading",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "szabo1997formalizing",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "ford2005peer",
+      "weight": 1
+    },
+    {
+      "source": "Decentralised Web",
+      "target": "karaarslan2018blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Deepfakes and fraudulent content",
+      "target": "Cyber security and Cryptography",
+      "weight": 1
+    },
+    {
+      "source": "Deepfakes and fraudulent content",
+      "target": "Agents",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Update Cycle",
+      "weight": 2
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Cook1977; @Kleinke1986; @Fagel2010",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Otsuka2005",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Kendon1967",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Kleinke1986; @Nguyen2009",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Aoki2003",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "kraus2022facebook",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "park2022metaverse",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Metaverse Ontology",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "gadekallu2022blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "iser1993fictive",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "taylor2009play",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "glas2013battlefields",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "chen2011leet",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "serapis2008coming",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "cole2013call",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "siyaev2021towards",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "heiphetz2010training; @aldrich2005learning",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Apple",
+      "weight": 1
+    },
+    {
+      "source": "Definitions and frameworks for Metaverse",
+      "target": "Vision Pro",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "central bank digital currencies",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Lightning and Similar L2",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "https://doi.org/10.48550/arxiv.2208.01908",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "moser2013inquiry",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "anderson2002free",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "carlsten2016instability",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "fuchsbauer2019aggregate",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "apostolaki2016hijacking; @apostolaki2017hijacking; @johnson2014game; @stinner2022proof",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "dymydiuk2020rubicon",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Bitcoin ETF",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "apostolaki2017hijacking",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "taleb2012antifragile",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Wouters2022",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "warren2023bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Lowery2023",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "Srinivasan2022",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "krawisz2014hyperbitcoinization",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "booth2022bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "malherbe2019cryptocurrencies",
+      "weight": 1
+    },
+    {
+      "source": "Digital Asset Risks",
+      "target": "budish2018economic",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "moringiello2021property; @fairfield2021tokenized",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "dutton2003authenticity",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "komlo2020frost",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "low2022emperor",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "Kaloudis2023",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "UDA",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "DIBA",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "Digital Objects",
+      "weight": 1
+    },
+    {
+      "source": "Digital Objects",
+      "target": "Digital Asset Risks",
+      "weight": 1
+    },
+    {
+      "source": "Distributed Identity",
+      "target": "king1966fisher",
+      "weight": 2
+    },
+    {
+      "source": "Distributed Identity",
+      "target": "lockwood2021exploring",
+      "weight": 2
+    },
+    {
+      "source": "Distributed Identity",
+      "target": "dwork1992pricing",
+      "weight": 2
+    },
+    {
+      "source": "Education",
+      "target": "Kelly Drecourt",
+      "weight": 1
+    },
+    {
+      "source": "Education",
+      "target": "Ethan Mollick",
+      "weight": 1
+    },
+    {
+      "source": "Energy and Power",
+      "target": "54]\\] are easily verified. Academia seems [poorly positioned](https://bitcoinmagazine.com/culture/bitcoin-could-never-be-invented-in-a-university) to pivot to this subject, as an ethical bar has to be established before research can commence, and the field is too new to make this an affordable task. This stuff is existentially important to the whole technology. Is a trillion dollar asset which [potentially replaces](https://www.theheldreport.com/p/bitcoin-vs-gold) the money utility of [[Gold",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "buterin2013ethereum",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "sayeed2019assessing",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "Blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "petzold2008annotated",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "hafid2020scaling",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "bonneau2015sok",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "cryptopians",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "chen2020survey",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "Lowery2023",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "voskuil2020cryptoeconomics",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "liu2022empirical",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "poelstra2015stake",
+      "weight": 1
+    },
+    {
+      "source": "Ethereum",
+      "target": "mackinga2022twap",
+      "weight": 1
+    },
+    {
+      "source": "Facebook Meta",
+      "target": "Mark Zuckerberg",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Gaussian splatting and Similar",
+      "weight": 7
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Scene Capture and Reconstruction",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "SLAM",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Text to 3D and 4D",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Motion Capture",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Human tracking and SLAM capture",
+      "weight": 1
+    },
+    {
+      "source": "Gaussian splatting and Similar",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Gemini",
+      "target": "Contracts and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Gemini",
+      "target": "SHOULD🟡",
+      "weight": 1
+    },
+    {
+      "source": "Global Inequality",
+      "target": "booth2020price",
+      "weight": 1
+    },
+    {
+      "source": "Global Inequality",
+      "target": "mattei2022capital",
+      "weight": 1
+    },
+    {
+      "source": "Global Inequality",
+      "target": "hawtrey1925currency",
+      "weight": 1
+    },
+    {
+      "source": "Global Inequality",
+      "target": "balassa2013theory",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "Hardware and Edge",
+      "weight": 2
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "Proprietary Large Language Models",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "cuervo2018creating",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "boring2009scroll",
+      "weight": 1
+    },
+    {
+      "source": "Hardware and Edge",
+      "target": "hansberger2017dispelling",
+      "weight": 1
+    },
+    {
+      "source": "IPAdapter",
+      "target": "Paper",
+      "weight": 1
+    },
+    {
+      "source": "IPAdapter",
+      "target": "Code",
+      "weight": 1
+    },
+    {
+      "source": "IPAdapter",
+      "target": "BibTeX",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Knowledge Graphing",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Logseq",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Convergence",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Disruption",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Singularity",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Introduction to me",
+      "target": "Recent Projects",
+      "weight": 1
+    },
+    {
+      "source": "Jailbreaking",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "KnoWhere",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "PEOPLE👱",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "Face Swap",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "Segmentation and Identification",
+      "weight": 1
+    },
+    {
+      "source": "Knowhere",
+      "target": "Head Gaze",
+      "weight": 1
+    },
+    {
+      "source": "Knowledge Graphing",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Knowledge Graphing",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Landscape",
+      "target": "Landscape",
+      "weight": 2
+    },
+    {
+      "source": "Large language models",
+      "target": "Base models",
+      "weight": 1
+    },
+    {
+      "source": "Leopold Aschenbrenner",
+      "target": "Artificial Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "Leopold Aschenbrenner",
+      "target": "Artificial Superintelligence",
+      "weight": 1
+    },
+    {
+      "source": "Leopold Aschenbrenner",
+      "target": "Hardware and Edge",
+      "weight": 1
+    },
+    {
+      "source": "Leopold Aschenbrenner",
+      "target": "Energy and Power",
+      "weight": 1
+    },
+    {
+      "source": "Leopold Aschenbrenner",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "poon2016bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "divakaruni2022lightning",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "zabka2022short",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "Cashu",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "chaum1985security",
+      "weight": 1
+    },
+    {
+      "source": "Lightning and Similar L2",
+      "target": "mirzaei2022daric",
+      "weight": 1
+    },
+    {
+      "source": "Llama",
+      "target": "open source",
+      "weight": 1
+    },
+    {
+      "source": "Medical AI",
+      "target": "Medical AI",
+      "weight": 1
+    },
+    {
+      "source": "Medical AI",
+      "target": "[Google",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Anthropic Claude",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Gemini",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "ChatGPT",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Logseq",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Knowledge Graphing",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "RGB",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Lightning and Similar L2",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Cashu",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Some legacy Linked-JSON",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Agentic Mycelia",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse Ontology",
+      "target": "Ontology conversation with AIs",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Spatial Risks",
+      "target": "rosenberg2022regulation",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Roblox",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "mystakidis2022metaverse",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "nevelsteen2018virtual",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "ondrejka2004escaping",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "mclellan1993avatars",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "park2022metaverse",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "gibson2019neuromancer",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "hennig2022social",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bloom2015",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "barrero2021working",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "prakash2020characteristic",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "aiken2020zooming",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Wolff2008",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "oeppen2020human",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "OMalley1996",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Dourish1996",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Criminisi2003; @Van_Eijk2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Chen2002",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Roberts2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Sellen1992",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Sellen1995",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Monk2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Gemmell2000; @Kuster2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Williams1977",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Edigo1988",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Pejsa2016",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bardram2012",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Adamczyk2007",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ishii1993",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vishwanath2005; @Anstis1969; @Wollaston1824",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Loomis2008; @Fullwood2006",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Moubayed2012; @Vishwanath2005; @Anstis1969; @Wollaston1824",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Nguyen2005",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vertegaal2002",
+      "weight": 3
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Van_Eijk2010; @Bock2008",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Moubayed2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Jouppi2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Aoki2003",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1988",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Heldner2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kleinke1986",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ting-Toomey2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Otsuka2005",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "katagiri2007aiduti",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Loomis2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Goodwin2000",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Gillies2005",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1988; @Argyle1976; @Argyle1965; @Argyle1976; @Argyle1969; @Kendon1967; @Monk2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hedge1978",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Novick1996",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vertegaal2000",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vertegaal2001",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Langton2000",
+      "weight": 3
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kendon1967",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1965",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Colburn2000",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Macrae2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Symons2004",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kluttz2009",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Wilson2000",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Schrammel2007",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Stiefelhagen2001; @Stiefelhagen2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Steptoe2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Steptoe2010",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1976",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1969; @Argyle1988; @Cook1977",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Cook1977; @Kleinke1986; @Fagel2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bohannon2013",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Regenbrecht2015",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Steinmeyer2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Rosenthal1947",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Buxton1992",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vertegaal2003",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Loomis2008",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Troje1998",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Boker2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "St_John2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bailenson2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Rienks2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Stiefelhagen2002",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1969; @Kleinke1986",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kleinke1986; @Nguyen2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ekman1993",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Goldin-Meadow1999",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Nguyen2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ekman1993; @Chovil1991",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "schiano2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "ohba1998",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hofmann2006",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Iverson2005",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Krauss1996",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kleinsmith2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Schegloff1998",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ou2005",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Murray2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Tang2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Tse2007",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Tang2006",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Norris2013; @Norris2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Luff2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Tuddenham2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Jamil2011; @Jetter2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hall1969",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Argyle1969",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Watson1966; @Argyle1988",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bruno2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Slessor2008; @Hofmann2006",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Yee2007; @Bailenson2001; @Bailenson2003",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bailenson2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Blascovich2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Maeda2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hager1979; @Argyle1988",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Carlston2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Stiefelhagen2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Deckers2013; @Gibson1963",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bente1998; @Slessor2008; @Argyle1988; @Hofmann2006; @Pan2008",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Vertegaal1997",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Fels2000; @Sellen1992",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Fagel2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Voida2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Berger1975",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Jones1971",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Mihoub2015",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "doerr2018measure",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Chartrand1999",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Parsons1974",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Risko2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "fox2015neural",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kollock1998",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Cuddihy2000",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hancock2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Holm2010",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Porter2008",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Roberts2015",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Beck2011; @Schuemie2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Slater1999",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Beck2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Heeter1992; @Biocca1997",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Fulk1987; @Haythornthwaite1995",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Gunawardena1997",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Nowak2001",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bulu2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Biocca2003",
+      "weight": 5
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Garrison1999; @Beck2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bondareva2004; @Jouppi2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bondareva2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Slater2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Usoh2000",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Van_Baren2004; @Harms2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hauber2005; @Gunawardena1997",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Harms2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Hauber2006",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kauff2002; @Kauff2002a",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Fuchs2002",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Jones2009",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ichikawa1995; @Okada1994",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Gotsch2018",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kulik2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Otsuka2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Blanche2010; @Tay2008",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Eldes2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Yendo2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "authenticVolume2022",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Mori1970",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bartneck2007; @Bartneck2009",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Mitchell2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bartneck2009",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Ho2008",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Yee2007",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Strait2014",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Marti2005",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Adalgeirsson2010; @Lee2011; @Tsui2011; @Paulos1998; @Kristoffersson2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Desai2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Tsui2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kristoffersson2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Sakamoto2007",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Lincoln2009; @Lincoln2010; @Raskar2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Lee2011; @Sakamoto2007; @Tsui2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Oyekoya2012; @Pan2014; @Pan2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Jouppi2004",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Pan2014",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Kristoffersson2013",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Nagendran2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Itoh2005",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Drobyshev22MP",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Raskar1998",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Raskar2001",
+      "weight": 2
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Rivera-Gutierrez2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Bandyopadhyay2001",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Dalsgaard2011",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Lincoln2010",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "Benjamin2012",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "xi2022challenges",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse and Telecollaboration",
+      "target": "biener2022quantifying; @luong2022demographic",
+      "weight": 1
+    },
+    {
+      "source": "Metaverse as Markets",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Microsoft CoPilot",
+      "target": "Microsoft CoPilot",
+      "weight": 1
+    },
+    {
+      "source": "Mixed reality",
+      "target": "Humans, Avatars , Character",
+      "weight": 1
+    },
+    {
+      "source": "Mixed reality",
+      "target": "education",
+      "weight": 1
+    },
+    {
+      "source": "Mixed reality",
+      "target": "Apple",
+      "weight": 4
+    },
+    {
+      "source": "Mixed reality",
+      "target": "apple",
+      "weight": 1
+    },
+    {
+      "source": "Model Optimisation and Performance",
+      "target": "Bitnet and the rise of the 1bit model",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "homer1996history",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "szabo2002shelling",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "selgin1996defense",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "borio2017fx",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "barsky1987fisher",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "hall2009inflation",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "white1914fiat",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "davies2010history",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "stroukal2018can",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "Alden2023",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "Eichengreen2023",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "tomlinson2003third",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "caballero2008financial; @spiro2019hidden",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "grewal2020struggling",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "carney2019growing; @piffaretti2009reshaping",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "stoeferle2018gold",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "mathews2018china",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "huang2016understanding",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "hudson2021destiny",
+      "weight": 2
+    },
+    {
+      "source": "Money",
+      "target": "hendrickson2021value; @ferranti2022hedging",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "gainsford2017salt; @goldberg2005famous",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "giancarlo2021cryptodad",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "wang2021central",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "filardo2012central",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "cantillon1756essai; @bordo1983some",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "prasad2021future",
+      "weight": 1
+    },
+    {
+      "source": "Money",
+      "target": "bertomeu2023uncle",
+      "weight": 1
+    },
+    {
+      "source": "Multi Agent RAG scrapbook",
+      "target": "PEOPLE👱",
+      "weight": 1
+    },
+    {
+      "source": "Multi Agent RAG scrapbook",
+      "target": "David Tully",
+      "weight": 1
+    },
+    {
+      "source": "Multi Agent RAG scrapbook",
+      "target": "MUST 🔴",
+      "weight": 1
+    },
+    {
+      "source": "Music and audio",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Music and audio",
+      "target": "Microsoft CoPilot",
+      "weight": 1
+    },
+    {
+      "source": "Music and audio",
+      "target": "Music and audio",
+      "weight": 1
+    },
+    {
+      "source": "Music and audio",
+      "target": "copyright",
+      "weight": 1
+    },
+    {
+      "source": "Octave Multi Model Laboratory",
+      "target": "National Industrial Centre for Virtual Environments",
+      "weight": 1
+    },
+    {
+      "source": "Octave Multi Model Laboratory",
+      "target": "Hardware and Edge",
+      "weight": 1
+    },
+    {
+      "source": "Octave Multi Model Laboratory",
+      "target": "Telethrone",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Deepseek",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Falcon",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Mistral",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Red Pyjama",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Microsoft Models",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Poro",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "ComfyUI",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Stable Diffusion",
+      "weight": 1
+    },
+    {
+      "source": "Open Generative AI tools",
+      "target": "Text to 3D and 4D",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "RLHF",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "DPO",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "Proprietary Large Language Models",
+      "weight": 2
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "GANs",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "Diffusion Models",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "Transformers",
+      "weight": 2
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "State Space and Other Approaches",
+      "weight": 1
+    },
+    {
+      "source": "Overview of Machine Learning Techniques",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Parametric",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "Trust and Safety",
+      "weight": 2
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "education",
+      "weight": 1
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "copyright",
+      "weight": 1
+    },
+    {
+      "source": "Politics, Law, Privacy",
+      "target": "pol",
+      "weight": 1
+    },
+    {
+      "source": "Product Design",
+      "target": "Visionflow",
+      "weight": 2
+    },
+    {
+      "source": "Product Design",
+      "target": "Knowhere",
+      "weight": 2
+    },
+    {
+      "source": "Product and Risk Management",
+      "target": "Product Design",
+      "weight": 1
+    },
+    {
+      "source": "Product and Risk Management",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Product and Risk Management",
+      "target": "Safety and alignment",
+      "weight": 1
+    },
+    {
+      "source": "Prompt Engineering",
+      "target": "Ethan Mollick",
+      "weight": 1
+    },
+    {
+      "source": "Prompt Engineering",
+      "target": "Melvin Carvalho",
+      "weight": 1
+    },
+    {
+      "source": "Prompt Engineering",
+      "target": "Stable Diffusion",
+      "weight": 1
+    },
+    {
+      "source": "Prompt Engineering",
+      "target": "Dec 19th, 2023",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary AI Video",
+      "target": "latent space",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Image Generation",
+      "target": "OpenAI",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Image Generation",
+      "target": "android",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Image Generation",
+      "target": "Landscape",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Image Generation",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Image Generation",
+      "target": "Proprietary Video VP & 3D",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "AI Companies",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Prompt Engineering",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Microsoft CoPilot",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Artificial Intelligence",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Artificial Superintelligence",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Constitutional AI",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Multimodal",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Proprietary Large Language Models",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "landscape",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Large Language Models",
+      "target": "Proprietary Image Generation",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "Metaverse and Telecollaboration",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "OpenUSD",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Proprietary Video VP & 3D",
+      "target": "Open Generative AI tools",
+      "weight": 1
+    },
+    {
+      "source": "Python to build RAG data page",
+      "target": "...",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "Large language models",
+      "weight": 2
+    },
+    {
+      "source": "RAG",
+      "target": "Infrastructure",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "RAG",
+      "weight": 7
+    },
+    {
+      "source": "RAG",
+      "target": "agents",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "ChatGPT",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "GPT",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "Training and fine tuning",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "Llama",
+      "weight": 1
+    },
+    {
+      "source": "RAG",
+      "target": "Evaluation and leaderboards",
+      "weight": 1
+    },
+    {
+      "source": "Recent Projects",
+      "target": "Hardware and Edge",
+      "weight": 1
+    },
+    {
+      "source": "Recent Projects",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Research Tools",
+      "target": "Research Tools",
+      "weight": 2
+    },
+    {
+      "source": "Robin Hanson",
+      "target": "Lead Poisoning Hypothesis",
+      "weight": 1
+    },
+    {
+      "source": "Robotics",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Robotics",
+      "target": "wow",
+      "weight": 1
+    },
+    {
+      "source": "Safety and alignment",
+      "target": "Safety and alignment",
+      "weight": 1
+    },
+    {
+      "source": "Safety and alignment",
+      "target": "confusion matrices",
+      "weight": 1
+    },
+    {
+      "source": "Safety and alignment",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Sam Hammond",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Scene Capture and Reconstruction",
+      "target": "Gaussian splatting and Similar",
+      "weight": 2
+    },
+    {
+      "source": "Semantic Web",
+      "target": "[https://arxiv.org/abs/1909.07606](https://arxiv.org/abs/1909.07606)",
+      "weight": 1
+    },
+    {
+      "source": "Semantic Web",
+      "target": "[https://arxiv.org/abs/2005.11401](https://arxiv.org/abs/2005.11401)",
+      "weight": 1
+    },
+    {
+      "source": "Semantic Web",
+      "target": "[https://arxiv.org/abs/2002.08909](https://arxiv.org/abs/2002.08909)",
+      "weight": 1
+    },
+    {
+      "source": "Semantic Web",
+      "target": "[https://arxiv.org/abs/2301.00416](https://arxiv.org/abs/2301.00416)",
+      "weight": 1
+    },
+    {
+      "source": "Social contract and jobs",
+      "target": "Singularity",
+      "weight": 1
+    },
+    {
+      "source": "Social contract and jobs",
+      "target": "Layoff tracker and threatened roles",
+      "weight": 2
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Education",
+      "weight": 2
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Agents",
+      "weight": 2
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "education",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Death of the Internet",
+      "weight": 2
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Diagrams as Code",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "collaborative",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Metaverse and Telecollaboration",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Cyber security and Cryptography",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Distributed Identity",
+      "weight": 1
+    },
+    {
+      "source": "Soon-Next-Later (AI futurology)",
+      "target": "Sam Hammond",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Translation",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Accessibility",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Speech and voice",
+      "weight": 11
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Social contract and jobs",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "SHOULD🟡",
+      "weight": 2
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Product Design",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "real time",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "PlayerTwo",
+      "weight": 1
+    },
+    {
+      "source": "Speech and voice",
+      "target": "NVIDIA Omniverse",
+      "weight": 1
+    },
+    {
+      "source": "Stable Coins",
+      "target": "clements2021built",
+      "weight": 1
+    },
+    {
+      "source": "Stable Coins",
+      "target": "Eurodollar",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "Stable Diffusion",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "Stable Video Diffusion",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "KOHYA Dreambooth and similar",
+      "weight": 2
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "LoRA",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "Fashion",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "Checkpoints",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "Copyright",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "copyright",
+      "weight": 1
+    },
+    {
+      "source": "Stable Diffusion",
+      "target": "deleted by user",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Hardware and Edge",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Social contract and jobs",
+      "weight": 2
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Education",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Proprietary Large Language Models",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Death of the Internet",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Trust and Safety",
+      "weight": 2
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "Infrastructure",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "rework based on gpt",
+      "weight": 1
+    },
+    {
+      "source": "State of the art in AI",
+      "target": "presentation",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Octave Multi Model Laboratory",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "National Industrial Centre for Virtual Environments",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Convergence",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Disruption",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Dreamlab",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Introduction to me",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Semantic Web",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Spatial Web",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Decentralised Web",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Politics, Law, Privacy",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Blockchain",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Ethereum",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Bitcoin",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Lightning and Similar L2",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "BTC Layer 3",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "RGB",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "nostr",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Digital Asset Risks",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "NFTs",
+      "weight": 2
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Digital Objects",
+      "weight": 2
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Bitcoin As Money",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Money",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Distributed Identity",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Metaverse and Telecollaboration",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Definitions and frameworks for Metaverse",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Spatial Computing",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Metaverse and Spatial Risks",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Overview of Machine Learning Techniques",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Proprietary Large Language Models",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Proprietary Image Generation",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Proprietary Video VP & 3D",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Open Generative AI tools",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "State of the art in AI",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "AI Adoption",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Soon-Next-Later (AI futurology)",
+      "weight": 1
+    },
+    {
+      "source": "Suggested Reading Order",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "bayer2023artificial",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "o2021god",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "rosenbergmanipulation",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "harari2014sapiens",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "Goldenfein Mann 2024",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "swartz2008guerilla",
+      "weight": 1
+    },
+    {
+      "source": "Surveillance",
+      "target": "Anthropic Claude",
+      "weight": 1
+    },
+    {
+      "source": "Text to 3D and 4D",
+      "target": "ComfyUI",
+      "weight": 1
+    },
+    {
+      "source": "Text to 3D and 4D",
+      "target": "Unreal",
+      "weight": 1
+    },
+    {
+      "source": "Tokenization",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "Trust and Safety",
+      "target": "Facebook Meta",
+      "weight": 1
+    },
+    {
+      "source": "Trust and Safety",
+      "target": "large language models",
+      "weight": 1
+    },
+    {
+      "source": "Upscaling",
+      "target": "ComfyUI",
+      "weight": 1
+    },
+    {
+      "source": "Virtual Production",
+      "target": "Unreal",
+      "weight": 1
+    },
+    {
+      "source": "Virtual Production",
+      "target": "ball2020metaverse",
+      "weight": 1
+    },
+    {
+      "source": "ecash",
+      "target": "Update Cycle",
+      "weight": 1
+    },
+    {
+      "source": "ecash",
+      "target": "cashu",
+      "weight": 1
+    },
+    {
+      "source": "flossverse",
+      "target": "jones2008trust",
+      "weight": 1
+    },
+    {
+      "source": "infrastructure",
+      "target": "Trust and Safety",
+      "weight": 1
+    },
+    {
+      "source": "multimodal",
+      "target": "Large language models",
+      "weight": 2
+    },
+    {
+      "source": "multimodal",
+      "target": "Variational Autoencoders",
+      "weight": 1
+    },
+    {
+      "source": "multimodal",
+      "target": "Multimodal",
+      "weight": 1
+    },
+    {
+      "source": "multimodal",
+      "target": "Apple",
+      "weight": 1
+    },
+    {
+      "source": "nostr",
+      "target": "MUST 🔴",
+      "weight": 1
+    },
+    {
+      "source": "nostr",
+      "target": "NosDav",
+      "weight": 1
+    },
+    {
+      "source": "qlora",
+      "target": "Large language models",
+      "weight": 1
+    },
+    {
+      "source": "qlora",
+      "target": "LoRA",
+      "weight": 1
+    },
+    {
+      "source": "qlora",
+      "target": "qLoRA",
+      "weight": 1
+    },
+    {
+      "source": "relighting",
+      "target": "Global lighting | Image Based Lighting",
+      "weight": 1
+    },
+    {
+      "source": "relighting",
+      "target": "ComfyUI",
+      "weight": 1
+    },
+    {
+      "source": "relighting",
+      "target": "relighting",
+      "weight": 2
+    },
+    {
+      "source": "relighting",
+      "target": "Apple",
+      "weight": 1
+    },
+    {
+      "source": "relighting",
+      "target": "AI Video",
+      "weight": 1
+    }
+  ]
+}
