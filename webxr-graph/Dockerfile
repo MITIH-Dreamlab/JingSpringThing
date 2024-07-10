@@ -3,6 +3,7 @@ FROM node:14
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
+VOLUME /usr/src/app/processed_files
 
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
