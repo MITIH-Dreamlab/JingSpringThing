@@ -1,4 +1,3 @@
-// Required modules
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
@@ -7,7 +6,7 @@ require('dotenv').config();
 
 // Express app setup
 const app = express();
-const port = process.env.PORT || 8443; // Using 8443 as an alternative HTTPS port
+const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 
 // HTTPS options - Make sure these files exist in your project root
 const httpsOptions = {
@@ -16,7 +15,6 @@ const httpsOptions = {
 };
 
 // GitHub repository information
-// HINT: Double-check these values match your GitHub repository structure
 const GITHUB_OWNER = 'jjohare';
 const GITHUB_REPO = 'logseq';
 const GITHUB_DIRECTORY = 'mainKnowledgeGraph/pages';
@@ -31,7 +29,6 @@ async function fetchMarkdownFiles() {
     try {
         console.log(`Fetching contents from: https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_DIRECTORY}`);
         
-        // HINT: This is where we're making the initial API call to GitHub
         const response = await axios.get(
             `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_DIRECTORY}`,
             {
@@ -45,17 +42,23 @@ async function fetchMarkdownFiles() {
         console.log('API Response:', response.status, response.statusText);
         console.log('Files found:', response.data.length);
 
-        // Filter for markdown files
         const markdownFiles = response.data.filter(file => file.name.endsWith('.md'));
         console.log('Markdown files found:', markdownFiles.length);
 
-        // Fetch content for each markdown file
         for (const file of markdownFiles) {
             console.log(`Fetching content for file: ${file.name}`);
-            const fileResponse = await axios.get(file.download_url, {
-                headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
-            });
-            files.push({ name: file.name, content: fileResponse.data });
+            try {
+                // Use the provided download_url, which should already be properly encoded
+                const fileResponse = await axios.get(file.download_url, {
+                    headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
+                });
+                files.push({ name: file.name, content: fileResponse.data });
+                console.log(`Content fetched for file: ${file.name}`);
+            } catch (fileError) {
+                console.error(`Error fetching file ${file.name}:`, fileError.message);
+                // If there's an error with a specific file, continue with the next one
+                continue;
+            }
         }
 
         console.log(`Successfully fetched ${files.length} Markdown files`);
@@ -65,7 +68,6 @@ async function fetchMarkdownFiles() {
             console.error('Response status:', error.response.status);
             console.error('Response data:', error.response.data);
         }
-        // HINT: If you're seeing errors here, check your GitHub token and repository details
     }
     return files;
 }
@@ -83,8 +85,10 @@ function parseMarkdownFiles(files) {
     files.forEach((file, index) => {
         const { name, content } = file;
 
-        // HINT: Make sure your markdown files contain this tag if you want them to be included
+        // Ensure debug information is printed
+        console.log(`Parsing file: ${name}`);
         if (!content.includes('public:: true')) {
+            console.log(`Skipping file (not marked as public): ${name}`);
             return; // Skip files not marked as public
         }
 
@@ -101,6 +105,7 @@ function parseMarkdownFiles(files) {
 
         nodes.push(node);
         nodeMap.set(name, index);
+        console.log(`Node created: ${node.name}, Size: ${node.size}, Hyperlinks: ${node.hyperlinks}`);
     });
 
     // Create edges based on the links
@@ -113,10 +118,13 @@ function parseMarkdownFiles(files) {
                     target: targetIndex,
                     weight: 1
                 });
+                console.log(`Edge created between ${nodes[sourceIndex].name} and ${nodes[targetIndex].name}`);
             }
         });
     });
 
+    console.log(`Total nodes: ${nodes.length}`);
+    console.log(`Total edges: ${edges.length}`);
     return { nodes, edges };
 }
 
@@ -129,6 +137,7 @@ app.get('/graph-data', async (req, res) => {
         const files = await fetchMarkdownFiles();
         const graphData = parseMarkdownFiles(files);
         res.json(graphData);
+        console.log('Graph data sent to client');
     } catch (error) {
         console.error('Error processing graph data:', error);
         res.status(500).json({ error: 'Internal server error' });

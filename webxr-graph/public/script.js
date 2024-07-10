@@ -12,14 +12,28 @@ const NODE_SIZE_EXPONENT = 0.5;
 const MAX_FILE_SIZE = 1000000; // 1MB
 const MAX_HYPERLINK_COUNT = 20;
 const MAX_EDGE_WEIGHT = 10;
+const INITIAL_POSITION_RANGE = 20; // Reduced range to ensure nodes are visible
 
 // VR Spoofing flag
 const SPOOF_VR = true; // Set this to false for real WebXR in production
+
+// Debug elements
+const statusEl = document.getElementById('status');
+const nodeCountEl = document.getElementById('nodeCount');
+const edgeCountEl = document.getElementById('edgeCount');
+
+// Function to update status
+function updateStatus(message) {
+    statusEl.textContent = `Status: ${message}`;
+    console.log(`Status: ${message}`);
+}
 
 /**
  * Initializes the 3D scene, camera, and renderer
  */
 function initScene() {
+    updateStatus('Initializing Scene');
+    
     // Create a new scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
@@ -45,6 +59,20 @@ function initScene() {
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 
+    // Add a red cube as a reference point
+    const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.position.set(0, 0, -5);
+    scene.add(cube);
+
+    // Add a geodesic sphere as a boundary reference
+    const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.set(0, 0, 0);
+    scene.add(sphere);
+
     // Handle window resizing
     window.addEventListener('resize', onWindowResize, false);
 }
@@ -53,13 +81,16 @@ function initScene() {
  * Sets up WebXR or spoofed VR
  */
 async function setupXR() {
+    updateStatus('Setting up XR');
+    
     if (SPOOF_VR || (navigator.xr && await navigator.xr.isSessionSupported('immersive-vr'))) {
         const button = document.createElement('button');
         button.textContent = 'Enter VR';
         button.onclick = enterVR;
         document.body.appendChild(button);
+        updateStatus('Enter VR button added');
     } else {
-        console.log('VR not supported');
+        updateStatus('VR not supported');
     }
 }
 
@@ -78,7 +109,7 @@ function enterVR() {
  * Starts a spoofed VR session
  */
 function startSpoofedVRSession() {
-    console.log('Starting spoofed VR session');
+    updateStatus('Starting spoofed VR session');
     setupSpoofedVRControls();
     animate();
 }
@@ -88,7 +119,7 @@ function startSpoofedVRSession() {
  */
 function setupSpoofedVRControls() {
     document.addEventListener('keydown', (event) => {
-        const speed = 0.1;
+        const speed = 1; // Adjust speed as necessary for smoother exploration
         switch(event.key) {
             case 'w': camera.position.z -= speed; break;
             case 's': camera.position.z += speed; break;
@@ -97,6 +128,7 @@ function setupSpoofedVRControls() {
             case 'q': camera.position.y += speed; break;
             case 'e': camera.position.y -= speed; break;
         }
+        console.log(`Camera Position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}`);
     });
 }
 
@@ -105,20 +137,29 @@ function setupSpoofedVRControls() {
  */
 function onVRSessionStarted(session) {
     renderer.xr.setSession(session);
-    // Additional VR session setup if needed
+    updateStatus('VR session started');
 }
 
 /**
  * Loads graph data from the server
  */
 async function loadData() {
+    updateStatus('Loading graph data');
+    
     try {
         const response = await fetch('/graph-data');
         const graphData = await response.json();
         nodes = graphData.nodes;
         edges = graphData.edges;
+
+        nodeCountEl.textContent = `Nodes: ${nodes.length}`;
+        edgeCountEl.textContent = `Edges: ${edges.length}`;
+
+        console.log('Graph data loaded', graphData);
+        updateStatus('Graph data loaded');
     } catch (error) {
         console.error('Error loading graph data:', error);
+        updateStatus('Error loading graph data');
     }
 }
 
@@ -126,18 +167,22 @@ async function loadData() {
  * Creates 3D objects for nodes and edges
  */
 function createGraphObjects() {
+    updateStatus('Creating graph objects');
+    
     // Create nodes
     nodes.forEach(node => {
         const geometry = new THREE.SphereGeometry(calculateNodeSize(node.size), 32, 32);
         const material = new THREE.MeshPhongMaterial({ color: getNodeColor(node.hyperlinks) });
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(
-            Math.random() * 100 - 50,
-            Math.random() * 100 - 50,
-            Math.random() * 100 - 50
-        );
-        mesh.userData = { nodeId: node.id };
+        // Set a smaller range for initial positions to ensure visibility
+        const x = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
+        const y = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
+        const z = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
+        mesh.position.set(x, y, z);
+        mesh.userData = { nodeId: node.id, name: node.name };
         scene.add(mesh);
+        console.log(`Node added: ${node.name} at (${mesh.position.x}, ${mesh.position.y}, ${mesh.position.z})`);
+        console.log(`Distance from camera: ${mesh.position.distanceTo(camera.position)}`);
     });
 
     // Create edges
@@ -147,14 +192,18 @@ function createGraphObjects() {
         
         if (sourceNode && targetNode) {
             const material = new THREE.LineBasicMaterial({ color: getEdgeColor(edge.weight) });
-            const geometry = new THREE.BufferGeometry().setFromPoints([
-                sourceNode.position,
-                targetNode.position
-            ]);
+            const points = [sourceNode.position, targetNode.position];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const line = new THREE.Line(geometry, material);
             scene.add(line);
+            console.log(`Edge added between ${sourceNode.userData.name} and ${targetNode.userData.name}`);
+        } else {
+            console.warn(`Edge warning: sourceNode or targetNode not found for edge between ${edge.source} and ${edge.target}`);
         }
     });
+
+    console.log('Graph objects created');
+    updateStatus('Graph objects created');
 }
 
 /**
@@ -229,6 +278,7 @@ function render(time, frame) {
  * Initializes the application
  */
 async function init() {
+    updateStatus('Initializing application');
     initScene();
     await setupXR();
     await loadData();
