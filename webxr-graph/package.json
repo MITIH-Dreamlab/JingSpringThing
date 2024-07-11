@@ -9,9 +9,9 @@
   "dependencies": {
     "express": "^4.17.1",
     "axios": "^0.21.1",
-    "dotenv": "^10.0.0"
+    "dotenv": "^10.0.0",
+    "fs-extra": "^9.0.0"
   },
   "author": "Your Name",
   "license": "ISC"
 }
-

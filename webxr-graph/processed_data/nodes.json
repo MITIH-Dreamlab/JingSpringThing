@@ -1,5 +1,5 @@
 {
-  "nodes": [
+  "files": [
     {
       "name": "AI Adoption",
       "hash": "07d8323abfad24a6726a66c38b0a8052cc7c247275fc684efd15a049ef0081d7",
@@ -990,6 +990,5 @@
       "size": 1368,
       "httpsLinksCount": 10
     }
-  ],
-  "edges": []
+  ]
 }
