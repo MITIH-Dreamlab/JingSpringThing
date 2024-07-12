@@ -1,0 +1,56 @@
+public:: true
+
+- #Public page automatically published
+- ### Essential Elements of RAG
+	- RAG involves retrieval systems and generative models.
+	- Retrieval systems source relevant external information.
+	- Generative models create responses using this information.
+- ### Embedding Models in RAG
+	- Crucial for converting data into vector embeddings.
+	- Facilitates the storage and retrieval of data in vector form.
+	- Different types of embeddings for text, images, audio, etc.
+- ### Vector Databases in RAG
+	- Store vectorized representations of data.
+	- Enable semantic searches beyond keyword matching.
+	- Essential for handling large volumes of diverse data types.
+- ### Language Models (LLMs) Integration
+	- LLMs like GPT are used for generating responses.
+	- They contextualize the retrieved information.
+	- LLMs provide the capacity for nuanced and coherent output.
+- ### Data Chunking and Pre-processing
+	- Involves organizing data into manageable parts for processing.
+	- Effective chunking improves data retrieval accuracy.
+	- Overlapping data chunks can enhance context understanding.
+- ### Multimodal Data Handling
+	- RAG can process diverse data types (text, image, audio).
+	- Presents computational challenges and potential for errors.
+	- Requires careful alignment of different data types.
+- ### Optimization and Debugging
+	- Involves refining the interaction between components.
+	- Debugging is critical to address hallucinations and inaccuracies.
+	- Tools for evaluation and observability are essential.
+- ### Applications and Use Cases
+	- Suitable for complex tasks requiring external data retrieval.
+	- Used in chatbots, customer service interfaces, and information systems.
+	- Emerging applications in multimodal contexts (video/image search).
+- ### Current Challenges and Limitations
+	- Managing computational costs and complexity.
+	- Addressing issues of compounded hallucinations in multimodal RAGs.
+	- Balancing storage, computation, and output quality.
+- # Misc
+	- [Taking RAG apps from POC to Production, Fast - YouTube](https://www.youtube.com/watch?v=WQsN0_eVaEs)
+	- [AI-Powered Search: Embedding-Based Retrieval and Retrieval-Augmented Generation (RAG) | by Daniel Tunkelang | Apr, 2024 | Medium](https://dtunkelang.medium.com/ai-powered-search-embedding-based-retrieval-and-retrieval-augmented-generation-rag-cabeaba26a8b)
+	- [AutoRAG documentation (marker-inc-korea.github.io)](https://marker-inc-korea.github.io/AutoRAG/index.html)
+	- [llmware-ai/llmware: Providing enterprise-grade LLM-based development framework, tools, and fine-tuned models. (github.com)](https://github.com/llmware-ai/llmware) [[Large language models]] [[Infrastructure]] [[RAG]]
+	- [turbopuffer](https://turbopuffer.com/) [[RAG]] serverless vector database
+	- Using [[agents]] over [[RAG]] [Forget RAG: Embrace agent design for a more intelligent grounded ChatGPT! | by James Nguyen | Nov, 2023 | Medium](https://james-tn.medium.com/forget-rag-embrace-agent-design-for-a-more-intelligent-grounded-chatgpt-6c562d903c61)
+	- [[ChatGPT]] threatens the [[RAG]] model with better capabilities [Chat GPT 4 Turbo for Tech Leaders | Medium](https://medium.com/@sivaad/openai-devday-for-executives-will-gpt-4-turbo-kill-traditional-rag-c82748c8feb9)
+	- [CLI tool](https://www.reddit.com/r/ChatGPTCoding/comments/183qetc/made_a_small_cli_tool_to_create_openai_assistants/) to deploy a [[GPT]] model from a directory of data [[RAG]]
+	- [VECTORDB](http://vectordb.com) open source [[RAG]] database
+	- https://nux.ai/guides/chaining-rag-systems [[RAG]]
+	- Instant RAG from directory agent builder for openai [openai instant assistant](https://github.com/davidgonmar/openai_instant_assistant)
+	- [[Training and fine tuning]] tiny 1500 line trainer for 8b [[Llama]] [rombodawg/test_dataset_Codellama-3-8B · Hugging Face](https://huggingface.co/rombodawg/test_dataset_Codellama-3-8B)
+	- [[Large language models]] memory calculator [LLM RAM Calculator by Ray Fernando](https://llm-calc.rayfernando.ai/)
+	- [[Evaluation and leaderboards]] [Ayumi LLM Evaluation (m8geil.de)](https://ayumi.m8geil.de/)
+	-
+	-
