@@ -22,6 +22,11 @@ const app = express();
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+
 async function initializeHttpsOptions() {
     httpsOptions = {
         key: await fs.readFile('key.pem'),
@@ -154,64 +159,99 @@ function extractReferences(content, nodeNames) {
  * Builds the edges of the graph based on file references.
  * @param {Array} files - Array of file objects containing name and content.
  */
+/**
+ * Builds the edges of the graph based on file references.
+ * @param {Array} files - Array of file objects containing name, sha, and filePath.
+ */
 async function buildEdges(files) {
+    // Load existing node data
     const nodeData = await loadNodeData();
     const nodeNames = nodeData.map(file => file.name);
-    const referencesMap = {};
+    const edges = [];
 
-    // Initialize referencesMap
-    for (const source of nodeNames) {
-        referencesMap[source] = {};
-        for (const target of nodeNames) {
-            referencesMap[source][target] = 0;
-        }
-    }
-
-    // Process files and build referencesMap
+    // Process each file
     for (const file of files) {
         const source = file.name.replace('.md', '');
-        const content = file.content;
+        let content;
 
+        // Read file content, handling potential errors
+        try {
+            content = await fs.readFile(file.filePath, 'utf8');
+        } catch (error) {
+            console.error(`Error reading file ${file.filePath}:`, error);
+            continue; // Skip this file if there's an error reading it
+        }
+
+        // Check if the file is public
         if (!content.includes('public:: true')) {
+            console.log(`Skipping non-public file: ${file.name}`);
             continue;
         }
 
-        const references = extractReferences(content, nodeNames);
+        // Find existing node entry or create a new one
+        let nodeEntry = nodeData.find(node => node.name === source);
 
-        for (const [target, weight] of Object.entries(references)) {
-            if (target !== source) {
-                referencesMap[source][target] += weight;
+        // Update node entry if it's new or has changed
+        if (!nodeEntry || nodeEntry.sha !== file.sha) {
+            nodeEntry = {
+                name: source,
+                sha: file.sha,
+                filePath: file.filePath,
+                size: Buffer.byteLength(content, 'utf8'),
+                httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
+            };
+
+            // Update or add the node entry
+            const index = nodeData.findIndex(node => node.name === source);
+            if (index === -1) {
+                nodeData.push(nodeEntry);
+            } else {
+                nodeData[index] = nodeEntry;
+            }
+
+            // Extract references to other nodes
+            const references = extractReferences(content, nodeNames);
+
+            // Create edges based on references
+            for (const [target, weight] of Object.entries(references)) {
+                if (target !== source) {
+                    edges.push({ 
+                        source, 
+                        target, 
+                        weight: parseFloat(weight.toFixed(2)) // Ensure weight is a number with 2 decimal places
+                    });
+                }
             }
         }
     }
 
-    // Build edges with bi-directional weights
-    const edges = [];
-    nodeNames.forEach(source => {
-        nodeNames.forEach(target => {
-            if (source !== target) {
-                const weight = referencesMap[source][target] + referencesMap[target][source];
-                if (weight > 0) {
-                    edges.push({
-                        source: source,
-                        target: target,
-                        weight: weight
-                    });
-                }
-            }
-        });
+    // Combine edges with the same source and target
+    const combinedEdges = edges.reduce((acc, edge) => {
+        const existingEdge = acc.find(e => e.source === edge.source && e.target === edge.target);
+        if (existingEdge) {
+            existingEdge.weight += edge.weight;
+        } else {
+            acc.push(edge);
+        }
+        return acc;
+    }, []);
+
+    // Round weights to 2 decimal places
+    combinedEdges.forEach(edge => {
+        edge.weight = parseFloat(edge.weight.toFixed(2));
     });
 
-    // Save the updated graph data
+    // Save updated node data and edges
     try {
         await saveNodeData(nodeData);
-        await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges: edges }, null, 2));
-        await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: nodeData, edges: edges }, null, 2));
+        await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges: combinedEdges }, null, 2));
+        await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: nodeData, edges: combinedEdges }, null, 2));
         console.log('Graph data saved successfully.');
     } catch (err) {
         console.error('Error saving graph data:', err);
     }
 }
+
 
 
 async function buildEdges(files) {
