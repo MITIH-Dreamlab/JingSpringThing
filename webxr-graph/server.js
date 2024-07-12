@@ -1,4 +1,3 @@
-// Required modules
 const express = require('express');
 const https = require('https');
 const fs = require('fs/promises');
@@ -21,18 +20,10 @@ const app = express();
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
-/**
- * Escapes special characters in a string for use in a regular expression.
- * @param {string} string - The string to escape.
- * @returns {string} The escaped string.
- */
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-/**
- * Initializes HTTPS options by reading key and certificate files.
- */
 async function initializeHttpsOptions() {
     httpsOptions = {
         key: await fs.readFile('key.pem'),
@@ -40,9 +31,6 @@ async function initializeHttpsOptions() {
     };
 }
 
-/**
- * Initializes the directory structure and creates necessary files.
- */
 async function initialize() {
     // Create necessary directories
     await fs.mkdir(PROCESSED_STORAGE_PATH, { recursive: true });
@@ -54,19 +42,10 @@ async function initialize() {
     }
 }
 
-/**
- * Computes the SHA256 hash of the given data.
- * @param {string} data - The data to hash.
- * @returns {string} The computed hash.
- */
 function computeHash(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-/**
- * Loads the graph data from the file.
- * @returns {Promise<Object>} The graph data object.
- */
 async function loadGraphData() {
     try {
         const data = await fs.readFile(GRAPH_DATA_PATH, 'utf8');
@@ -77,10 +56,6 @@ async function loadGraphData() {
     }
 }
 
-/**
- * Saves the graph data to the file.
- * @param {Object} graphData - The graph data to save.
- */
 async function saveGraphData(graphData) {
     try {
         await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify(graphData, null, 2));
@@ -90,18 +65,12 @@ async function saveGraphData(graphData) {
     }
 }
 
-/**
- * Fetches Markdown files from the GitHub repository.
- * @returns {Promise<Array>} An array of file objects.
- */
 async function fetchMarkdownFiles() {
     const files = [];
     try {
-        // Encode the GitHub directory path
         const encodedDirectory = encodeURIComponent(GITHUB_DIRECTORY).replace(/%2F/g, '/');
         console.log(`Fetching contents from: https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedDirectory}`);
         
-        // Make a request to the GitHub API
         const response = await axios.get(
             `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedDirectory}`,
             {
@@ -116,7 +85,6 @@ async function fetchMarkdownFiles() {
         const markdownFiles = response.data.filter(file => file.name.endsWith('.md'));
         console.log('Markdown files found:', markdownFiles.length);
 
-        // Fetch content for each Markdown file
         for (const file of markdownFiles) {
             console.log(`Fetching content for file: ${file.name}`);
             try {
@@ -124,16 +92,13 @@ async function fetchMarkdownFiles() {
                     headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
                 });
                 const content = fileResponse.data;
-                console.log(`File: ${file.name}, GitHub SHA: ${file.sha}`);
                 files.push({ name: file.name, content: content, sha: file.sha });
                 console.log(`Content fetched for file: ${file.name}`);
             } catch (fileError) {
                 console.error(`Error fetching file ${file.name}:`, fileError.message);
-                continue;
             }
         }
 
-        // Compare and update local files
         const updatedFiles = await compareAndUpdateFiles(files);
         console.log(`Updated ${updatedFiles.length} files locally`);
 
@@ -149,15 +114,9 @@ async function fetchMarkdownFiles() {
     }
 }
 
-/**
- * Compares and updates local files with the fetched files.
- * @param {Array} files - Array of file objects from GitHub.
- * @returns {Promise<Array>} Array of updated file objects.
- */
 async function compareAndUpdateFiles(files) {
     const updatedFiles = [];
     for (const file of files) {
-        // Skip non-public files
         if (!file.content.includes('public:: true')) {
             console.log(`Skipping non-public file: ${file.name}`);
             continue;
@@ -169,9 +128,7 @@ async function compareAndUpdateFiles(files) {
         try {
             const stats = await fs.stat(localPath);
             if (stats.isFile()) {
-                const localContent = await fs.readFile(localPath, 'utf8');
                 const localMetadata = JSON.parse(await fs.readFile(`${localPath}.meta.json`, 'utf8'));
-                console.log(`File: ${file.name}, Local SHA: ${localMetadata.sha}, GitHub SHA: ${file.sha}`);
                 if (localMetadata.sha === file.sha) {
                     needsUpdate = false;
                     console.log(`File ${file.name} is up to date.`);
@@ -196,6 +153,7 @@ async function compareAndUpdateFiles(files) {
     return updatedFiles;
 }
 
+
 /**
  * Extracts references to other nodes from the content.
  * @param {string} content - The content to search for references.
@@ -204,50 +162,31 @@ async function compareAndUpdateFiles(files) {
  */
 function extractReferences(content, nodeNames) {
     const references = {};
-    const lowerContent = content.toLowerCase();
 
-    // Sort node names by length (descending) to prefer longer matches
-    const sortedNodeNames = nodeNames.sort((a, b) => b.length - a.length);
+    // Prepare node names for regex
+    const regexPatterns = nodeNames.map(name => ({
+        name: name.replace('.md', ''),
+        regex: new RegExp(`\\b${escapeRegExp(name.replace('.md', ''))}\\b`, 'gi') 
+    }));
 
-    for (const nodeName of sortedNodeNames) {
-        const lowerNodeName = nodeName.toLowerCase().replace('.md', '');
+    for (const { name, regex } of regexPatterns) {
+        let match;
         let count = 0;
-        let lastIndex = 0;
+        while ((match = regex.exec(content)) !== null) {
+            const matchStart = match.index;
+            const matchEnd = matchStart + name.length;
 
-        while (true) {
-            // Search for the node name (case insensitive, without .md)
-            const index = lowerContent.indexOf(lowerNodeName, lastIndex);
-            if (index === -1) break;
-
-            // Check if it's a whole word (using word boundaries)
-            const prevChar = index > 0 ? lowerContent[index - 1] : ' ';
-            const nextChar = index + lowerNodeName.length < lowerContent.length ? lowerContent[index + lowerNodeName.length] : ' ';
-            const isWholeWord = !/[a-z0-9_]/.test(prevChar) && !/[a-z0-9_]/.test(nextChar);
-
-            if (isWholeWord) {
-                // Check if it's already wrapped in [[]] to prevent recursion
-                const isWrapped = (
-                    index >= 2 && 
-                    lowerContent.substring(index - 2, index) === '[[' && 
-                    lowerContent.substring(index + lowerNodeName.length, index + lowerNodeName.length + 2) === ']]'
-                );
-
-                if (!isWrapped) {
-                    // Check if it's part of a web hyperlink
-                    const surroundingText = lowerContent.substring(Math.max(0, index - 50), Math.min(lowerContent.length, index + lowerNodeName.length + 50));
-                    if (surroundingText.includes('](http') || surroundingText.includes('](https')) {
-                        count += 0.1;
-                    } else {
-                        count += 1;
-                    }
-                }
+            // Check if it's part of a web hyperlink
+            const surroundingText = content.substring(Math.max(0, matchStart - 50), Math.min(content.length, matchEnd + 50));
+            if (surroundingText.includes('](http') || surroundingText.includes('](https')) {
+                count += 0.1;
+            } else {
+                count += 1;
             }
-
-            lastIndex = index + lowerNodeName.length;
         }
 
         if (count > 0) {
-            references[nodeName] = count;
+            references[name] = count;
         }
     }
 
@@ -325,34 +264,21 @@ async function buildEdges(files) {
     await saveGraphData(graphData);
 }
 
-/**
- * Retrieves the current graph data.
- * @returns {Promise<Object>} The current graph data.
- */
 async function getGraphData() {
     return loadGraphData();
 }
 
-/**
- * Refreshes the graph data by fetching new files and rebuilding edges.
- */
 async function refreshGraphData() {
     const files = await fetchMarkdownFiles();
     await buildEdges(files);
 }
 
-// Set up Express routes
 app.use(express.static('public'));
 
-/**
- * Route to get graph data.
- * Sends the current graph data and initiates a background refresh.
- */
 app.get('/graph-data', async (req, res) => {
     try {
         const graphData = await getGraphData();
         res.json(graphData);
-        // Start background refresh
         setTimeout(async () => {
             await refreshGraphData();
         }, 0);
@@ -362,10 +288,6 @@ app.get('/graph-data', async (req, res) => {
     }
 });
 
-/**
- * Route to test GitHub API access.
- * Useful for debugging GitHub API issues.
- */
 app.get('/test-github-api', async (req, res) => {
     try {
         const response = await axios.get(
@@ -384,9 +306,6 @@ app.get('/test-github-api', async (req, res) => {
     }
 });
 
-/**
- * Main function to initialize and start the server.
- */
 async function main() {
     try {
         await initialize();
@@ -408,7 +327,6 @@ async function main() {
     }
 }
 
-// Start the application
 main().catch((err) => {
     console.error('Unexpected error:', err);
     process.exit(1);
