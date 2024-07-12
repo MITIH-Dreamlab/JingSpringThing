@@ -1,4 +1,3 @@
-// Required Node.js modules
 const express = require('express');
 const https = require('https');
 const fs = require('fs/promises');
@@ -8,24 +7,21 @@ const crypto = require('crypto');
 require('dotenv').config();
 
 // Constants for file paths and GitHub configurations
-const DATA_DIR = '/usr/src/app/data';
-const LOCAL_STORAGE_PATH = `${DATA_DIR}/markdown_files`;
-const PROCESSED_STORAGE_PATH = `${DATA_DIR}/processed_files`;
-const PRISTINE_PATH = path.join(PROCESSED_STORAGE_PATH, 'pristine');
-const PROCESSED_PATH = path.join(PROCESSED_STORAGE_PATH, 'processed');
-const NODES_JSON_PATH = `${PROCESSED_STORAGE_PATH}/nodes.json`;
-const EDGES_JSON_PATH = `${PROCESSED_STORAGE_PATH}/edges.json`;
-const GRAPH_DATA_PATH = `${PROCESSED_STORAGE_PATH}/graph-data.json`;
+const PROCESSED_STORAGE_PATH = '/usr/src/app/data/processed_files';
+const MARKDOWN_STORAGE_PATH = path.join(PROCESSED_STORAGE_PATH, 'markdown');
+const NODES_JSON_PATH = path.join(PROCESSED_STORAGE_PATH, 'nodes.json');
+const EDGES_JSON_PATH = path.join(PROCESSED_STORAGE_PATH, 'edges.json');
+const GRAPH_DATA_PATH = path.join(PROCESSED_STORAGE_PATH, 'graph-data.json');
+const GITHUB_OWNER = 'jjohare';
+const GITHUB_REPO = 'logseq';
+const GITHUB_DIRECTORY = 'mainKnowledgeGraph/pages';
+const GITHUB_ACCESS_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
 
 // Express app setup
 const app = express();
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
-/**
- * Initializes HTTPS options by reading key and certificate files.
- * This is necessary for running an HTTPS server.
- */
 async function initializeHttpsOptions() {
     httpsOptions = {
         key: await fs.readFile('key.pem'),
@@ -33,18 +29,9 @@ async function initializeHttpsOptions() {
     };
 }
 
-/**
- * Initializes the necessary directories and JSON files.
- * This function ensures that all required directories exist and that
- * the JSON files for nodes, edges, and graph data are created if they don't exist.
- */
 async function initialize() {
-    const directories = [PROCESSED_STORAGE_PATH, LOCAL_STORAGE_PATH, PRISTINE_PATH];
-    for (const dir of directories) {
-        await fs.mkdir(dir, { recursive: true }).catch(err => {
-            if (err.code !== 'EEXIST') throw err;
-        });
-    }
+    await fs.mkdir(PROCESSED_STORAGE_PATH, { recursive: true });
+    await fs.mkdir(MARKDOWN_STORAGE_PATH, { recursive: true });
 
     const jsonFiles = [
         { path: NODES_JSON_PATH, content: { files: [] } },
@@ -59,60 +46,10 @@ async function initialize() {
     }
 }
 
-async function writeDebugFile(filename, content) {
-    const debugPath = path.join(DATA_DIR, 'debug');
-    try {
-        await fs.mkdir(debugPath, { recursive: true });
-        await fs.writeFile(path.join(debugPath, filename), JSON.stringify(content, null, 2));
-        console.log(`Debug file written: ${filename}`);
-    } catch (error) {
-        console.error(`Error writing debug file ${filename}:`, error);
-    }
-}
-
-// Use this function in buildEdges and other relevant places
-
-async function compareAndUpdateFiles(files) {
-    const updatedFiles = [];
-    for (const file of files) {
-        const localPath = path.join(LOCAL_STORAGE_PATH, file.name);
-        let needsUpdate = true;
-
-        try {
-            const stats = await fs.stat(localPath);
-            if (stats.isFile()) {
-                const localContent = await fs.readFile(localPath, 'utf8');
-                const localHash = computeHash(localContent);
-                if (localHash === file.sha) {
-                    needsUpdate = false;
-                }
-            }
-        } catch (error) {
-            // File doesn't exist locally, needs to be downloaded
-        }
-
-        if (needsUpdate) {
-            await fs.writeFile(localPath, file.content, 'utf8');
-            updatedFiles.push(file);
-        }
-    }
-    return updatedFiles;
-}
-
-/**
- * Computes the SHA256 hash of the given data.
- * This is used to check if file contents have changed.
- * @param {string} data - The data to hash.
- * @returns {string} The computed hash.
- */
 function computeHash(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-/**
- * Loads the node data from the JSON file.
- * @returns {Promise<Array>} Array of node data.
- */
 async function loadNodeData() {
     try {
         const data = await fs.readFile(NODES_JSON_PATH, 'utf8');
@@ -123,10 +60,6 @@ async function loadNodeData() {
     }
 }
 
-/**
- * Saves the node data to the JSON file.
- * @param {Array} nodes - The node data to save.
- */
 async function saveNodeData(nodes) {
     try {
         await fs.writeFile(NODES_JSON_PATH, JSON.stringify({ files: nodes }, null, 2));
@@ -136,16 +69,8 @@ async function saveNodeData(nodes) {
     }
 }
 
-/**
- * Fetches Markdown files from the specified GitHub repository.
- * This function uses the GitHub API to retrieve all Markdown files
- * from the specified directory in the repository.
- * @returns {Promise<Array>} Array of objects containing file names and contents.
- */
 async function fetchMarkdownFiles() {
-    const files = [];
     try {
-        console.log(`Fetching contents from: https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodeURIComponent(GITHUB_DIRECTORY)}`);
         const response = await axios.get(
             `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodeURIComponent(GITHUB_DIRECTORY)}`,
             {
@@ -156,28 +81,40 @@ async function fetchMarkdownFiles() {
             }
         );
 
-        console.log('API Response:', response.status, response.statusText);
         const markdownFiles = response.data.filter(file => file.name.endsWith('.md'));
-        console.log('Markdown files found:', markdownFiles.length);
+        const existingNodes = await loadNodeData();
+        const filesToFetch = [];
+        const updatedFiles = [];
 
         for (const file of markdownFiles) {
-            console.log(`Fetching content for file: ${file.name}`);
-            try {
-                const fileResponse = await axios.get(file.download_url, {
-                    headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
+            const existingNode = existingNodes.find(node => node.name === file.name.replace('.md', ''));
+            if (!existingNode || existingNode.sha !== file.sha) {
+                filesToFetch.push(file);
+            } else {
+                updatedFiles.push({
+                    name: file.name,
+                    sha: file.sha,
+                    filePath: existingNode.filePath
                 });
-                files.push({ name: file.name, content: fileResponse.data, sha: file.sha });
-                console.log(`Content fetched for file: ${file.name}`);
-            } catch (fileError) {
-                console.error(`Error fetching file ${file.name}:`, fileError.message);
-                continue;
             }
         }
-        console.log(`Successfully fetched ${files.length} Markdown files`);
 
-        // Compare and update files
-        const updatedFiles = await compareAndUpdateFiles(files);
-        console.log(`Updated ${updatedFiles.length} files locally`);
+        for (const file of filesToFetch) {
+            const fileResponse = await axios.get(file.download_url, {
+                headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
+            });
+            const content = fileResponse.data;
+            
+            if (content.includes('public:: true')) {
+                const filePath = path.join(MARKDOWN_STORAGE_PATH, file.name);
+                await fs.writeFile(filePath, content);
+                updatedFiles.push({
+                    name: file.name,
+                    sha: file.sha,
+                    filePath: filePath
+                });
+            }
+        }
 
         return updatedFiles;
     } catch (error) {
@@ -188,7 +125,6 @@ async function fetchMarkdownFiles() {
 
 /**
  * Extracts references to other nodes from the content.
- * This function looks for both [[wiki-style]] links and node names within hyperlinks.
  * @param {string} content - The content to search for references.
  * @param {string[]} nodeNames - Array of node names to search for.
  * @returns {Object} Object with node names as keys and reference counts as values.
@@ -196,31 +132,26 @@ async function fetchMarkdownFiles() {
 function extractReferences(content, nodeNames) {
     const references = {};
     nodeNames.forEach(node => {
-        const regex = new RegExp(`\\[\\[${node}\\]\\]`, 'gi');
-        const matches = content.match(regex) || [];
-        if (matches.length > 0) {
-            references[node] = matches.length;
-        }
-    });
+        // Count Logseq style [[links]]
+        const logseqRegex = new RegExp(`\\[\\[${node}\\]\\]`, 'gi');
+        const logseqMatches = content.match(logseqRegex) || [];
+        references[node] = logseqMatches.length;
 
-    // Add weight for node names in hyperlinks
-    const hyperlinks = content.match(/\[([^\]]+)\]\(https?:\/\/[^\s]+\)/g) || [];
-    for (const hyperlink of hyperlinks) {
-        const linkText = hyperlink.match(/\[([^\]]+)\]/)[1];
-        for (const nodeName of nodeNames) {
-            if (linkText.toLowerCase().includes(nodeName.toLowerCase())) {
-                references[nodeName] = (references[nodeName] || 0) + 0.1;
+        // Count hyperlinks
+        const hyperlinkRegex = new RegExp(`\\[([^\\]]+)\\]\\(https?:\\/\\/[^\\s]+\\)`, 'g');
+        let hyperlinkMatch;
+        while ((hyperlinkMatch = hyperlinkRegex.exec(content)) !== null) {
+            if (hyperlinkMatch[1].toLowerCase().includes(node.toLowerCase())) {
+                references[node] = (references[node] || 0) + 0.1;
             }
         }
-    }
+    });
 
     return references;
 }
 
 /**
  * Builds the edges of the graph based on file references.
- * This function processes all Markdown files, extracts references,
- * and creates edges between nodes based on these references.
  * @param {Array} files - Array of file objects containing name and content.
  */
 async function buildEdges(files) {
@@ -228,9 +159,7 @@ async function buildEdges(files) {
     const nodeNames = nodeData.map(file => file.name);
     const referencesMap = {};
 
-    console.log(`Initial nodeData: ${JSON.stringify(nodeData)}`);
-    await fs.writeFile('./processed_data/debug_initial_nodeData.json', JSON.stringify(nodeData, null, 2));
-
+    // Initialize referencesMap
     for (const source of nodeNames) {
         referencesMap[source] = {};
         for (const target of nodeNames) {
@@ -238,56 +167,25 @@ async function buildEdges(files) {
         }
     }
 
-    console.log(`Processing ${files.length} files`);
-    let publicFileCount = 0;
-
+    // Process files and build referencesMap
     for (const file of files) {
         const source = file.name.replace('.md', '');
         const content = file.content;
 
-        console.log(`Processing file: ${file.name}`);
         if (!content.includes('public:: true')) {
-            console.log(`Skipping file (not marked as public): ${file.name}`);
             continue;
         }
-        publicFileCount++;
 
-        const pristineHash = computeHash(content);
-        let nodeEntry = nodeData.find(node => node.name === source);
+        const references = extractReferences(content, nodeNames);
 
-        if (!nodeEntry || nodeEntry.hash !== pristineHash) {
-            nodeEntry = {
-                name: source,
-                hash: pristineHash,
-                size: Buffer.byteLength(content, 'utf8'),
-                httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
-            };
-
-            if (!nodeData.find(node => node.name === source)) {
-                nodeData.push(nodeEntry);
-            } else {
-                const index = nodeData.findIndex(node => node.name === source);
-                nodeData[index] = nodeEntry;
-            }
-
-            console.log(`Created/Updated node: ${JSON.stringify(nodeEntry)}`);
-
-            // Extract references and calculate weights
-            const references = extractReferences(content, nodeNames);
-            console.log(`References for ${source}: ${JSON.stringify(references)}`);
-
-            for (const [target, count] of Object.entries(references)) {
-                if (target !== source) {
-                    referencesMap[source][target] = (referencesMap[source][target] || 0) + count;
-                }
+        for (const [target, weight] of Object.entries(references)) {
+            if (target !== source) {
+                referencesMap[source][target] += weight;
             }
         }
     }
 
-    console.log(`Processed ${publicFileCount} public files`);
-    await fs.writeFile('./processed_data/debug_nodeData_after_processing.json', JSON.stringify(nodeData, null, 2));
-    await fs.writeFile('./processed_data/debug_referencesMap.json', JSON.stringify(referencesMap, null, 2));
-
+    // Build edges with bi-directional weights
     const edges = [];
     nodeNames.forEach(source => {
         nodeNames.forEach(target => {
@@ -304,9 +202,7 @@ async function buildEdges(files) {
         });
     });
 
-    console.log(`Constructed ${edges.length} edges`);
-    await fs.writeFile('./processed_data/debug_edges.json', JSON.stringify(edges, null, 2));
-
+    // Save the updated graph data
     try {
         await saveNodeData(nodeData);
         await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges: edges }, null, 2));
@@ -316,60 +212,79 @@ async function buildEdges(files) {
         console.error('Error saving graph data:', err);
     }
 }
-/**
- * Retrieves the current graph data and initiates a background refresh.
- * This function returns the existing graph data immediately and then
- * starts a process to fetch new data from GitHub and update the graph.
- * @returns {Promise<Object>} The current graph data.
- */
-async function getGraphData() {
-    let existingData = {};
-    try {
-        existingData = JSON.parse(await fs.readFile(GRAPH_DATA_PATH, 'utf8'));
-    } catch (error) {
-        console.log('No existing graph data found. Creating new data.');
+
+
+async function buildEdges(files) {
+    const nodeData = await loadNodeData();
+    const nodeNames = nodeData.map(file => file.name);
+    const edges = [];
+
+    for (const file of files) {
+        const source = file.name.replace('.md', '');
+        const content = await fs.readFile(file.filePath, 'utf8');
+
+        let nodeEntry = nodeData.find(node => node.name === source);
+
+        if (!nodeEntry || nodeEntry.sha !== file.sha) {
+            nodeEntry = {
+                name: source,
+                sha: file.sha,
+                filePath: file.filePath,
+                size: Buffer.byteLength(content, 'utf8'),
+                httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
+            };
+
+            const index = nodeData.findIndex(node => node.name === source);
+            if (index === -1) {
+                nodeData.push(nodeEntry);
+            } else {
+                nodeData[index] = nodeEntry;
+            }
+
+            const references = extractReferences(content, nodeNames);
+            for (const [target, weight] of Object.entries(references)) {
+                if (target !== source) {
+                    edges.push({ source, target, weight });
+                }
+            }
+        }
     }
 
-    // Start background refresh
-    setTimeout(async () => {
-        await refreshGraphData();
-    }, 0);
-
-    return existingData;
+    await saveNodeData(nodeData);
+    await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges }, null, 2));
+    await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: nodeData, edges }, null, 2));
 }
 
-/**
- * Refreshes the graph data by fetching new files from GitHub and rebuilding the graph.
- * This function is typically called in the background to update the graph data.
- */
+async function getGraphData() {
+    try {
+        return JSON.parse(await fs.readFile(GRAPH_DATA_PATH, 'utf8'));
+    } catch (error) {
+        console.log('No existing graph data found. Creating new data.');
+        return { nodes: [], edges: [] };
+    }
+}
+
 async function refreshGraphData() {
     const files = await fetchMarkdownFiles();
     await buildEdges(files);
 }
 
-// Express API Endpoints
 app.use(express.static('public'));
 
-/**
- * Endpoint to get the graph data.
- * This endpoint returns the current graph data immediately and
- * initiates a background refresh of the data.
- */
 app.get('/graph-data', async (req, res) => {
     try {
         const graphData = await getGraphData();
         res.json(graphData);
-        console.log('Graph data sent to client.');
+        // Start background refresh
+        setTimeout(async () => {
+            await refreshGraphData();
+        }, 0);
     } catch (error) {
         console.error('Error processing graph data:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-/**
- * Endpoint to test GitHub API access.
- * This endpoint is useful for verifying that the GitHub access token is working correctly.
- */
 app.get('/test-github-api', async (req, res) => {
     try {
         const response = await axios.get(
@@ -382,39 +297,34 @@ app.get('/test-github-api', async (req, res) => {
             }
         );
         res.json(response.data);
-        console.log('GitHub API test successful.');
     } catch (error) {
         console.error('Error testing GitHub API:', error.message);
         res.status(500).json({ error: 'Failed to access GitHub API', details: error.message });
     }
 });
 
-/**
- * Main function to initialize and start the server.
- * This function sets up the HTTPS server and starts listening for requests.
- */
-
 async function main() {
     try {
-        await fs.access(DATA_DIR, fs.constants.W_OK);
-        console.log(`Data directory ${DATA_DIR} is writable`);
+        await initialize();
+        await initializeHttpsOptions();
+
+        https.createServer(httpsOptions, app).listen(port, async () => {
+            console.log(`HTTPS Server running on https://localhost:${port}`);
+            console.log('Starting initial graph data refresh');
+            try {
+                await refreshGraphData();
+                console.log('Initial graph data refresh complete');
+            } catch (refreshError) {
+                console.error('Error during initial graph data refresh:', refreshError);
+            }
+        });
     } catch (error) {
-        console.error(`Error accessing ${DATA_DIR}:`, error);
+        console.error('Error in main function:', error);
         process.exit(1);
     }
-
-    await initialize();
-    await initializeHttpsOptions();
-    https.createServer(httpsOptions, app).listen(port, async () => {
-        console.log(`HTTPS Server running on https://localhost:${port}`);
-        console.log('HINT: If you\'re running this in Docker, make sure port', port, 'is properly exposed');
-        await refreshGraphData(); // Initial data fetch and processing
-    });
 }
 
-// Start the application
 main().catch((err) => {
     console.error('Unexpected error:', err);
-    process.exit(1); // Exit with a non-zero exit code
+    process.exit(1);
 });
-
