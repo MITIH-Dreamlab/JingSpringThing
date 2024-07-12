@@ -188,6 +188,9 @@ async function fetchAndUpdateFiles(filesToUpdate) {
  * @returns {Object} Object with node names as keys and reference counts as values.
  */
 function extractReferences(content, nodeNames) {
+    console.log('Extracting references from content');
+    console.log('Node names to search for:', nodeNames);
+    
     const references = {};
     const regexPatterns = nodeNames.map(name => ({
         name: name.replace('.md', ''),
@@ -201,16 +204,22 @@ function extractReferences(content, nodeNames) {
             const surroundingText = content.substring(Math.max(0, match.index - 50), Math.min(content.length, match.index + name.length + 50));
             if (surroundingText.includes('](http') || surroundingText.includes('](https')) {
                 count += 0.1;
+                console.log(`Hyperlink reference found for ${name}: ${surroundingText}`);
             } else {
                 count += 1;
+                console.log(`Direct reference found for ${name}: ${surroundingText}`);
             }
         }
         if (count > 0) {
             references[name] = parseFloat(count.toFixed(2));
+            console.log(`Total references for ${name}: ${references[name]}`);
         }
     }
+    
+    console.log('Extracted references:', references);
     return references;
 }
+
 
 /**
  * Escapes special characters in a string for use in a regular expression.
@@ -230,49 +239,66 @@ async function buildEdges(updatedFiles) {
     const graphData = await loadGraphData();
     const nodeNames = graphData.nodes.map(node => node.name);
     const newEdges = [];
+    
+    console.log('Building edges for updated files:', updatedFiles.map(f => f.name));
+    console.log('Existing Node Names:', nodeNames);
 
     for (const file of updatedFiles) {
-        const source = file.name.replace('.md', '');
+        const source = decodeURIComponent(file.name).replace('.md', '');
         const content = file.content;
-
+        
+        console.log(`Processing file: ${file.name} (decoded: ${source})`);
+        
         let nodeIndex = graphData.nodes.findIndex(node => node.name === source);
         const nodeEntry = {
             name: source,
             size: Buffer.byteLength(content, 'utf8'),
             httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
         };
-
+        
         if (nodeIndex === -1) {
+            console.log(`Adding new node: ${source}`);
             graphData.nodes.push(nodeEntry);
         } else {
+            console.log(`Updating existing node: ${source}`);
             graphData.nodes[nodeIndex] = nodeEntry;
         }
-
+        
         const references = extractReferences(content, nodeNames);
+        console.log(`References for ${source}:`, references);
+        
         for (const [target, weight] of Object.entries(references)) {
             if (target !== source) {
                 newEdges.push({ source, target, weight });
+                console.log(`Edge created: ${source} -> ${target} with weight ${weight}`);
             }
         }
     }
-
-    // Combine new edges with existing edges
+    
+    console.log('New edges created:', newEdges);
+    
     const allEdges = [...graphData.edges.filter(edge => 
         !newEdges.some(newEdge => newEdge.source === edge.source && newEdge.target === edge.target)
     ), ...newEdges];
-
-    // Combine edges with the same source and target
+    
+    console.log('All edges before reduction:', allEdges);
+    
     graphData.edges = allEdges.reduce((acc, edge) => {
         const existingEdge = acc.find(e => e.source === edge.source && e.target === edge.target);
         if (existingEdge) {
             existingEdge.weight = parseFloat((existingEdge.weight + edge.weight).toFixed(2));
+            console.log(`Updated edge weight: ${edge.source} -> ${edge.target}, new weight: ${existingEdge.weight}`);
         } else {
             acc.push({ ...edge, weight: parseFloat(edge.weight.toFixed(2)) });
+            console.log(`Added new edge: ${edge.source} -> ${edge.target}, weight: ${edge.weight}`);
         }
         return acc;
     }, []);
-
+    
+    console.log('Final edges:', graphData.edges);
+    
     await saveGraphData(graphData);
+    console.log('Graph data saved successfully');
 }
 
 /**
