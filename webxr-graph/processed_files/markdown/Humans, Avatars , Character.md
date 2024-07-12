@@ -1,0 +1,49 @@
+public:: true
+
+- #Public page automatically published
+- ## Avatar Generation:
+- [REPLIKANT | AI-Assisted 3D Avatar & Animation Platform for Creators](https://www.replikant.com/): AI-assisted 3D avatar and animation platform for creators.
+- [Meta research paper](https://drive.google.com/file/d/1i4NJKAggS82wqMamCJ1OHRGgViuyoY6R/view): Research paper on avatar generation.
+- ## Face Generation:
+	- [Media2Face (google.com)](https://sites.google.com/view/media2face): Website for Media2Face, a project related to face generation. [Towards a Simultaneous and Granular Identity-Expression Control in Personalized Face Generation](https://diffsfsr.github.io/): Research page on personalized face generation.
+	- [Paper page
+		- HeadStudio: Text to Animatable Head Avatars with 3D Gaussian Splatting (huggingface.co)](https://huggingface.co/papers/2402.06149): Paper page on the HeadStudio project for 3D head avatars.
+	- Lip sync
+		- [VASA-1 - Microsoft Research](https://www.microsoft.com/en-us/research/project/vasa-1/)
+		- [wav2lips](https://becominghuman.ai/deepfake-audio-with-wav2lip-263f0f0e84bc)
+		- [Realtime lip-sync API](https://getsynchronicity.io/)
+- ## Body Generation:
+	- [Volumetric primitives (MVP) avatar representation of Lombardi et al. [2021].](https://dl.acm.org/doi/abs/10.1145/3528233.3530740): Research paper on volumetric primitives avatar representation.
+	- [Gaussian Shell Maps for Efficient 3D Human Generation (rameenabdal.github.io)](https://rameenabdal.github.io/GaussianShellMaps/): Research page on Gaussian Shell Maps for 3D human generation.
+	- [En3D (menyifang.github.io)](https://menyifang.github.io/projects/En3D/index.html): Page on the En3D project, which focuses on 3D human generation.
+- ## Hand Generation:
+	- [URHand (frozenburning.github.io)](https://frozenburning.github.io/projects/urhand/): Page on the URHand project, which involves hand generation.
+- ## Audio-Driven Avatar:
+	- [facebookresearch/audio2photoreal: Code and dataset for photorealistic Codec Avatars driven from audio (github.com)](https://github.com/facebookresearch/audio2photoreal): GitHub repository for audio-driven avatars.
+- ## Human Texture Estimation:
+	- Human texture estimation from a single image [SMPLitex: A Generative Model and Dataset for 3D Human Texture Estimation from Single Image (BMVC 2023) (dancasas.github.io)](https://dancasas.github.io/projects/SMPLitex/index.html): Research paper on human texture estimation from a single image.
+- Miscellaneous:
+	- [StableIdentity: Inserting Anybody into Anywhere at First Sight (qinghew.github.io)](https://qinghew.github.io/StableIdentity/): Page on StableIdentity, a project related to inserting anybody into anywhere at first sight.
+	- [What You See Is What You GAN: Rendering Every Pixel for High-Fidelity Geometry in 3D GANs (nvidia.com)](https://research.nvidia.com/labs/nxp/wysiwyg/): Research paper on rendering high-fidelity geometry in 3D GANs.
+	- [Manu.Vision • Futurist on X: "Generating consistent characters is now finally possible! I break down the full process in 4 easy steps in this thread (full tutorial with AI prompts and screenshots): https://t.co/ApLm4IjyTj" / X (twitter.com)]
+	- (https://twitter.com/manuvision/status/1745326572154863816?): Tweet discussing the process of generating consistent characters.
+	- [Tutorial  Consistent Characters with Scenario (youtube.com)](https://www.youtube.com/watch?v=aEnDEraK3I8): YouTube tutorial on creating consistent characters with scenario.
+	- [EricGuo5513/momask-codes: Official implementation of "MoMask: Generative Masked Modeling of 3D Human Motions" (github.com)](https://github.com/EricGuo5513/momask-codes): GitHub repository for the official implementation of MoMask, a generative masked modeling of 3D human motions.
+	- [(1) I made a Character Asset Creator (ComfyUI backend) : StableDiffusion (reddit.com)](https://www.reddit.com/r/StableDiffusion/comments/19aymjf/i_made_a_character_asset_creator_comfyui_backend/): Reddit post about a Character Asset Creator for StableDiffusion.
+	- [https://rentry.org/mikugg-emotions-script](https://rentry.org/mikugg-emotions-script): Script for creating emotions in Mikugg
+	- [https://docs.miku.gg/guides/bots/create-bot-emotions/](https://docs.miku.gg/guides/bots/create-bot-emotions/): Documentation on creating bot emotions in Miku.
+	- [Workflow
+		- Consistant Character Maker
+		- v2.0 | Stable Diffusion Workflows | Civitai](https://civitai.com/models/287147/workflow-consistant-character-maker): Workflow for creating consistent characters using the Stable Diffusion model.
+- ## Character Consistency
+	- I want to work it to get a character I like. Then I NEED: to be able to get that SAME character, totally consistant, from different viewpoints. High Fidelity.
+	- Then its..... 1. Better voice to mouth stuff
+	- 2. Environment and character can be treated seperate, but hte blending/compositing is super hard from an abstraction pov
+	- 3. Animation
+- ### A [workflow](https://www.linkedin.com/posts/lovis-odin-7a751360_how-to-create-this-3d-animation-for-free-activity-7179810196922257409-8PcO?utm_source=share&utm_medium=member_desktop)
+	- 1- Generate an image of character using the prompt "[SUBJECT], T-Pose 3D, full body" in @midjourney or other 2- Generate your 3D character using [https://tripo3d.ai](https://tripo3d.ai/) from @tripoai , export in custom preset "Cinema 4D" 3
+		- Generate PBR texture using [https://lnkd.in/gBvGH_PH](https://lnkd.in/gBvGH_PH) from @AiDigimans 4- Animate it using [https://mixamo.com](https://mixamo.com/) from @Adobe 5- Integrate your model and texture into [https://spline.design](https://spline.design/) from @splinetool and make it cool !
+	-
+- ## Animation
+	- [lizhe00/AnimatableGaussians: Code of [CVPR 2024] "Animatable Gaussians: Learning Pose-dependent Gaussian Maps for High-fidelity Human Avatar Modeling" (github.com)](https://github.com/lizhe00/AnimatableGaussians/tree/master)
+	-

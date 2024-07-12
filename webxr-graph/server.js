@@ -9,8 +9,6 @@ require('dotenv').config();
 // Constants for file paths and GitHub configurations
 const PROCESSED_STORAGE_PATH = '/usr/src/app/data/processed_files';
 const MARKDOWN_STORAGE_PATH = path.join(PROCESSED_STORAGE_PATH, 'markdown');
-const NODES_JSON_PATH = path.join(PROCESSED_STORAGE_PATH, 'nodes.json');
-const EDGES_JSON_PATH = path.join(PROCESSED_STORAGE_PATH, 'edges.json');
 const GRAPH_DATA_PATH = path.join(PROCESSED_STORAGE_PATH, 'graph-data.json');
 const GITHUB_OWNER = 'jjohare';
 const GITHUB_REPO = 'logseq';
@@ -22,11 +20,12 @@ const app = express();
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
+// Helper function to escape special characters in regular expressions
 function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-
+// Initialize HTTPS options
 async function initializeHttpsOptions() {
     httpsOptions = {
         key: await fs.readFile('key.pem'),
@@ -34,50 +33,50 @@ async function initializeHttpsOptions() {
     };
 }
 
+// Initialize directory structure and files
 async function initialize() {
     await fs.mkdir(PROCESSED_STORAGE_PATH, { recursive: true });
     await fs.mkdir(MARKDOWN_STORAGE_PATH, { recursive: true });
 
-    const jsonFiles = [
-        { path: NODES_JSON_PATH, content: { files: [] } },
-        { path: EDGES_JSON_PATH, content: { edges: [] } },
-        { path: GRAPH_DATA_PATH, content: {} }
-    ];
-
-    for (const file of jsonFiles) {
-        if (!await fs.access(file.path).catch(() => false)) {
-            await fs.writeFile(file.path, JSON.stringify(file.content, null, 2));
-        }
+    if (!await fs.access(GRAPH_DATA_PATH).catch(() => false)) {
+        await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: [], edges: [] }, null, 2));
     }
 }
 
+// Compute SHA256 hash of data
 function computeHash(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-async function loadNodeData() {
+// Load graph data from file
+async function loadGraphData() {
     try {
-        const data = await fs.readFile(NODES_JSON_PATH, 'utf8');
-        return JSON.parse(data).files;
+        const data = await fs.readFile(GRAPH_DATA_PATH, 'utf8');
+        return JSON.parse(data);
     } catch (err) {
-        console.error('Error loading nodes data:', err);
-        return [];
+        console.error('Error loading graph data:', err);
+        return { nodes: [], edges: [] };
     }
 }
 
-async function saveNodeData(nodes) {
+// Save graph data to file
+async function saveGraphData(graphData) {
     try {
-        await fs.writeFile(NODES_JSON_PATH, JSON.stringify({ files: nodes }, null, 2));
-        console.log('Node data saved successfully.');
+        await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify(graphData, null, 2));
+        console.log('Graph data saved successfully.');
     } catch (err) {
-        console.error('Error saving nodes data:', err);
+        console.error('Error saving graph data:', err);
     }
 }
 
+// Fetch Markdown files from GitHub
 async function fetchMarkdownFiles() {
+    const files = [];
     try {
+        const encodedDirectory = encodeURIComponent(GITHUB_DIRECTORY).replace(/%2F/g, '/');
+        console.log(`Fetching contents from: https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedDirectory}`);
         const response = await axios.get(
-            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodeURIComponent(GITHUB_DIRECTORY)}`,
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedDirectory}`,
             {
                 headers: {
                     Authorization: `token ${GITHUB_ACCESS_TOKEN}`,
@@ -86,140 +85,179 @@ async function fetchMarkdownFiles() {
             }
         );
 
+        console.log('API Response:', response.status, response.statusText);
         const markdownFiles = response.data.filter(file => file.name.endsWith('.md'));
-        const existingNodes = await loadNodeData();
-        const filesToFetch = [];
-        const updatedFiles = [];
+        console.log('Markdown files found:', markdownFiles.length);
 
         for (const file of markdownFiles) {
-            const existingNode = existingNodes.find(node => node.name === file.name.replace('.md', ''));
-            if (!existingNode || existingNode.sha !== file.sha) {
-                filesToFetch.push(file);
-            } else {
-                updatedFiles.push({
-                    name: file.name,
-                    sha: file.sha,
-                    filePath: existingNode.filePath
+            console.log(`Fetching content for file: ${file.name}`);
+            try {
+                const fileResponse = await axios.get(file.download_url, {
+                    headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
                 });
+                const content = fileResponse.data;
+                console.log(`File: ${file.name}, GitHub SHA: ${file.sha}`);
+                files.push({ name: file.name, content: content, sha: file.sha });
+                console.log(`Content fetched for file: ${file.name}`);
+            } catch (fileError) {
+                console.error(`Error fetching file ${file.name}:`, fileError.message);
+                continue;
             }
         }
 
-        for (const file of filesToFetch) {
-            const fileResponse = await axios.get(file.download_url, {
-                headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
-            });
-            const content = fileResponse.data;
-            
-            if (content.includes('public:: true')) {
-                const filePath = path.join(MARKDOWN_STORAGE_PATH, file.name);
-                await fs.writeFile(filePath, content);
-                updatedFiles.push({
-                    name: file.name,
-                    sha: file.sha,
-                    filePath: filePath
-                });
-            }
-        }
+        const updatedFiles = await compareAndUpdateFiles(files);
+        console.log(`Updated ${updatedFiles.length} files locally`);
 
         return updatedFiles;
     } catch (error) {
         console.error('Error fetching Markdown files:', error.message);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+        }
         return [];
     }
 }
 
-/**
- * Extracts references to other nodes from the content.
- * @param {string} content - The content to search for references.
- * @param {string[]} nodeNames - Array of node names to search for.
- * @returns {Object} Object with node names as keys and reference counts as values.
- */
+// Compare and update local files
+async function compareAndUpdateFiles(files) {
+    const updatedFiles = [];
+    for (const file of files) {
+        if (!file.content.includes('public:: true')) {
+            console.log(`Skipping non-public file: ${file.name}`);
+            continue;
+        }
+
+        const localPath = path.join(MARKDOWN_STORAGE_PATH, decodeURIComponent(file.name));
+        let needsUpdate = true;
+
+        try {
+            const stats = await fs.stat(localPath);
+            if (stats.isFile()) {
+                const localContent = await fs.readFile(localPath, 'utf8');
+                const localMetadata = JSON.parse(await fs.readFile(`${localPath}.meta.json`, 'utf8'));
+                console.log(`File: ${file.name}, Local SHA: ${localMetadata.sha}, GitHub SHA: ${file.sha}`);
+                if (localMetadata.sha === file.sha) {
+                    needsUpdate = false;
+                    console.log(`File ${file.name} is up to date.`);
+                } else {
+                    console.log(`File ${file.name} needs update.`);
+                }
+            }
+        } catch (error) {
+            console.log(`File ${file.name} doesn't exist locally or has no metadata, will be downloaded.`);
+        }
+
+        if (needsUpdate) {
+            await fs.writeFile(localPath, file.content, 'utf8');
+            await fs.writeFile(`${localPath}.meta.json`, JSON.stringify({ sha: file.sha }), 'utf8');
+            updatedFiles.push({
+                name: file.name,
+                sha: file.sha,
+                filePath: localPath
+            });
+        }
+    }
+    return updatedFiles;
+}
+
+
+// Extract references to other nodes from content
 function extractReferences(content, nodeNames) {
     const references = {};
-    nodeNames.forEach(node => {
-        // Count Logseq style [[links]]
-        const logseqRegex = new RegExp(`\\[\\[${node}\\]\\]`, 'gi');
-        const logseqMatches = content.match(logseqRegex) || [];
-        references[node] = logseqMatches.length;
+    const lowerContent = content.toLowerCase();
 
-        // Count hyperlinks
-        const hyperlinkRegex = new RegExp(`\\[([^\\]]+)\\]\\(https?:\\/\\/[^\\s]+\\)`, 'g');
-        let hyperlinkMatch;
-        while ((hyperlinkMatch = hyperlinkRegex.exec(content)) !== null) {
-            if (hyperlinkMatch[1].toLowerCase().includes(node.toLowerCase())) {
-                references[node] = (references[node] || 0) + 0.1;
+    // Sort node names by length (descending) to prefer longer matches
+    const sortedNodeNames = nodeNames.sort((a, b) => b.length - a.length);
+
+    for (const nodeName of sortedNodeNames) {
+        const lowerNodeName = nodeName.toLowerCase().replace('.md', '');
+        let count = 0;
+        let lastIndex = 0;
+
+        while (true) {
+            // Search for the node name (case insensitive, without .md)
+            const index = lowerContent.indexOf(lowerNodeName, lastIndex);
+            if (index === -1) break;
+
+            // Check if it's a whole word (using word boundaries)
+            const prevChar = index > 0 ? lowerContent[index - 1] : ' ';
+            const nextChar = index + lowerNodeName.length < lowerContent.length ? lowerContent[index + lowerNodeName.length] : ' ';
+            const isWholeWord = !/[a-z0-9_]/.test(prevChar) && !/[a-z0-9_]/.test(nextChar);
+
+            if (isWholeWord) {
+                // Check if it's already wrapped in [[]] to prevent recursion
+                const isWrapped = (
+                    index >= 2 && 
+                    lowerContent.substring(index - 2, index) === '[[' && 
+                    lowerContent.substring(index + lowerNodeName.length, index + lowerNodeName.length + 2) === ']]'
+                );
+
+                if (!isWrapped) {
+                    // Check if it's part of a web hyperlink
+                    const surroundingText = lowerContent.substring(Math.max(0, index - 50), Math.min(lowerContent.length, index + lowerNodeName.length + 50));
+                    if (surroundingText.includes('](http') || surroundingText.includes('](https')) {
+                        count += 0.1;
+                    } else {
+                        count += 1;
+                    }
+                }
             }
+
+            lastIndex = index + lowerNodeName.length;
         }
-    });
+
+        if (count > 0) {
+            references[nodeName] = count;
+        }
+    }
 
     return references;
 }
 
-/**
- * Builds the edges of the graph based on file references.
- * @param {Array} files - Array of file objects containing name and content.
- */
-/**
- * Builds the edges of the graph based on file references.
- * @param {Array} files - Array of file objects containing name, sha, and filePath.
- */
+// Build edges of the graph based on file references
 async function buildEdges(files) {
-    // Load existing node data
-    const nodeData = await loadNodeData();
-    const nodeNames = nodeData.map(file => file.name);
+    const graphData = await loadGraphData();
+    const nodeNames = graphData.nodes.map(node => node.name);
     const edges = [];
 
-    // Process each file
     for (const file of files) {
         const source = file.name.replace('.md', '');
         let content;
 
-        // Read file content, handling potential errors
         try {
             content = await fs.readFile(file.filePath, 'utf8');
         } catch (error) {
             console.error(`Error reading file ${file.filePath}:`, error);
-            continue; // Skip this file if there's an error reading it
+            continue;
         }
 
-        // Check if the file is public
         if (!content.includes('public:: true')) {
             console.log(`Skipping non-public file: ${file.name}`);
             continue;
         }
 
-        // Find existing node entry or create a new one
-        let nodeEntry = nodeData.find(node => node.name === source);
+        let nodeIndex = graphData.nodes.findIndex(node => node.name === source);
 
-        // Update node entry if it's new or has changed
-        if (!nodeEntry || nodeEntry.sha !== file.sha) {
-            nodeEntry = {
+        if (nodeIndex === -1 || graphData.nodes[nodeIndex].sha !== file.sha) {
+            const nodeEntry = {
                 name: source,
                 sha: file.sha,
-                filePath: file.filePath,
                 size: Buffer.byteLength(content, 'utf8'),
                 httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
             };
 
-            // Update or add the node entry
-            const index = nodeData.findIndex(node => node.name === source);
-            if (index === -1) {
-                nodeData.push(nodeEntry);
+            if (nodeIndex === -1) {
+                graphData.nodes.push(nodeEntry);
             } else {
-                nodeData[index] = nodeEntry;
+                graphData.nodes[nodeIndex] = nodeEntry;
             }
 
-            // Extract references to other nodes
             const references = extractReferences(content, nodeNames);
-
-            // Create edges based on references
             for (const [target, weight] of Object.entries(references)) {
                 if (target !== source) {
-                    edges.push({ 
-                        source, 
-                        target, 
-                        weight: parseFloat(weight.toFixed(2)) // Ensure weight is a number with 2 decimal places
-                    });
+                    edges.push({ source, target, weight: parseFloat(weight.toFixed(2)) });
                 }
             }
         }
@@ -241,74 +279,45 @@ async function buildEdges(files) {
         edge.weight = parseFloat(edge.weight.toFixed(2));
     });
 
-    // Save updated node data and edges
-    try {
-        await saveNodeData(nodeData);
-        await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges: combinedEdges }, null, 2));
-        await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: nodeData, edges: combinedEdges }, null, 2));
-        console.log('Graph data saved successfully.');
-    } catch (err) {
-        console.error('Error saving graph data:', err);
-    }
+    graphData.edges = combinedEdges;
+
+    await saveGraphData(graphData);
 }
 
 
-
-async function buildEdges(files) {
-    const nodeData = await loadNodeData();
-    const nodeNames = nodeData.map(file => file.name);
-    const edges = [];
-
-    for (const file of files) {
-        const source = file.name.replace('.md', '');
-        const content = await fs.readFile(file.filePath, 'utf8');
-
-        let nodeEntry = nodeData.find(node => node.name === source);
-
-        if (!nodeEntry || nodeEntry.sha !== file.sha) {
-            nodeEntry = {
-                name: source,
-                sha: file.sha,
-                filePath: file.filePath,
-                size: Buffer.byteLength(content, 'utf8'),
-                httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
-            };
-
-            const index = nodeData.findIndex(node => node.name === source);
-            if (index === -1) {
-                nodeData.push(nodeEntry);
-            } else {
-                nodeData[index] = nodeEntry;
-            }
-
-            const references = extractReferences(content, nodeNames);
-            for (const [target, weight] of Object.entries(references)) {
-                if (target !== source) {
-                    edges.push({ source, target, weight });
-                }
-            }
+    // Combine edges with the same source and target
+    const combinedEdges = edges.reduce((acc, edge) => {
+        const existingEdge = acc.find(e => e.source === edge.source && e.target === edge.target);
+        if (existingEdge) {
+            existingEdge.weight += edge.weight;
+        } else {
+            acc.push(edge);
         }
-    }
+        return acc;
+    }, []);
 
-    await saveNodeData(nodeData);
-    await fs.writeFile(EDGES_JSON_PATH, JSON.stringify({ edges }, null, 2));
-    await fs.writeFile(GRAPH_DATA_PATH, JSON.stringify({ nodes: nodeData, edges }, null, 2));
+    // Round weights to 2 decimal places
+    combinedEdges.forEach(edge => {
+        edge.weight = parseFloat(edge.weight.toFixed(2));
+    });
+
+    graphData.edges = combinedEdges;
+
+    await saveGraphData(graphData);
 }
 
+// Get graph data
 async function getGraphData() {
-    try {
-        return JSON.parse(await fs.readFile(GRAPH_DATA_PATH, 'utf8'));
-    } catch (error) {
-        console.log('No existing graph data found. Creating new data.');
-        return { nodes: [], edges: [] };
-    }
+    return loadGraphData();
 }
 
+// Refresh graph data
 async function refreshGraphData() {
     const files = await fetchMarkdownFiles();
     await buildEdges(files);
 }
 
+// Express routes
 app.use(express.static('public'));
 
 app.get('/graph-data', async (req, res) => {
@@ -343,6 +352,7 @@ app.get('/test-github-api', async (req, res) => {
     }
 });
 
+// Main function to initialize and start the server
 async function main() {
     try {
         await initialize();
@@ -364,6 +374,7 @@ async function main() {
     }
 }
 
+// Start the application
 main().catch((err) => {
     console.error('Unexpected error:', err);
     process.exit(1);
