@@ -78,12 +78,15 @@ function computeHash(data) {
 async function loadGraphData() {
     try {
         const data = await fs.readFile(GRAPH_DATA_PATH, 'utf8');
-        return JSON.parse(data);
+        const graphData = JSON.parse(data);
+        console.log(`Loaded graph data: ${graphData.nodes.length} nodes, ${graphData.edges.length} edges`);
+        return graphData;
     } catch (err) {
         console.error('Error loading graph data:', err);
         return { nodes: [], edges: [] };
     }
 }
+
 
 /**
  * Saves the graph data to the file.
@@ -128,8 +131,6 @@ async function fetchMarkdownMetadata() {
     }
 }
 
-
-
 /**
  * Compares and updates local files with the fetched metadata.
  * @param {Array} githubFiles - Array of file metadata objects from GitHub.
@@ -137,6 +138,19 @@ async function fetchMarkdownMetadata() {
  */
 async function compareAndIdentifyUpdates(githubFiles) {
     const filesToUpdate = [];
+    const currentFiles = new Set(githubFiles.map(file => file.name));
+    
+    // Check local files and remove those not present on GitHub
+    const localFiles = await fs.readdir(MARKDOWN_STORAGE_PATH);
+    for (const localFile of localFiles) {
+        if (!currentFiles.has(localFile) && localFile.endsWith('.md')) {
+            const localPath = path.join(MARKDOWN_STORAGE_PATH, localFile);
+            await fs.unlink(localPath).catch(console.error);
+            await fs.unlink(`${localPath}.meta.json`).catch(console.error);
+            console.log(`Removed local file: ${localFile}`);
+        }
+    }
+
     for (const file of githubFiles) {
         const localPath = path.join(MARKDOWN_STORAGE_PATH, file.name);
         const metadataPath = `${localPath}.meta.json`;
@@ -163,6 +177,7 @@ async function fetchAndUpdateFiles(filesToUpdate) {
     const updatedFiles = [];
     for (const file of filesToUpdate) {
         try {
+            const encodedName = encodeURIComponent(file.name);
             const response = await axios.get(file.download_url, {
                 headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
             });
@@ -180,6 +195,7 @@ async function fetchAndUpdateFiles(filesToUpdate) {
     }
     return updatedFiles;
 }
+
 
 /**
  * Extracts references to other nodes from the content.
@@ -220,7 +236,6 @@ function extractReferences(content, nodeNames) {
     return references;
 }
 
-
 /**
  * Escapes special characters in a string for use in a regular expression.
  * @param {string} string - The string to escape.
@@ -235,13 +250,30 @@ function escapeRegExp(string) {
  * @param {Array} updatedFiles - Array of updated file objects.
  * @returns {Promise<void>}
  */
+/**
+ * Builds the edges of the graph based on file references.
+ * @param {Array} updatedFiles - Array of updated file objects.
+ * @returns {Promise<void>}
+ */
 async function buildEdges(updatedFiles) {
-    const graphData = await loadGraphData();
-    const nodeNames = graphData.nodes.map(node => node.name);
-    const newEdges = [];
+    let graphData = await loadGraphData();
+    const nodeNames = new Set(graphData.nodes.map(node => node.name));
     
     console.log('Building edges for updated files:', updatedFiles.map(f => f.name));
-    console.log('Existing Node Names:', nodeNames);
+    console.log('Existing Node Names:', Array.from(nodeNames));
+
+    // If no files were updated, but graph is empty, process all files
+    if (updatedFiles.length === 0 && graphData.nodes.length === 0) {
+        const allFiles = await fs.readdir(MARKDOWN_STORAGE_PATH);
+        for (const fileName of allFiles) {
+            if (fileName.endsWith('.md')) {
+                const filePath = path.join(MARKDOWN_STORAGE_PATH, fileName);
+                const content = await fs.readFile(filePath, 'utf8');
+                updatedFiles.push({ name: fileName, filePath, content });
+            }
+        }
+        console.log(`Processing all ${updatedFiles.length} files due to empty graph`);
+    }
 
     for (const file of updatedFiles) {
         const source = decodeURIComponent(file.name).replace('.md', '');
@@ -249,57 +281,53 @@ async function buildEdges(updatedFiles) {
         
         console.log(`Processing file: ${file.name} (decoded: ${source})`);
         
-        let nodeIndex = graphData.nodes.findIndex(node => node.name === source);
-        const nodeEntry = {
-            name: source,
-            size: Buffer.byteLength(content, 'utf8'),
-            httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
-        };
-        
-        if (nodeIndex === -1) {
-            console.log(`Adding new node: ${source}`);
+        let nodeEntry = graphData.nodes.find(node => node.name === source);
+        if (!nodeEntry) {
+            nodeEntry = {
+                name: source,
+                size: Buffer.byteLength(content, 'utf8'),
+                httpsLinksCount: (content.match(/https?:\/\/[^\s]+/g) || []).length
+            };
             graphData.nodes.push(nodeEntry);
+            nodeNames.add(source);
+            console.log(`Added new node: ${source}`);
         } else {
-            console.log(`Updating existing node: ${source}`);
-            graphData.nodes[nodeIndex] = nodeEntry;
+            nodeEntry.size = Buffer.byteLength(content, 'utf8');
+            nodeEntry.httpsLinksCount = (content.match(/https?:\/\/[^\s]+/g) || []).length;
+            console.log(`Updated existing node: ${source}`);
         }
         
-        const references = extractReferences(content, nodeNames);
+        const references = extractReferences(content, Array.from(nodeNames));
         console.log(`References for ${source}:`, references);
         
         for (const [target, weight] of Object.entries(references)) {
             if (target !== source) {
-                newEdges.push({ source, target, weight });
-                console.log(`Edge created: ${source} -> ${target} with weight ${weight}`);
+                let edge = graphData.edges.find(e => e.source === source && e.target === target);
+                if (edge) {
+                    edge.weight = parseFloat((edge.weight + weight).toFixed(2));
+                    console.log(`Updated edge weight: ${source} -> ${target}, new weight: ${edge.weight}`);
+                } else {
+                    graphData.edges.push({ source, target, weight: parseFloat(weight.toFixed(2)) });
+                    console.log(`Added new edge: ${source} -> ${target}, weight: ${weight}`);
+                }
             }
         }
     }
     
-    console.log('New edges created:', newEdges);
+    // Remove edges that reference non-existent nodes
+    graphData.edges = graphData.edges.filter(edge => 
+        nodeNames.has(edge.source) && nodeNames.has(edge.target)
+    );
     
-    const allEdges = [...graphData.edges.filter(edge => 
-        !newEdges.some(newEdge => newEdge.source === edge.source && newEdge.target === edge.target)
-    ), ...newEdges];
-    
-    console.log('All edges before reduction:', allEdges);
-    
-    graphData.edges = allEdges.reduce((acc, edge) => {
-        const existingEdge = acc.find(e => e.source === edge.source && e.target === edge.target);
-        if (existingEdge) {
-            existingEdge.weight = parseFloat((existingEdge.weight + edge.weight).toFixed(2));
-            console.log(`Updated edge weight: ${edge.source} -> ${edge.target}, new weight: ${existingEdge.weight}`);
-        } else {
-            acc.push({ ...edge, weight: parseFloat(edge.weight.toFixed(2)) });
-            console.log(`Added new edge: ${edge.source} -> ${edge.target}, weight: ${edge.weight}`);
-        }
-        return acc;
-    }, []);
-    
-    console.log('Final edges:', graphData.edges);
+    console.log('Final node count:', graphData.nodes.length);
+    console.log('Final edge count:', graphData.edges.length);
     
     await saveGraphData(graphData);
     console.log('Graph data saved successfully');
 }
+
+
+
 
 /**
  * Refreshes the graph data by fetching new files and rebuilding edges.
@@ -308,10 +336,14 @@ async function buildEdges(updatedFiles) {
 async function refreshGraphData() {
     try {
         const githubFiles = await fetchMarkdownMetadata();
+        console.log(`Fetched ${githubFiles.length} files from GitHub`);
+        
         const filesToUpdate = await compareAndIdentifyUpdates(githubFiles);
+        console.log(`Identified ${filesToUpdate.length} files to update`);
 
         if (filesToUpdate.length > 0) {
             const updatedFiles = await fetchAndUpdateFiles(filesToUpdate);
+            console.log(`Successfully updated ${updatedFiles.length} files`);
             await buildEdges(updatedFiles);
             console.log('Graph data refreshed successfully.');
             return true;
@@ -324,6 +356,7 @@ async function refreshGraphData() {
         return false;
     }
 }
+
 
 // Set up Express routes
 app.use(express.static('public'));
@@ -414,6 +447,5 @@ async function main() {
 
 // Start the application
 main().catch((err) => {
-    console.error('Unexpected error:', err);
-    process.exit(1);
+    console.error('Unexpected error:', err); process.exit(1); 
 });
