@@ -13,11 +13,15 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
+import { GraphSimulation } from './GraphSimulation.js';
 
 // Global variables
 let renderer, scene, camera, controls;
 let nodes = [], edges = [];
 let socket;
+let graphSimulation;
+let lastTime = 0;
+
 
 // Performance optimization: Use object pooling for nodes and edges
 let nodePool = [], edgePool = [];
@@ -185,6 +189,10 @@ function setupWebSocket() {
  * Updates the graph data and recreates graph objects
  * @param {Object} graphData - The new graph data
  */
+/**
+ * Updates the graph data and initializes or updates the physics simulation
+ * @param {Object} graphData - The new graph data
+ */
 function updateGraphData(graphData) {
     // Check if the received data has the expected structure
     if (!graphData.nodes || !graphData.edges) {
@@ -198,37 +206,67 @@ function updateGraphData(graphData) {
     nodeCountEl.textContent = `Nodes: ${nodes.length}`;
     edgeCountEl.textContent = `Edges: ${edges.length}`;
 
-    // Performance optimization: Reuse existing objects instead of recreating them
+    // Initialize or update the GraphSimulation
+    if (!graphSimulation) {
+        graphSimulation = new GraphSimulation(renderer, nodes, edges);
+    } else {
+        // If you implement an update method in GraphSimulation, use it here
+        // graphSimulation.updateData(nodes, edges);
+        
+        // For now, we'll recreate the simulation
+        graphSimulation = new GraphSimulation(renderer, nodes, edges);
+    }
+
+    // Ensure the node and edge pools are large enough
+    while (nodePool.length < nodes.length) {
+        const geometry = new THREE.SphereGeometry(NODE_BASE_SIZE, 32, 32);
+        const material = new THREE.MeshPhongMaterial();
+        const mesh = new THREE.Mesh(geometry, material);
+        nodePool.push(mesh);
+        scene.add(mesh);
+    }
+
+    while (edgePool.length < edges.length) {
+        const material = new THREE.LineBasicMaterial();
+        const geometry = new THREE.BufferGeometry();
+        const line = new THREE.Line(geometry, material);
+        edgePool.push(line);
+        scene.add(line);
+    }
+
     updateGraphObjects();
 }
+
 
 /**
  * Updates 3D objects for nodes and edges, reusing existing objects when possible
  */
+/**
+ * Updates 3D objects for nodes and edges based on the current simulation state
+ */
 function updateGraphObjects() {
-    updateStatus('Updating graph objects');
-    
-    // Update or create nodes
+    const positionTexture = graphSimulation.getCurrentPositions();
+    const positionArray = new Float32Array(nodes.length * 4);
+    renderer.readRenderTargetPixels(
+        graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
+        0, 0, 16, Math.ceil(nodes.length / 16),
+        positionArray
+    );
+
+    // Update nodes
     nodes.forEach((node, index) => {
-        let mesh = nodePool[index];
-        if (!mesh) {
-            const geometry = new THREE.SphereGeometry(NODE_BASE_SIZE, 32, 32);
-            const material = new THREE.MeshPhongMaterial();
-            mesh = new THREE.Mesh(geometry, material);
-            nodePool[index] = mesh;
-            scene.add(mesh);
+        const mesh = nodePool[index];
+        if (mesh) {
+            mesh.position.set(
+                positionArray[index * 4],
+                positionArray[index * 4 + 1],
+                positionArray[index * 4 + 2]
+            );
+            mesh.scale.setScalar(calculateNodeSize(node.size) / NODE_BASE_SIZE);
+            mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
+            mesh.userData = { nodeId: node.name, name: node.name, isGraphObject: true };
+            mesh.visible = true;
         }
-        
-        mesh.scale.setScalar(calculateNodeSize(node.size) / NODE_BASE_SIZE);
-        mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
-        
-        const x = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        const y = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        const z = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        mesh.position.set(x, y, z);
-        
-        mesh.userData = { nodeId: node.name, name: node.name, isGraphObject: true };
-        mesh.visible = true;
     });
 
     // Hide unused nodes
@@ -236,23 +274,25 @@ function updateGraphObjects() {
         if (nodePool[i]) nodePool[i].visible = false;
     }
 
-    // Update or create edges
+    // Update edges
     edges.forEach((edge, index) => {
-        let line = edgePool[index];
-        if (!line) {
-            const material = new THREE.LineBasicMaterial();
-            const geometry = new THREE.BufferGeometry();
-            line = new THREE.Line(geometry, material);
-            edgePool[index] = line;
-            scene.add(line);
-        }
-
-        const sourceNode = nodePool.find(node => node.userData.nodeId === edge.source);
-        const targetNode = nodePool.find(node => node.userData.nodeId === edge.target);
+        const line = edgePool[index];
+        const sourceIndex = nodes.findIndex(n => n.name === edge.source);
+        const targetIndex = nodes.findIndex(n => n.name === edge.target);
         
-        if (sourceNode && targetNode) {
-            const points = [sourceNode.position, targetNode.position];
-            line.geometry.setFromPoints(points);
+        if (sourceIndex !== -1 && targetIndex !== -1 && line) {
+            const sourcePos = new THREE.Vector3(
+                positionArray[sourceIndex * 4],
+                positionArray[sourceIndex * 4 + 1],
+                positionArray[sourceIndex * 4 + 2]
+            );
+            const targetPos = new THREE.Vector3(
+                positionArray[targetIndex * 4],
+                positionArray[targetIndex * 4 + 1],
+                positionArray[targetIndex * 4 + 2]
+            );
+            
+            line.geometry.setFromPoints([sourcePos, targetPos]);
             line.material.color.setHex(getEdgeColor(edge.weight));
             line.userData = { isGraphObject: true };
             line.visible = true;
@@ -325,7 +365,15 @@ function animate() {
 /**
  * Render function
  */
-function render() {
+function render(time) {
+    const deltaTime = (time - lastTime) / 1000;
+    lastTime = time;
+
+    if (graphSimulation) {
+        graphSimulation.compute(deltaTime);
+        updateGraphObjects();
+    }
+
     if (SPOOF_VR || !renderer.xr.isPresenting) {
         controls.update();
     }
