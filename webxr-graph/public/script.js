@@ -23,11 +23,11 @@ let socket;
 let nodePool = [], edgePool = [];
 
 // Constants for graph visualization
-const NODE_BASE_SIZE = 0.2;
+const NODE_BASE_SIZE = 4;
 const NODE_SIZE_EXPONENT = 0.5;
 const MAX_FILE_SIZE = 1000000; // 1MB
-const MAX_HYPERLINK_COUNT = 20;
-const MAX_EDGE_WEIGHT = 10;
+const MAX_HYPERLINK_COUNT = 2000;
+const MAX_EDGE_WEIGHT = 1000;
 const INITIAL_POSITION_RANGE = 20;
 
 // VR Spoofing flag
@@ -78,19 +78,19 @@ function initScene() {
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 
-    // Add a red cube as a reference point
-    const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube.position.set(0, 0, -5);
-    scene.add(cube);
+  // Add a red cube as a reference point
+  //  const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+  //  const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  //  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  //  cube.position.set(0, 0, -5);
+  //  scene.add(cube);
 
     // Add a geodesic sphere as a boundary reference
-    const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(0, 0, 0);
-    scene.add(sphere);
+ //   const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
+ //   const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+ //   const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+ //   sphere.position.set(0, 0, 0);
+ //   scene.add(sphere);
 
     // Handle window resizing
     window.addEventListener('resize', onWindowResize, false);
@@ -155,7 +155,8 @@ async function loadData() {
  */
 function setupWebSocket() {
     // Use wss:// for secure WebSocket connections
-    socket = new WebSocket(`wss://${window.location.host}`);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(`${protocol}//${window.location.host}`);
 
     socket.onopen = () => {
         console.log('WebSocket connection established');
