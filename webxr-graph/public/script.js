@@ -1,13 +1,18 @@
 /**
  * script.js
  * 
- * This script creates a 3D visualization of a graph structure using Three.js.
- * It includes support for VR (or VR spoofing) and real-time updates via WebSocket.
+ * This script creates a 3D visualization of a graph structure using Three.js and WebGL.
+ * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
+ * GPU-accelerated force-directed graph layout, and debug features like node randomization.
  * 
  * Dependencies:
  * - Three.js (imported via skypack.dev)
  * - OrbitControls for Three.js
  * - VRButton for Three.js
+ * - GraphSimulation (custom class for GPU-accelerated physics)
+ * 
+ * @version 2.2
+ * @license MIT
  */
 
 import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
@@ -15,29 +20,34 @@ import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/js
 import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
 import { GraphSimulation } from './GraphSimulation.js';
 
-// Global variables
+// Global variables for Three.js components
 let renderer, scene, camera, controls;
-let nodes = [], edges = [];
-let socket;
-let graphSimulation;
-let lastTime = 0;
 
+// Graph data and simulation
+let nodes = [], edges = [];
+let graphSimulation;
+
+// WebSocket connection for real-time updates
+let socket;
 
 // Performance optimization: Use object pooling for nodes and edges
 let nodePool = [], edgePool = [];
 
+// Time tracking for animation
+let lastTime = 0;
+
 // Constants for graph visualization
-const NODE_BASE_SIZE = 4;
+const NODE_BASE_SIZE = 5; // Increased for better visibility
 const NODE_SIZE_EXPONENT = 0.5;
 const MAX_FILE_SIZE = 1000000; // 1MB
 const MAX_HYPERLINK_COUNT = 2000;
-const MAX_EDGE_WEIGHT = 1000;
-const INITIAL_POSITION_RANGE = 20;
+const MAX_EDGE_WEIGHT = 100;
+const INITIAL_POSITION_RANGE = 1000; // Increased for wider spread
 
-// VR Spoofing flag
-const SPOOF_VR = true; // Set this to false for real WebXR in production
+// VR Spoofing flag (set to false for real WebXR in production)
+const SPOOF_VR = true;
 
-// Debug elements
+// Debug elements in the DOM
 const statusEl = document.getElementById('status');
 const nodeCountEl = document.getElementById('nodeCount');
 const edgeCountEl = document.getElementById('edgeCount');
@@ -57,37 +67,32 @@ function updateStatus(message) {
 function initScene() {
     updateStatus('Initializing Scene');
     
-    // Create a new scene
+    // Create a new Three.js scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
     // Set up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 50;
+    camera.position.set(0, 0, 200);
+    camera.lookAt(0, 0, 0);
 
-    // Set up the renderer
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('graphCanvas'), antialias: true });
+    // Set up the WebGL renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
 
     // Add orbit controls for non-VR navigation
     controls = new OrbitControls(camera, renderer.domElement);
 
-    // Add ambient light
+    // Add ambient light to the scene
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    // Add directional light
+    // Add directional light to the scene
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
-
-  // Add a red cube as a reference point
-  //  const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-  //  const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-  //  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  //  cube.position.set(0, 0, -5);
-  //  scene.add(cube);
 
     // Add a geodesic sphere as a boundary reference
  //   const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
@@ -98,6 +103,8 @@ function initScene() {
 
     // Handle window resizing
     window.addEventListener('resize', onWindowResize, false);
+
+    console.log('Scene initialized with debug objects');
 }
 
 /**
@@ -120,7 +127,7 @@ async function setupXR() {
  */
 function setupSpoofedVRControls() {
     document.addEventListener('keydown', (event) => {
-        const speed = 1;
+        const speed = 5; // Increased for faster movement
         switch(event.key) {
             case 'w': camera.position.z -= speed; break;
             case 's': camera.position.z += speed; break;
@@ -134,7 +141,44 @@ function setupSpoofedVRControls() {
 }
 
 /**
- * Loads graph data from the server and sets up WebSocket
+ * Randomizes the positions of all nodes
+ */
+function randomizeNodePositions() {
+    if (!graphSimulation) {
+        console.error('Graph simulation not initialized');
+        return;
+    }
+
+    const positionArray = new Float32Array(nodes.length * 4);
+    for (let i = 0; i < nodes.length; i++) {
+        positionArray[i * 4] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 1] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 2] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 3] = 1; // W component
+    }
+
+    // Update the position texture in the GraphSimulation
+    graphSimulation.updateNodePositions(positionArray);
+
+    console.log('Node positions randomized');
+    updateGraphObjects();
+}
+
+/**
+ * Sets up keyboard controls
+ */
+function setupKeyboardControls() {
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            randomizeNodePositions();
+        }
+    });
+
+    console.log('Keyboard controls set up. Press spacebar to randomize node positions.');
+}
+
+/**
+ * Loads initial graph data from the server and sets up WebSocket
  */
 async function loadData() {
     updateStatus('Loading graph data');
@@ -142,11 +186,11 @@ async function loadData() {
     try {
         const response = await fetch('/graph-data');
         const graphData = await response.json();
+        console.log('Received graph data:', graphData); // Debug log
         updateGraphData(graphData);
-        console.log('Initial graph data loaded', graphData);
         updateStatus('Graph data loaded');
         
-        // Set up WebSocket connection
+        // Set up WebSocket connection for real-time updates
         setupWebSocket();
     } catch (error) {
         console.error('Error loading graph data:', error);
@@ -169,8 +213,8 @@ function setupWebSocket() {
 
     socket.onmessage = (event) => {
         const updatedGraphData = JSON.parse(event.data);
+        console.log('Received updated graph data:', updatedGraphData); // Debug log
         updateGraphData(updatedGraphData);
-        console.log('Received updated graph data', updatedGraphData);
         updateStatus('Graph data updated');
     };
 
@@ -189,19 +233,16 @@ function setupWebSocket() {
  * Updates the graph data and recreates graph objects
  * @param {Object} graphData - The new graph data
  */
-/**
- * Updates the graph data and initializes or updates the physics simulation
- * @param {Object} graphData - The new graph data
- */
 function updateGraphData(graphData) {
-    // Check if the received data has the expected structure
-    if (!graphData.nodes || !graphData.edges) {
-        console.error('Received invalid graph data structure', graphData);
+    if (!graphData || !graphData.nodes || !graphData.edges) {
+        console.error('Invalid graph data received:', graphData);
         return;
     }
 
     nodes = graphData.nodes;
     edges = graphData.edges;
+
+    console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
 
     nodeCountEl.textContent = `Nodes: ${nodes.length}`;
     edgeCountEl.textContent = `Edges: ${edges.length}`;
@@ -209,64 +250,58 @@ function updateGraphData(graphData) {
     // Initialize or update the GraphSimulation
     if (!graphSimulation) {
         graphSimulation = new GraphSimulation(renderer, nodes, edges);
-    } else {
-        // If you implement an update method in GraphSimulation, use it here
-        // graphSimulation.updateData(nodes, edges);
         
-        // For now, we'll recreate the simulation
-        graphSimulation = new GraphSimulation(renderer, nodes, edges);
-    }
-
-    // Ensure the node and edge pools are large enough
-    while (nodePool.length < nodes.length) {
-        const geometry = new THREE.SphereGeometry(NODE_BASE_SIZE, 32, 32);
-        const material = new THREE.MeshPhongMaterial();
-        const mesh = new THREE.Mesh(geometry, material);
-        nodePool.push(mesh);
-        scene.add(mesh);
-    }
-
-    while (edgePool.length < edges.length) {
-        const material = new THREE.LineBasicMaterial();
-        const geometry = new THREE.BufferGeometry();
-        const line = new THREE.Line(geometry, material);
-        edgePool.push(line);
-        scene.add(line);
+        // Set initial simulation parameters
+        graphSimulation.setSimulationParameters({
+            repulsionStrength: 60.0,
+            attractionStrength: 0.15,
+            maxSpeed: 12.0,
+            damping: 0.98,
+            centeringForce: 0.005,
+            edgeDistance: 5.0
+        });
+    } else {
+        graphSimulation.updateNodeData(nodes);
+        graphSimulation.updateEdgeData(edges);
     }
 
     updateGraphObjects();
 }
-
-
 /**
- * Updates 3D objects for nodes and edges, reusing existing objects when possible
- */
-/**
- * Updates 3D objects for nodes and edges based on the current simulation state
+ * Updates 3D objects for nodes and edges
  */
 function updateGraphObjects() {
-    const positionTexture = graphSimulation.getCurrentPositions();
-    const positionArray = new Float32Array(nodes.length * 4);
+    const WIDTH = graphSimulation.WIDTH;
+    const HEIGHT = graphSimulation.HEIGHT;
+
+    const positionArray = new Float32Array(WIDTH * HEIGHT * 4);
     renderer.readRenderTargetPixels(
         graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
-        0, 0, 16, Math.ceil(nodes.length / 16),
+        0, 0, WIDTH, HEIGHT,
         positionArray
     );
 
-    // Update nodes
+    // Update or create nodes
     nodes.forEach((node, index) => {
-        const mesh = nodePool[index];
-        if (mesh) {
-            mesh.position.set(
-                positionArray[index * 4],
-                positionArray[index * 4 + 1],
-                positionArray[index * 4 + 2]
-            );
-            mesh.scale.setScalar(calculateNodeSize(node.size) / NODE_BASE_SIZE);
-            mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
-            mesh.userData = { nodeId: node.name, name: node.name, isGraphObject: true };
-            mesh.visible = true;
+        let mesh = nodePool[index];
+        if (!mesh) {
+            const geometry = new THREE.SphereGeometry(NODE_BASE_SIZE, 32, 32);
+            const material = new THREE.MeshPhongMaterial();
+            mesh = new THREE.Mesh(geometry, material);
+            nodePool[index] = mesh;
+            scene.add(mesh);
         }
+        
+        mesh.position.set(
+            positionArray[index * 4],
+            positionArray[index * 4 + 1],
+            positionArray[index * 4 + 2]
+        );
+
+        mesh.scale.setScalar(calculateNodeSize(node.size));
+        mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
+        mesh.userData = { nodeId: node.name, name: node.name };
+        mesh.visible = true;
     });
 
     // Hide unused nodes
@@ -274,13 +309,21 @@ function updateGraphObjects() {
         if (nodePool[i]) nodePool[i].visible = false;
     }
 
-    // Update edges
+    // Update or create edges
     edges.forEach((edge, index) => {
-        const line = edgePool[index];
+        let line = edgePool[index];
+        if (!line) {
+            const material = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.3 });
+            const geometry = new THREE.BufferGeometry();
+            line = new THREE.Line(geometry, material);
+            edgePool[index] = line;
+            scene.add(line);
+        }
+
         const sourceIndex = nodes.findIndex(n => n.name === edge.source);
         const targetIndex = nodes.findIndex(n => n.name === edge.target);
         
-        if (sourceIndex !== -1 && targetIndex !== -1 && line) {
+        if (sourceIndex !== -1 && targetIndex !== -1) {
             const sourcePos = new THREE.Vector3(
                 positionArray[sourceIndex * 4],
                 positionArray[sourceIndex * 4 + 1],
@@ -293,11 +336,9 @@ function updateGraphObjects() {
             );
             
             line.geometry.setFromPoints([sourcePos, targetPos]);
-            line.material.color.setHex(getEdgeColor(edge.weight));
-            line.userData = { isGraphObject: true };
+            line.material.color = getEdgeColor(edge.weight);
             line.visible = true;
         } else {
-            console.warn(`Edge warning: sourceNode or targetNode not found for edge between ${edge.source} and ${edge.target}`);
             line.visible = false;
         }
     });
@@ -306,10 +347,8 @@ function updateGraphObjects() {
     for (let i = edges.length; i < edgePool.length; i++) {
         if (edgePool[i]) edgePool[i].visible = false;
     }
-
-    console.log('Graph objects updated');
-    updateStatus('Graph objects updated');
 }
+
 
 /**
  * Calculates the size of a node based on its file size
@@ -338,7 +377,7 @@ function getNodeColor(hyperlinkCount) {
  */
 function getEdgeColor(weight) {
     const t = Math.min(weight / MAX_EDGE_WEIGHT, 1);
-    return new THREE.Color(1 - t, t, 0).getHex();
+    return new THREE.Color(1 - t, t, 0);
 }
 
 /**
@@ -353,19 +392,7 @@ function onWindowResize() {
 /**
  * Animation loop
  */
-function animate() {
-    if (SPOOF_VR) {
-        requestAnimationFrame(animate);
-        render();
-    } else {
-        renderer.setAnimationLoop(render);
-    }
-}
-
-/**
- * Render function
- */
-function render(time) {
+function animate(time) {
     const deltaTime = (time - lastTime) / 1000;
     lastTime = time;
 
@@ -374,9 +401,16 @@ function render(time) {
         updateGraphObjects();
     }
 
-    if (SPOOF_VR || !renderer.xr.isPresenting) {
-        controls.update();
-    }
+    render();
+
+    requestAnimationFrame(animate);
+}
+
+/**
+ * Render function
+ */
+function render() {
+    controls.update();
     renderer.render(scene, camera);
 }
 
@@ -390,8 +424,9 @@ async function init() {
     if (SPOOF_VR) {
         setupSpoofedVRControls();
     }
+    setupKeyboardControls(); // Set up keyboard controls including spacebar for randomization
     await loadData();
-    animate();
+    animate(0);
 }
 
 // Start the application
