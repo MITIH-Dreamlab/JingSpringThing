@@ -42,7 +42,7 @@ Access the Application: Open a WebXR-compatible browser and navigate to https://
 
 ## Architecture
 Class Diagram
-'''mermaid
+```mermaid
 classDiagram
     class Server {
         +fetchMarkdownMetadata()
@@ -67,9 +67,9 @@ classDiagram
     }
     Server --> GraphSimulation : updates
     GraphSimulation --> WebXRVisualization : renders
-'''
+```
 Sequence Diagram
-'''mermaid
+```mermaid
 sequenceDiagram
     participant Client
     participant Server
@@ -87,17 +87,18 @@ sequenceDiagram
     Server->>GraphSimulation: Update graph data
     GraphSimulation->>WebXRVisualization: Render updated graph
     WebXRVisualization-->>Client: Display 3D graph
-Key Components
+```
+# Key Components
 server.js: Handles server-side operations, including GitHub API interactions and graph data processing.
 script.js: Manages client-side WebXR visualization and user interactions.
-GraphSimulation: Handles the physics simulation for node positioning.
+## GraphSimulation: Handles the physics simulation for node positioning.
 Usage
 Use a WebXR-compatible browser to view the 3D graph.
 Press the spacebar to randomize node positions.
 Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
-Contributing
+## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-License
+## License
 This project is licensed under the Creative Commons CC0 license.
 
