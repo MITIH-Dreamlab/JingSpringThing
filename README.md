@@ -2,6 +2,8 @@
 
 This project visualizes GitHub Markdown files as a 3D graph using WebXR. It fetches Markdown files from a specified GitHub repository, parses them to create nodes and edges, and then uses Three.js to render this graph in an immersive 3D space.
 
+![The current WebXR render](screenshot.png)
+
 ## Features
 
 - Fetch and parse Markdown files from GitHub
