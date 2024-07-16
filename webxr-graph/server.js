@@ -177,7 +177,7 @@ async function fetchAndUpdateFiles(filesToUpdate) {
     const updatedFiles = [];
     for (const file of filesToUpdate) {
         try {
-            const encodedName = encodeURIComponent(file.name);
+            // Use the download_url directly instead of constructing it
             const response = await axios.get(file.download_url, {
                 headers: { Authorization: `token ${GITHUB_ACCESS_TOKEN}` }
             });
@@ -186,8 +186,22 @@ async function fetchAndUpdateFiles(filesToUpdate) {
             if (content.includes('public:: true')) {
                 const localPath = path.join(MARKDOWN_STORAGE_PATH, file.name);
                 await fs.writeFile(localPath, content, 'utf8');
-                await fs.writeFile(`${localPath}.meta.json`, JSON.stringify({ sha: file.sha }), 'utf8');
+
+                // Extract hyperlinks
+                const hyperlinks = content.match(/https?:\/\/[^\s)]+/g) || [];
+
+                // Create metadata object with SHA and hyperlinks
+                const metadata = {
+                    sha: file.sha,
+                    hyperlinks: hyperlinks
+                };
+
+                // Write metadata to file
+                await fs.writeFile(`${localPath}.meta.json`, JSON.stringify(metadata, null, 2), 'utf8');
                 updatedFiles.push({ name: file.name, filePath: localPath, content });
+                console.log(`Successfully updated file: ${file.name}`);
+            } else {
+                console.log(`Skipped non-public file: ${file.name}`);
             }
         } catch (error) {
             console.error(`Error updating file ${file.name}:`, error.message);
