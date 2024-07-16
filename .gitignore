@@ -1,4 +1,4 @@
 # Ignore virtual environment directory
-# spatialKnowledgeGraph/pythonCodeJOH/venv/
+webxr-graph/processed_files
 webxr-graph/.env
 
