@@ -1,0 +1,152 @@
+[
+  {
+    "url": "https://nostr.how/en/what-is-nostr",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://www.piratewires.com/p/interview-with-jack-dorsey-mike-solana",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/kind-0/nsecbunkerd",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://monstr.app/",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/lnbits/nostr-signing-device",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://www.theverge.com/2023/4/26/23699633/mark-zuckerberg-meta-generative-ai-chatbots-instagram-facebook-whatsapp",
+    "date": "2023-04-26",
+    "weight": 0.6
+  },
+  {
+    "url": "https://github.com/nostrworld/nostriga/issues/10",
+    "date": "2024-05-01",
+    "weight": 0.8
+  },
+  {
+    "url": "https://nate.mecca1.net/posts/2024-01-30_microblogging-protocols/}}",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://nostrsigningdevice.com/",
+    "date": "2024-06-20",
+    "weight": 0.8
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=vw5SZyYBuPk&t=1471s",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/jeffthibault/python-nostr",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/monty888/nostrpy",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/raspiblitz/raspiblitz/issues/3799",
+    "date": "2023-05-06",
+    "weight": 0.6
+  },
+  {
+    "url": "https://community.umbrel.com/t/introducing-the-official-nostr-relay-app/11339/17",
+    "date": "2023-02-26",
+    "weight": 0.6
+  },
+  {
+    "url": "https://nostr.info/relays/",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://websocketking.com/",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://darthcoin.substack.com/p/lnbits-nostr-market",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://gitlab.com/1440000bytes/joinstr",
+    "date": "2023-04-17",
+    "weight": 0.6
+  },
+  {
+    "url": "https://thebitcoinmanual.com/articles/blinded-nostr-assets/",
+    "date": "2023-03-15",
+    "weight": 0.6
+  },
+  {
+    "url": "https://github.com/ArcadeLabsInc/arcade/wiki/NIP-112:-Encrypted-Group-Chat",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://nips.nostr.com/90",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://noogle.lol/",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/pablof7z/nostr-data-vending-machine",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/nostr-protocol/nips/pull/682",
+    "date": "2023-07-03",
+    "weight": 0.6
+  },
+  {
+    "url": "https://github.com/pablof7z/nostr-data-vending-machine",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/melvincarvalho/noskey",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://dev.to/melvincarvalho/smart-events-contracts-over-nostr-a-consensus-based-approach-1l9n",
+    "date": "2023-05-07",
+    "weight": 0.6
+  },
+  {
+    "url": "https://github.com/bongatores/nostrSpace",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/AndreasGassmann/bip85#readme",
+    "date": null,
+    "weight": 0.5
+  },
+  {
+    "url": "https://github.com/supertestnet/nostr-image-host",
+    "date": null,
+    "weight": 0.5
+  }
+]
