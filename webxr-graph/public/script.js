@@ -1,10 +1,15 @@
+script.js
 /**
  * script.js
- * 
+ *
  * This script creates a 3D visualization of a graph structure using Three.js and WebGL.
  * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
  * GPU-accelerated force-directed graph layout, and debug features like node randomization.
+<<<<<<< HEAD
  * 
+=======
+ *
+>>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
  * Features:
  * - 3D visualization of nodes (spheres) and edges (lines)
  * - VR support with option for VR spoofing
@@ -13,11 +18,19 @@
  * - Dynamic node labeling for closer nodes
  * - Responsive design (handles window resizing)
  * - Debug overlay with node and edge counts
+<<<<<<< HEAD
  * 
  * Dependencies:
  * - Three.js (imported via CDN)
  * - GraphSimulation (custom class for GPU-accelerated physics)
  * 
+=======
+ *
+ * Dependencies:
+ * - Three.js (imported via CDN)
+ * - GraphSimulation (custom class for GPU-accelerated physics)
+ *
+>>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
  * @version 3.0
  * @license MIT
  */
@@ -75,7 +88,7 @@ function updateStatus(message) {
  */
 function initScene() {
     updateStatus('Initializing Scene');
-    
+
     // Create a new Three.js scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
@@ -114,7 +127,7 @@ function initScene() {
  */
 async function setupXR() {
     updateStatus('Setting up XR');
-    
+
     if (SPOOF_VR || (navigator.xr && await navigator.xr.isSessionSupported('immersive-vr'))) {
         const button = THREE.VRButton.createButton(renderer);
         document.body.appendChild(button);
@@ -184,14 +197,14 @@ function setupKeyboardControls() {
  */
 async function loadData() {
     updateStatus('Loading graph data');
-    
+
     try {
         const response = await fetch('/graph-data');
         const graphData = await response.json();
         console.log('Received graph data:', graphData); // Debug log
         updateGraphData(graphData);
         updateStatus('Graph data loaded');
-        
+
         // Set up WebSocket connection for real-time updates
         setupWebSocket();
     } catch (error) {
@@ -252,7 +265,7 @@ function updateGraphData(graphData) {
     // Initialize or update the GraphSimulation
     if (!graphSimulation) {
         graphSimulation = new GraphSimulation(renderer, nodes, edges);
-        
+
         // Set initial simulation parameters
         graphSimulation.setSimulationParameters({
             repulsionStrength: 60.0,
@@ -319,7 +332,7 @@ function updateGraphObjects() {
                 console.warn('Font not loaded, skipping text label for node:', node.name);
             }
         }
-        
+
         mesh.position.set(
             positionArray[index * 4],
             positionArray[index * 4 + 1],
@@ -356,7 +369,7 @@ function updateGraphObjects() {
 
         const sourceIndex = nodes.findIndex(n => n.name === edge.source);
         const targetIndex = nodes.findIndex(n => n.name === edge.target);
-        
+
         if (sourceIndex !== -1 && targetIndex !== -1) {
             const sourcePos = new THREE.Vector3(
                 positionArray[sourceIndex * 4],
@@ -368,7 +381,7 @@ function updateGraphObjects() {
                 positionArray[targetIndex * 4 + 1],
                 positionArray[targetIndex * 4 + 2]
             );
-            
+
             line.geometry.setFromPoints([sourcePos, targetPos]);
             line.material.color = getEdgeColor(edge.weight);
             line.visible = true;
@@ -433,7 +446,11 @@ function animate(time) {
         try {
             graphSimulation.compute(deltaTime);
             updateGraphObjects();
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
             // Update text visibility
             nodePool.forEach(nodeMesh => {
                 const textMesh = nodeMesh.children[0];
@@ -456,7 +473,11 @@ function animate(time) {
  */
 function render() {
     controls.update();
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
     // Update text rotations to face camera (only for visible text)
     nodePool.forEach(nodeMesh => {
         const textMesh = nodeMesh.children[0];
