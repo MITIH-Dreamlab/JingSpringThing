@@ -5,24 +5,19 @@
  * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
  * GPU-accelerated force-directed graph layout, and debug features like node randomization.
  * 
- * Features:
- * - 3D visualization of nodes (spheres) and edges (lines)
- * - VR support with option for VR spoofing
- * - Real-time graph updates via WebSocket
- * - GPU-accelerated force-directed graph layout
- * - Dynamic node labeling for closer nodes
- * - Responsive design (handles window resizing)
- * - Debug overlay with node and edge counts
- * 
  * Dependencies:
- * - Three.js (imported via CDN)
+ * - Three.js (imported via skypack.dev)
+ * - OrbitControls for Three.js
+ * - VRButton for Three.js
  * - GraphSimulation (custom class for GPU-accelerated physics)
  * 
- * @version 3.0
+ * @version 2.2
  * @license MIT
  */
 
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js';
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
 import { GraphSimulation } from './GraphSimulation.js';
 
 // Global variables for Three.js components
@@ -36,22 +31,18 @@ let graphSimulation;
 let socket;
 
 // Performance optimization: Use object pooling for nodes and edges
-const nodePool = [], edgePool = [];
+let nodePool = [], edgePool = [];
 
 // Time tracking for animation
 let lastTime = 0;
 
-// Font for node labels
-let font;
-
 // Constants for graph visualization
-const NODE_BASE_SIZE = 5; // Base size for nodes
-const NODE_SIZE_EXPONENT = 0.5; // Exponent for node size scaling
-const MAX_FILE_SIZE = 1000000; // Maximum file size (1MB) for node size calculation
-const MAX_HYPERLINK_COUNT = 2000; // Maximum hyperlink count for node color calculation
-const MAX_EDGE_WEIGHT = 100; // Maximum edge weight for edge color calculation
-const INITIAL_POSITION_RANGE = 1000; // Range for initial random node positions
-const TEXT_VISIBILITY_THRESHOLD = 100; // Distance threshold for showing node labels
+const NODE_BASE_SIZE = 5; // Increased for better visibility
+const NODE_SIZE_EXPONENT = 0.5;
+const MAX_FILE_SIZE = 1000000; // 1MB
+const MAX_HYPERLINK_COUNT = 2000;
+const MAX_EDGE_WEIGHT = 100;
+const INITIAL_POSITION_RANGE = 1000; // Increased for wider spread
 
 // VR Spoofing flag (set to false for real WebXR in production)
 const SPOOF_VR = true;
@@ -92,7 +83,7 @@ function initScene() {
     document.body.appendChild(renderer.domElement);
 
     // Add orbit controls for non-VR navigation
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
 
     // Add ambient light to the scene
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -103,10 +94,17 @@ function initScene() {
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 
+    // Add a geodesic sphere as a boundary reference
+ //   const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
+ //   const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+ //   const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+ //   sphere.position.set(0, 0, 0);
+ //   scene.add(sphere);
+
     // Handle window resizing
     window.addEventListener('resize', onWindowResize, false);
 
-    console.log('Scene initialized');
+    console.log('Scene initialized with debug objects');
 }
 
 /**
@@ -116,7 +114,7 @@ async function setupXR() {
     updateStatus('Setting up XR');
     
     if (SPOOF_VR || (navigator.xr && await navigator.xr.isSessionSupported('immersive-vr'))) {
-        const button = THREE.VRButton.createButton(renderer);
+        const button = VRButton.createButton(renderer);
         document.body.appendChild(button);
         updateStatus('VR button added');
     } else {
@@ -129,7 +127,7 @@ async function setupXR() {
  */
 function setupSpoofedVRControls() {
     document.addEventListener('keydown', (event) => {
-        const speed = 5; // Movement speed
+        const speed = 5; // Increased for faster movement
         switch(event.key) {
             case 'w': camera.position.z -= speed; break;
             case 's': camera.position.z += speed; break;
@@ -269,16 +267,10 @@ function updateGraphData(graphData) {
 
     updateGraphObjects();
 }
-
 /**
  * Updates 3D objects for nodes and edges
  */
 function updateGraphObjects() {
-    if (!graphSimulation || !graphSimulation.gpuCompute) {
-        console.error('GraphSimulation not initialized');
-        return;
-    }
-
     const WIDTH = graphSimulation.WIDTH;
     const HEIGHT = graphSimulation.HEIGHT;
 
@@ -293,31 +285,11 @@ function updateGraphObjects() {
     nodes.forEach((node, index) => {
         let mesh = nodePool[index];
         if (!mesh) {
-            const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1); // About 20 polygons
+            const geometry = new THREE.SphereGeometry(NODE_BASE_SIZE, 32, 32);
             const material = new THREE.MeshPhongMaterial();
             mesh = new THREE.Mesh(geometry, material);
             nodePool[index] = mesh;
             scene.add(mesh);
-
-            // Create text label (hidden by default)
-            if (font) {
-                try {
-                    const textGeometry = new THREE.TextGeometry(node.name, {
-                        font: font,
-                        size: NODE_BASE_SIZE * 0.5,
-                        height: 0.1,
-                    });
-                    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-                    textMesh.position.y = NODE_BASE_SIZE * 1.5; // Position above the node
-                    textMesh.visible = false; // Hide by default
-                    mesh.add(textMesh);
-                } catch (error) {
-                    console.warn('Error creating text for node:', node.name, error);
-                }
-            } else {
-                console.warn('Font not loaded, skipping text label for node:', node.name);
-            }
         }
         
         mesh.position.set(
@@ -330,12 +302,6 @@ function updateGraphObjects() {
         mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
         mesh.userData = { nodeId: node.name, name: node.name };
         mesh.visible = true;
-
-        // Update text visibility based on distance to camera
-        if (mesh.children[0]) {
-            const distanceToCamera = camera.position.distanceTo(mesh.position);
-            mesh.children[0].visible = distanceToCamera < TEXT_VISIBILITY_THRESHOLD;
-        }
     });
 
     // Hide unused nodes
@@ -383,6 +349,7 @@ function updateGraphObjects() {
     }
 }
 
+
 /**
  * Calculates the size of a node based on its file size
  * @param {number} fileSize - Size of the file in bytes
@@ -406,7 +373,7 @@ function getNodeColor(hyperlinkCount) {
 /**
  * Determines the color of an edge based on its weight
  * @param {number} weight - Weight of the edge
- * @returns {THREE.Color} Color object for the edge
+ * @returns {number} Hexadecimal color value
  */
 function getEdgeColor(weight) {
     const t = Math.min(weight / MAX_EDGE_WEIGHT, 1);
@@ -430,24 +397,12 @@ function animate(time) {
     lastTime = time;
 
     if (graphSimulation) {
-        try {
-            graphSimulation.compute(deltaTime);
-            updateGraphObjects();
-            
-            // Update text visibility
-            nodePool.forEach(nodeMesh => {
-                const textMesh = nodeMesh.children[0];
-                if (textMesh) {
-                    const distanceToCamera = camera.position.distanceTo(nodeMesh.position);
-                    textMesh.visible = distanceToCamera < TEXT_VISIBILITY_THRESHOLD;
-                }
-            });
-        } catch (error) {
-            console.error('Error in graph simulation:', error);
-        }
+        graphSimulation.compute(deltaTime);
+        updateGraphObjects();
     }
 
     render();
+
     requestAnimationFrame(animate);
 }
 
@@ -456,15 +411,6 @@ function animate(time) {
  */
 function render() {
     controls.update();
-    
-    // Update text rotations to face camera (only for visible text)
-    nodePool.forEach(nodeMesh => {
-        const textMesh = nodeMesh.children[0];
-        if (textMesh && textMesh.visible) {
-            textMesh.lookAt(camera.position);
-        }
-    });
-
     renderer.render(scene, camera);
 }
 
@@ -480,23 +426,8 @@ async function init() {
     }
     setupKeyboardControls(); // Set up keyboard controls including spacebar for randomization
     await loadData();
-    animate(0); // Start animation regardless of font loading status
+    animate(0);
 }
 
-// Load the font before starting the application
-const loader = new THREE.FontLoader();
-loader.load(
-    'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
-    function(loadedFont) {
-        font = loadedFont;
-        console.log('Font loaded successfully');
-    },
-    function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    },
-    function(err) {
-        console.error('An error happened while loading the font:', err);
-    }
-);
-
-init(); // Initialize the application
+// Start the application
+init();
