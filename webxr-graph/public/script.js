@@ -1,15 +1,10 @@
-script.js
 /**
  * script.js
  *
  * This script creates a 3D visualization of a graph structure using Three.js and WebGL.
  * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
  * GPU-accelerated force-directed graph layout, and debug features like node randomization.
-<<<<<<< HEAD
- * 
-=======
  *
->>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
  * Features:
  * - 3D visualization of nodes (spheres) and edges (lines)
  * - VR support with option for VR spoofing
@@ -18,19 +13,11 @@ script.js
  * - Dynamic node labeling for closer nodes
  * - Responsive design (handles window resizing)
  * - Debug overlay with node and edge counts
-<<<<<<< HEAD
- * 
- * Dependencies:
- * - Three.js (imported via CDN)
- * - GraphSimulation (custom class for GPU-accelerated physics)
- * 
-=======
  *
  * Dependencies:
  * - Three.js (imported via CDN)
  * - GraphSimulation (custom class for GPU-accelerated physics)
  *
->>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
  * @version 3.0
  * @license MIT
  */
@@ -446,11 +433,7 @@ function animate(time) {
         try {
             graphSimulation.compute(deltaTime);
             updateGraphObjects();
-<<<<<<< HEAD
-            
-=======
 
->>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
             // Update text visibility
             nodePool.forEach(nodeMesh => {
                 const textMesh = nodeMesh.children[0];
@@ -473,11 +456,7 @@ function animate(time) {
  */
 function render() {
     controls.update();
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> 58d4e69f73dcbc04952ece11c412408f23615f0e
     // Update text rotations to face camera (only for visible text)
     nodePool.forEach(nodeMesh => {
         const textMesh = nodeMesh.children[0];
