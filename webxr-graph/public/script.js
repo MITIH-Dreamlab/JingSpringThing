@@ -1,34 +1,71 @@
-import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
-import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
-import { VRButton } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/webxr/VRButton.js';
-import * as d3 from 'https://cdn.skypack.dev/d3-force@3';
+script.js
+/**
+ * script.js
+ *
+ * This script creates a 3D visualization of a graph structure using Three.js and WebGL.
+ * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
+ * GPU-accelerated force-directed graph layout, and debug features like node randomization.
+ *
+ * Features:
+ * - 3D visualization of nodes (spheres) and edges (lines)
+ * - VR support with option for VR spoofing
+ * - Real-time graph updates via WebSocket
+ * - GPU-accelerated force-directed graph layout
+ * - Dynamic node labeling for closer nodes
+ * - Responsive design (handles window resizing)
+ * - Debug overlay with node and edge counts
+ *
+ * Dependencies:
+ * - Three.js (imported via CDN)
+ * - GraphSimulation (custom class for GPU-accelerated physics)
+ *
+ * @version 3.0
+ * @license MIT
+ */
 
-// Global variables
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js';
+import { GraphSimulation } from './GraphSimulation.js';
+
+// Global variables for Three.js components
 let renderer, scene, camera, controls;
+
+// Graph data and simulation
 let nodes = [], edges = [];
-let simulation; // d3-force simulation
+let graphSimulation;
+
+// WebSocket connection for real-time updates
+let socket;
+
+// Performance optimization: Use object pooling for nodes and edges
+const nodePool = [], edgePool = [];
+
+// Time tracking for animation
+let lastTime = 0;
+
+// Font for node labels
+let font;
 
 // Constants for graph visualization
-const NODE_BASE_SIZE = 0.2;
-const NODE_SIZE_EXPONENT = 0.5;
-const MAX_FILE_SIZE = 1000000; // 1MB
-const MAX_HYPERLINK_COUNT = 20;
-const MAX_EDGE_WEIGHT = 10;
-const INITIAL_POSITION_RANGE = 20; // Reduced range for initial visibility
-const ENERGY_THRESHOLD = 0.01; // Threshold for near ground state energy
+const NODE_BASE_SIZE = 5; // Base size for nodes
+const NODE_SIZE_EXPONENT = 0.5; // Exponent for node size scaling
+const MAX_FILE_SIZE = 1000000; // Maximum file size (1MB) for node size calculation
+const MAX_HYPERLINK_COUNT = 2000; // Maximum hyperlink count for node color calculation
+const MAX_EDGE_WEIGHT = 100; // Maximum edge weight for edge color calculation
+const INITIAL_POSITION_RANGE = 1000; // Range for initial random node positions
+const TEXT_VISIBILITY_THRESHOLD = 100; // Distance threshold for showing node labels
 
-// VR Spoofing flag
-const SPOOF_VR = true; // Set to false for real WebXR in production
+// VR Spoofing flag (set to false for real WebXR in production)
+const SPOOF_VR = true;
 
-// Debug elements
+// Debug elements in the DOM
 const statusEl = document.getElementById('status');
 const nodeCountEl = document.getElementById('nodeCount');
 const edgeCountEl = document.getElementById('edgeCount');
 
-// WebSocket connection
-let websocket;
-
-// Function to update status
+/**
+ * Updates the status message on the page and in the console
+ * @param {string} message - The status message to display
+ */
 function updateStatus(message) {
     statusEl.textContent = `Status: ${message}`;
     console.log(`Status: ${message}`);
@@ -40,42 +77,37 @@ function updateStatus(message) {
 function initScene() {
     updateStatus('Initializing Scene');
 
+    // Create a new Three.js scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
+    // Set up the camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 50;
+    camera.position.set(0, 0, 200);
+    camera.lookAt(0, 0, 0);
 
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('graphCanvas'), antialias: true });
+    // Set up the WebGL renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.xr.enabled = true;
+    document.body.appendChild(renderer.domElement);
 
-    controls = new OrbitControls(camera, renderer.domElement);
+    // Add orbit controls for non-VR navigation
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    // Add ambient light
+    // Add ambient light to the scene
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    // Add directional light
+    // Add directional light to the scene
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 
-    // Add a red cube as a reference point
-    const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube.position.set(0, 0, -5);
-    scene.add(cube);
-
-    // Add a geodesic sphere as a boundary reference
-    const sphereGeometry = new THREE.IcosahedronGeometry(100, 1);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(0, 0, 0);
-    scene.add(sphere);
-
+    // Handle window resizing
     window.addEventListener('resize', onWindowResize, false);
+
+    console.log('Scene initialized');
 }
 
 /**
@@ -85,34 +117,12 @@ async function setupXR() {
     updateStatus('Setting up XR');
 
     if (SPOOF_VR || (navigator.xr && await navigator.xr.isSessionSupported('immersive-vr'))) {
-        const button = document.createElement('button');
-        button.textContent = 'Enter VR';
-        button.onclick = enterVR;
+        const button = THREE.VRButton.createButton(renderer);
         document.body.appendChild(button);
-        updateStatus('Enter VR button added');
+        updateStatus('VR button added');
     } else {
         updateStatus('VR not supported');
     }
-}
-
-/**
- * Enters VR mode (real or spoofed)
- */
-function enterVR() {
-    if (SPOOF_VR) {
-        startSpoofedVRSession();
-    } else {
-        navigator.xr.requestSession('immersive-vr').then(onVRSessionStarted);
-    }
-}
-
-/**
- * Starts a spoofed VR session
- */
-function startSpoofedVRSession() {
-    updateStatus('Starting spoofed VR session');
-    setupSpoofedVRControls();
-    animate();
 }
 
 /**
@@ -120,7 +130,7 @@ function startSpoofedVRSession() {
  */
 function setupSpoofedVRControls() {
     document.addEventListener('keydown', (event) => {
-        const speed = 1; // Adjust speed as necessary for smoother exploration
+        const speed = 5; // Movement speed
         switch(event.key) {
             case 'w': camera.position.z -= speed; break;
             case 's': camera.position.z += speed; break;
@@ -128,23 +138,50 @@ function setupSpoofedVRControls() {
             case 'd': camera.position.x += speed; break;
             case 'q': camera.position.y += speed; break;
             case 'e': camera.position.y -= speed; break;
-            // Randomize node positions on spacebar press
-            case ' ': randomizeNodePositions(); break;
         }
         console.log(`Camera Position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}`);
     });
 }
 
 /**
- * Handles the start of a real VR session
+ * Randomizes the positions of all nodes
  */
-function onVRSessionStarted(session) {
-    renderer.xr.setSession(session);
-    updateStatus('VR session started');
+function randomizeNodePositions() {
+    if (!graphSimulation) {
+        console.error('Graph simulation not initialized');
+        return;
+    }
+
+    const positionArray = new Float32Array(nodes.length * 4);
+    for (let i = 0; i < nodes.length; i++) {
+        positionArray[i * 4] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 1] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 2] = (Math.random() - 0.5) * INITIAL_POSITION_RANGE * 2;
+        positionArray[i * 4 + 3] = 1; // W component
+    }
+
+    // Update the position texture in the GraphSimulation
+    graphSimulation.updateNodePositions(positionArray);
+
+    console.log('Node positions randomized');
+    updateGraphObjects();
 }
 
 /**
- * Loads graph data from the server and initializes the force-directed graph
+ * Sets up keyboard controls
+ */
+function setupKeyboardControls() {
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            randomizeNodePositions();
+        }
+    });
+
+    console.log('Keyboard controls set up. Press spacebar to randomize node positions.');
+}
+
+/**
+ * Loads initial graph data from the server and sets up WebSocket
  */
 async function loadData() {
     updateStatus('Loading graph data');
@@ -152,17 +189,12 @@ async function loadData() {
     try {
         const response = await fetch('/graph-data');
         const graphData = await response.json();
-        nodes = graphData.nodes;
-        edges = graphData.edges;
-
-        nodeCountEl.textContent = `Nodes: ${nodes.length}`;
-        edgeCountEl.textContent = `Edges: ${edges.length}`;
-
-        console.log('Graph data loaded', graphData);
+        console.log('Received graph data:', graphData); // Debug log
+        updateGraphData(graphData);
         updateStatus('Graph data loaded');
 
-        // Initialize the force-directed graph
-        initForceDirectedGraph();
+        // Set up WebSocket connection for real-time updates
+        setupWebSocket();
     } catch (error) {
         console.error('Error loading graph data:', error);
         updateStatus('Error loading graph data');
@@ -170,102 +202,212 @@ async function loadData() {
 }
 
 /**
- * Initializes the force-directed graph using d3-force
+ * Sets up WebSocket connection for real-time updates
  */
-function initForceDirectedGraph() {
-    simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(edges).id(d => d.name).distance(d => 10 + d.weight * 2)) // Adjust distance based on edge weight
-        .force("charge", d3.forceManyBody().strength(-50)) // Repulsion force
-        .force("center", d3.forceCenter(0, 0, 0)) // Centering force
-        .on("tick", updateNodePositions); // Update positions on each tick
+function setupWebSocket() {
+    // Use wss:// for secure WebSocket connections
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(`${protocol}//${window.location.host}`);
 
-    // Randomize initial positions
-    randomizeNodePositions();
+    socket.onopen = () => {
+        console.log('WebSocket connection established');
+        updateStatus('WebSocket connected');
+    };
+
+    socket.onmessage = (event) => {
+        const updatedGraphData = JSON.parse(event.data);
+        console.log('Received updated graph data:', updatedGraphData); // Debug log
+        updateGraphData(updatedGraphData);
+        updateStatus('Graph data updated');
+    };
+
+    socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        updateStatus('WebSocket error');
+    };
+
+    socket.onclose = () => {
+        console.log('WebSocket connection closed');
+        updateStatus('WebSocket disconnected');
+    };
 }
 
 /**
- * Randomizes the positions of the nodes
+ * Updates the graph data and recreates graph objects
+ * @param {Object} graphData - The new graph data
  */
-function randomizeNodePositions() {
-    nodes.forEach(node => {
-        const x = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        const y = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        const z = Math.random() * INITIAL_POSITION_RANGE - (INITIAL_POSITION_RANGE / 2);
-        node.x = x;
-        node.y = y;
-        node.z = z;
-    });
-    updateNodePositions(); // Update the Three.js objects immediately
+function updateGraphData(graphData) {
+    if (!graphData || !graphData.nodes || !graphData.edges) {
+        console.error('Invalid graph data received:', graphData);
+        return;
+    }
+
+    nodes = graphData.nodes;
+    edges = graphData.edges;
+
+    console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
+
+    nodeCountEl.textContent = `Nodes: ${nodes.length}`;
+    edgeCountEl.textContent = `Edges: ${edges.length}`;
+
+    // Initialize or update the GraphSimulation
+    if (!graphSimulation) {
+        graphSimulation = new GraphSimulation(renderer, nodes, edges);
+
+        // Set initial simulation parameters
+        graphSimulation.setSimulationParameters({
+            repulsionStrength: 60.0,
+            attractionStrength: 0.15,
+            maxSpeed: 12.0,
+            damping: 0.98,
+            centeringForce: 0.005,
+            edgeDistance: 5.0
+        });
+    } else {
+        graphSimulation.updateNodeData(nodes);
+        graphSimulation.updateEdgeData(edges);
+    }
+
+    updateGraphObjects();
 }
 
 /**
- * Updates the positions of the Three.js objects based on the simulation
+ * Updates 3D objects for nodes and edges
  */
-function updateNodePositions() {
-    nodes.forEach(node => {
-        const threeNode = scene.children.find(child => child.userData.nodeId === node.name);
-        if (threeNode) {
-            threeNode.position.set(node.x, node.y, node.z);
+function updateGraphObjects() {
+    if (!graphSimulation || !graphSimulation.gpuCompute) {
+        console.error('GraphSimulation not initialized');
+        return;
+    }
+
+    const WIDTH = graphSimulation.WIDTH;
+    const HEIGHT = graphSimulation.HEIGHT;
+
+    const positionArray = new Float32Array(WIDTH * HEIGHT * 4);
+    renderer.readRenderTargetPixels(
+        graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
+        0, 0, WIDTH, HEIGHT,
+        positionArray
+    );
+
+    // Update or create nodes
+    nodes.forEach((node, index) => {
+        let mesh = nodePool[index];
+        if (!mesh) {
+            const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1); // About 20 polygons
+            const material = new THREE.MeshPhongMaterial();
+            mesh = new THREE.Mesh(geometry, material);
+            nodePool[index] = mesh;
+            scene.add(mesh);
+
+            // Create text label (hidden by default)
+            if (font) {
+                try {
+                    const textGeometry = new THREE.TextGeometry(node.name, {
+                        font: font,
+                        size: NODE_BASE_SIZE * 0.5,
+                        height: 0.1,
+                    });
+                    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                    textMesh.position.y = NODE_BASE_SIZE * 1.5; // Position above the node
+                    textMesh.visible = false; // Hide by default
+                    mesh.add(textMesh);
+                } catch (error) {
+                    console.warn('Error creating text for node:', node.name, error);
+                }
+            } else {
+                console.warn('Font not loaded, skipping text label for node:', node.name);
+            }
+        }
+
+        mesh.position.set(
+            positionArray[index * 4],
+            positionArray[index * 4 + 1],
+            positionArray[index * 4 + 2]
+        );
+
+        mesh.scale.setScalar(calculateNodeSize(node.size));
+        mesh.material.color.setHex(getNodeColor(node.httpsLinksCount));
+        mesh.userData = { nodeId: node.name, name: node.name };
+        mesh.visible = true;
+
+        // Update text visibility based on distance to camera
+        if (mesh.children[0]) {
+            const distanceToCamera = camera.position.distanceTo(mesh.position);
+            mesh.children[0].visible = distanceToCamera < TEXT_VISIBILITY_THRESHOLD;
         }
     });
 
-    // Check for near ground state energy
-    if (simulation.alpha() < ENERGY_THRESHOLD) {
-        simulation.stop(); // Stop the simulation if near ground state
-        updateStatus('Graph settled');
+    // Hide unused nodes
+    for (let i = nodes.length; i < nodePool.length; i++) {
+        if (nodePool[i]) nodePool[i].visible = false;
+    }
+
+    // Update or create edges
+    edges.forEach((edge, index) => {
+        let line = edgePool[index];
+        if (!line) {
+            const material = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.3 });
+            const geometry = new THREE.BufferGeometry();
+            line = new THREE.Line(geometry, material);
+            edgePool[index] = line;
+            scene.add(line);
+        }
+
+        const sourceIndex = nodes.findIndex(n => n.name === edge.source);
+        const targetIndex = nodes.findIndex(n => n.name === edge.target);
+
+        if (sourceIndex !== -1 && targetIndex !== -1) {
+            const sourcePos = new THREE.Vector3(
+                positionArray[sourceIndex * 4],
+                positionArray[sourceIndex * 4 + 1],
+                positionArray[sourceIndex * 4 + 2]
+            );
+            const targetPos = new THREE.Vector3(
+                positionArray[targetIndex * 4],
+                positionArray[targetIndex * 4 + 1],
+                positionArray[targetIndex * 4 + 2]
+            );
+
+            line.geometry.setFromPoints([sourcePos, targetPos]);
+            line.material.color = getEdgeColor(edge.weight);
+            line.visible = true;
+        } else {
+            line.visible = false;
+        }
+    });
+
+    // Hide unused edges
+    for (let i = edges.length; i < edgePool.length; i++) {
+        if (edgePool[i]) edgePool[i].visible = false;
     }
 }
 
 /**
- * Creates 3D objects for nodes and edges
- */
-function createGraphObjects() {
-    updateStatus('Creating graph objects');
-
-    // Create nodes
-    nodes.forEach(node => {
-        const geometry = new THREE.SphereGeometry(calculateNodeSize(node.size), 32, 32);
-        const material = new THREE.MeshPhongMaterial({ color: getNodeColor(node.httpsLinksCount) });
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.userData = { nodeId: node.name }; // Use name as ID
-        scene.add(mesh);
-    });
-
-    // Create edges
-    edges.forEach(edge => {
-        const sourceNode = scene.children.find(child => child.userData.nodeId === edge.source);
-        const targetNode = scene.children.find(child => child.userData.nodeId === edge.target);
-
-        if (sourceNode && targetNode) {
-            const material = new THREE.LineBasicMaterial({ color: getEdgeColor(edge.weight) });
-            const points = [sourceNode.position, targetNode.position];
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, material);
-            scene.add(line);
-        }
-    });
-
-    updateStatus('Graph objects created');
-}
-
-/**
  * Calculates the size of a node based on its file size
+ * @param {number} fileSize - Size of the file in bytes
+ * @returns {number} Size of the node
  */
 function calculateNodeSize(fileSize) {
-    const normalizedSize = fileSize / MAX_FILE_SIZE;
+    const normalizedSize = Math.min(fileSize / MAX_FILE_SIZE, 1);
     return NODE_BASE_SIZE * Math.pow(normalizedSize, NODE_SIZE_EXPONENT);
 }
 
 /**
  * Determines the color of a node based on its hyperlink count
+ * @param {number} hyperlinkCount - Number of hyperlinks in the node
+ * @returns {number} Hexadecimal color value
  */
 function getNodeColor(hyperlinkCount) {
     const t = Math.min(hyperlinkCount / MAX_HYPERLINK_COUNT, 1);
-    return new THREE.Color(t, 0, 1 - t);
+    return new THREE.Color(t, 0, 1 - t).getHex();
 }
 
 /**
  * Determines the color of an edge based on its weight
+ * @param {number} weight - Weight of the edge
+ * @returns {THREE.Color} Color object for the edge
  */
 function getEdgeColor(weight) {
     const t = Math.min(weight / MAX_EDGE_WEIGHT, 1);
@@ -284,58 +426,47 @@ function onWindowResize() {
 /**
  * Animation loop
  */
-function animate() {
-    if (SPOOF_VR) {
-        requestAnimationFrame(animate);
-        render();
-    } else {
-        renderer.setAnimationLoop(render);
+function animate(time) {
+    const deltaTime = (time - lastTime) / 1000;
+    lastTime = time;
+
+    if (graphSimulation) {
+        try {
+            graphSimulation.compute(deltaTime);
+            updateGraphObjects();
+
+            // Update text visibility
+            nodePool.forEach(nodeMesh => {
+                const textMesh = nodeMesh.children[0];
+                if (textMesh) {
+                    const distanceToCamera = camera.position.distanceTo(nodeMesh.position);
+                    textMesh.visible = distanceToCamera < TEXT_VISIBILITY_THRESHOLD;
+                }
+            });
+        } catch (error) {
+            console.error('Error in graph simulation:', error);
+        }
     }
+
+    render();
+    requestAnimationFrame(animate);
 }
 
 /**
  * Render function
  */
-function render(time, frame) {
-    if (SPOOF_VR) {
-        renderer.render(scene, camera);
-    } else if (renderer.xr.isPresenting) {
-        renderer.render(scene, camera);
-    } else {
-        controls.update();
-        renderer.render(scene, camera);
-    }
-}
+function render() {
+    controls.update();
 
-/**
- * Initializes the WebSocket connection
- */
-function initWebSocket() {
-    websocket = new WebSocket(`wss://${window.location.host}`); // Use wss for HTTPS
-
-    websocket.onopen = () => {
-        console.log('WebSocket connection established');
-    };
-
-    websocket.onmessage = (event) => {
-        try {
-            const updatedData = JSON.parse(event.data);
-            console.log('Received updated graph data:', updatedData);
-
-            // Update the graph with the new data (replace this with your update logic)
-            // ...
-        } catch (error) {
-            console.error('Error processing WebSocket message:', error);
+    // Update text rotations to face camera (only for visible text)
+    nodePool.forEach(nodeMesh => {
+        const textMesh = nodeMesh.children[0];
+        if (textMesh && textMesh.visible) {
+            textMesh.lookAt(camera.position);
         }
-    };
+    });
 
-    websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-
-    websocket.onclose = () => {
-        console.log('WebSocket connection closed');
-    };
+    renderer.render(scene, camera);
 }
 
 /**
@@ -345,11 +476,28 @@ async function init() {
     updateStatus('Initializing application');
     initScene();
     await setupXR();
+    if (SPOOF_VR) {
+        setupSpoofedVRControls();
+    }
+    setupKeyboardControls(); // Set up keyboard controls including spacebar for randomization
     await loadData();
-    createGraphObjects();
-    initWebSocket(); // Initialize WebSocket connection
-    animate();
+    animate(0); // Start animation regardless of font loading status
 }
 
-// Start the application
-init();
+// Load the font before starting the application
+const loader = new THREE.FontLoader();
+loader.load(
+    'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+    function(loadedFont) {
+        font = loadedFont;
+        console.log('Font loaded successfully');
+    },
+    function(xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    },
+    function(err) {
+        console.error('An error happened while loading the font:', err);
+    }
+);
+
+init(); // Initialize the application
