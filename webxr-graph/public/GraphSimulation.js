@@ -18,7 +18,7 @@
  * @license MIT
  */
 
-//import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
 import { GPUComputationRenderer } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/misc/GPUComputationRenderer.js';
 
 export class GraphSimulation {
