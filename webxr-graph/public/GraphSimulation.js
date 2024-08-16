@@ -1,25 +1,7 @@
-/**
- * GraphSimulation.js
- *
- * This class implements a GPU-accelerated force-directed graph layout algorithm.
- * It uses Three.js and GPUComputationRenderer for efficient parallel computations on the GPU.
- * The simulation applies repulsive forces between all nodes and attractive forces along edges
- * to create a balanced graph layout.
- *
- * Features:
- * - GPU-accelerated computations for high performance
- * - Configurable simulation parameters
- * - Support for dynamic graphs (adding/removing nodes and edges)
- * - Edge weight consideration in force calculations
- * - Automatic resizing of computation textures when node count changes significantly
- *
- * @author Your Name
- * @version 1.3
- * @license MIT
- */
+// GraphSimulation.js
 
-import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
-import { GPUComputationRenderer } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/misc/GPUComputationRenderer.js';
+import * as THREE from 'three';
+import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js';
 
 export class GraphSimulation {
     /**
@@ -29,11 +11,18 @@ export class GraphSimulation {
      * @param {Array} edges - Array of edge objects
      */
     constructor(renderer, nodes, edges) {
+        console.log('Initializing GraphSimulation');
         this.renderer = renderer;
         this.nodes = nodes;
         this.edges = edges;
         this.initDimensions();
-        this.initComputeRenderer();
+        this.simulationParams = {}; // Initialize simulation parameters
+        try {
+            this.initComputeRenderer();
+        } catch (error) {
+            console.warn('GPU computation not available, falling back to CPU simulation');
+            this.useCPUSimulation = true;
+        }
     }
 
     /**
@@ -50,27 +39,39 @@ export class GraphSimulation {
      */
     initComputeRenderer() {
         console.log('Initializing GPUComputationRenderer');
-        this.gpuCompute = new GPUComputationRenderer(this.WIDTH, this.HEIGHT, this.renderer);
+        try {
+            this.gpuCompute = new GPUComputationRenderer(this.WIDTH, this.HEIGHT, this.renderer);
 
-        const dtPosition = this.gpuCompute.createTexture();
-        const dtVelocity = this.gpuCompute.createTexture();
-        const dtEdges = this.createEdgeTexture();
+            if (!this.gpuCompute.isSupported) {
+                console.error('GPUComputationRenderer is not supported on this device');
+                throw new Error('GPUComputationRenderer not supported');
+            }
 
-        this.fillPositionTexture(dtPosition);
-        this.fillVelocityTexture(dtVelocity);
+            const dtPosition = this.gpuCompute.createTexture();
+            const dtVelocity = this.gpuCompute.createTexture();
+            const dtEdges = this.createEdgeTexture();
 
-        this.positionVariable = this.gpuCompute.addVariable('texturePosition', this.getPositionShader(), dtPosition);
-        this.velocityVariable = this.gpuCompute.addVariable('textureVelocity', this.getVelocityShader(), dtVelocity);
+            this.fillPositionTexture(dtPosition);
+            this.fillVelocityTexture(dtVelocity);
 
-        this.gpuCompute.setVariableDependencies(this.positionVariable, [this.positionVariable, this.velocityVariable]);
-        this.gpuCompute.setVariableDependencies(this.velocityVariable, [this.positionVariable, this.velocityVariable]);
+            this.positionVariable = this.gpuCompute.addVariable('texturePosition', this.getPositionShader(), dtPosition);
+            this.velocityVariable = this.gpuCompute.addVariable('textureVelocity', this.getVelocityShader(), dtVelocity);
 
-        this.initUniforms();
+            this.gpuCompute.setVariableDependencies(this.positionVariable, [this.positionVariable, this.velocityVariable]);
+            this.gpuCompute.setVariableDependencies(this.velocityVariable, [this.positionVariable, this.velocityVariable]);
 
-        const error = this.gpuCompute.init();
-        if (error !== null) {
-            console.error('GPUComputationRenderer error:', error);
-            throw new Error('Failed to initialize GPUComputationRenderer');
+            this.initUniforms();
+
+            const error = this.gpuCompute.init();
+            if (error !== null) {
+                console.error('GPUComputationRenderer init error:', error);
+                throw new Error('Failed to initialize GPUComputationRenderer');
+            }
+
+            console.log('GPUComputationRenderer initialized successfully');
+        } catch (error) {
+            console.error('Error in initComputeRenderer:', error);
+            throw error;
         }
     }
 
@@ -78,6 +79,7 @@ export class GraphSimulation {
      * Initializes the uniforms for the velocity shader.
      */
     initUniforms() {
+        console.log('Initializing uniforms');
         const velocityUniforms = this.velocityVariable.material.uniforms;
         velocityUniforms.time = { value: 0.0 };
         velocityUniforms.delta = { value: 0.0 };
@@ -97,6 +99,7 @@ export class GraphSimulation {
      * @returns {THREE.DataTexture} Texture containing edge data
      */
     createEdgeTexture() {
+        console.log('Creating edge texture');
         const data = new Float32Array(this.WIDTH * this.HEIGHT * 4);
         for (let i = 0; i < this.edges.length; i++) {
             const edge = this.edges[i];
@@ -117,6 +120,7 @@ export class GraphSimulation {
      * @param {THREE.DataTexture} texture - The position texture to fill
      */
     fillPositionTexture(texture) {
+        console.log('Filling position texture');
         const theArray = texture.image.data;
         for (let i = 0; i < this.nodes.length; i++) {
             const stride = i * 4;
@@ -133,6 +137,7 @@ export class GraphSimulation {
      * @param {THREE.DataTexture} texture - The velocity texture to fill
      */
     fillVelocityTexture(texture) {
+        console.log('Filling velocity texture');
         const theArray = texture.image.data;
         for (let i = 0; i < theArray.length; i++) {
             theArray[i] = 0;
@@ -234,92 +239,96 @@ export class GraphSimulation {
      * @param {number} deltaTime - Time step for the simulation
      */
     compute(deltaTime) {
-        if (!this.gpuCompute) {
-            console.error('GPUCompute not initialized');
-            return;
-        }
-        this.velocityVariable.material.uniforms.time.value += deltaTime;
-        this.velocityVariable.material.uniforms.delta.value = deltaTime;
-        this.gpuCompute.compute();
-    }
-
-    /**
-     * Retrieves the current positions of all nodes.
-     * @returns {THREE.Texture} Texture containing current positions
-     */
-    getCurrentPositions() {
-        if (!this.gpuCompute || !this.positionVariable) {
-            console.error('GPUCompute or positionVariable not initialized');
-            return null;
-        }
-        return this.gpuCompute.getCurrentRenderTarget(this.positionVariable).texture;
-    }
-
-    /**
-     * Retrieves the current velocities of all nodes.
-     * @returns {THREE.Texture} Texture containing current velocities
-     */
-    getCurrentVelocities() {
-        if (!this.gpuCompute || !this.velocityVariable) {
-            console.error('GPUCompute or velocityVariable not initialized');
-            return null;
-        }
-        return this.gpuCompute.getCurrentRenderTarget(this.velocityVariable).texture;
-    }
-
-    /**
-     * Updates simulation parameters.
-     * @param {Object} params - Object containing parameter updates
-     */
-    setSimulationParameters(params) {
-        const uniforms = this.velocityVariable.material.uniforms;
-        if (params.repulsionStrength !== undefined) uniforms.repulsionStrength.value = params.repulsionStrength;
-        if (params.attractionStrength !== undefined) uniforms.attractionStrength.value = params.attractionStrength;
-        if (params.maxSpeed !== undefined) uniforms.maxSpeed.value = params.maxSpeed;
-        if (params.damping !== undefined) uniforms.damping.value = params.damping;
-        if (params.centeringForce !== undefined) uniforms.centeringForce.value = params.centeringForce;
-        if (params.edgeDistance !== undefined) uniforms.edgeDistance.value = params.edgeDistance;
-    }
-
-    /**
-     * Updates the node data. Call this if nodes are added or removed.
-     * @param {Array} nodes - New array of node objects
-     */
-    updateNodeData(nodes) {
-        const oldNodeCount = this.nodes.length;
-        this.nodes = nodes;
-        if (Math.abs(oldNodeCount - nodes.length) > oldNodeCount * 0.1) {
-            // If node count changed by more than 10%, reinitialize
-            console.log('Node count changed significantly. Reinitializing simulation.');
-            this.initDimensions();
-            this.initComputeRenderer();
+        if (this.useCPUSimulation) {
+            this.computeCPU(deltaTime);
+        } else if (this.gpuCompute) {
+            this.velocityVariable.material.uniforms.time.value += deltaTime;
+            this.velocityVariable.material.uniforms.delta.value = deltaTime;
+            this.gpuCompute.compute();
         } else {
-            this.velocityVariable.material.uniforms.nodeCount.value = this.nodes.length;
+            console.warn('Neither GPU nor CPU simulation is available.');
         }
     }
 
     /**
-     * Updates the edge data. Call this if edges are added or removed.
-     * @param {Array} edges - New array of edge objects
+     * Performs one step of the simulation on the CPU.
+     * @param {number} deltaTime - Time step for the simulation
      */
-    updateEdgeData(edges) {
-        this.edges = edges;
-        const dtEdges = this.createEdgeTexture();
-        this.velocityVariable.material.uniforms.edgeTexture.value = dtEdges;
-        this.velocityVariable.material.uniforms.edgeCount.value = this.edges.length;
-    }
+    computeCPU(deltaTime) {
+        const repulsionStrength = this.simulationParams.repulsionStrength || 60.0;
+        const attractionStrength = this.simulationParams.attractionStrength || 0.15;
+        const maxSpeed = this.simulationParams.maxSpeed || 12.0;
+        const damping = this.simulationParams.damping || 0.98;
+        const centeringForce = this.simulationParams.centeringForce || 0.005;
+        const edgeDistance = this.simulationParams.edgeDistance || 5.0;
 
-    /**
-     * Updates the positions of nodes. Used for manual position updates (e.g., from user interaction).
-     * @param {Float32Array} positionArray - Array of new positions (x, y, z, w for each node)
-     */
-    updateNodePositions(positionArray) {
-        const positionTexture = this.getCurrentPositions();
-        if (positionTexture && positionTexture.image) {
-            positionTexture.image.data.set(positionArray);
-            positionTexture.needsUpdate = true;
-        } else {
-            console.error('Position texture not available for updating');
+        // Initialize velocities if not exists
+        if (!this.velocities) {
+            this.velocities = this.nodes.map(() => ({ x: 0, y: 0, z: 0 }));
+        }
+
+        // Calculate forces
+        for (let i = 0; i < this.nodes.length; i++) {
+            let force = { x: 0, y: 0, z: 0 };
+
+            // Repulsive force
+            for (let j = 0; j < this.nodes.length; j++) {
+                if (i !== j) {
+                    const dx = this.nodes[i].x - this.nodes[j].x;
+                    const dy = this.nodes[i].y - this.nodes[j].y;
+                    const dz = this.nodes[i].z - this.nodes[j].z;
+                    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    if (distance > 0 && distance < 50) {
+                        const repulsion = repulsionStrength / (distance * distance);
+                        force.x += dx / distance * repulsion;
+                        force.y += dy / distance * repulsion;
+                        force.z += dz / distance * repulsion;
+                    }
+                }
+            }
+
+            // Attractive force (edges)
+            this.edges.forEach(edge => {
+                if (edge.source === this.nodes[i].id || edge.target === this.nodes[i].id) {
+                    const otherNode = this.nodes.find(n => n.id === (edge.source === this.nodes[i].id ? edge.target : edge.source));
+                    const dx = otherNode.x - this.nodes[i].x;
+                    const dy = otherNode.y - this.nodes[i].y;
+                    const dz = otherNode.z - this.nodes[i].z;
+                    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    const attraction = attractionStrength * (distance - edgeDistance);
+                    force.x += dx / distance * attraction;
+                    force.y += dy / distance * attraction;
+                    force.z += dz / distance * attraction;
+                }
+            });
+
+            // Centering force
+            force.x -= this.nodes[i].x * centeringForce;
+            force.y -= this.nodes[i].y * centeringForce;
+            force.z -= this.nodes[i].z * centeringForce;
+
+            // Update velocity
+            this.velocities[i].x = (this.velocities[i].x + force.x * deltaTime) * damping;
+            this.velocities[i].y = (this.velocities[i].y + force.y * deltaTime) * damping;
+            this.velocities[i].z = (this.velocities[i].z + force.z * deltaTime) * damping;
+
+            // Limit speed
+            const speed = Math.sqrt(
+                this.velocities[i].x * this.velocities[i].x +
+                this.velocities[i].y * this.velocities[i].y +
+                this.velocities[i].z * this.velocities[i].z
+            );
+            if (speed > maxSpeed) {
+                const ratio = maxSpeed / speed;
+                this.velocities[i].x *= ratio;
+                this.velocities[i].y *= ratio;
+                this.velocities[i].z *= ratio;
+            }
+
+            // Update position
+            this.nodes[i].x += this.velocities[i].x * deltaTime;
+            this.nodes[i].y += this.velocities[i].y * deltaTime;
+            this.nodes[i].z += this.velocities[i].z * deltaTime;
         }
     }
 }
