@@ -17,6 +17,14 @@
             font-family: Arial, sans-serif;
         }
     </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/build/three.module.js",
+            "three/examples/jsm/": "/vendor/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <canvas id="graphCanvas"></canvas>
@@ -25,7 +33,7 @@
         <p id="nodeCount">Nodes: -</p>
         <p id="edgeCount">Edges: -</p>
     </div>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="/script.js"></script>
 </body>
 </html>
 

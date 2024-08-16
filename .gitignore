@@ -2,4 +2,4 @@
 webxr-graph/processed_files
 webxr-graph/.env
 scrapeDateScript/venv
-
+webxr-graph/public/vendor
