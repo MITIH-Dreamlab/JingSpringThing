@@ -1,4 +1,5 @@
 # Ignore virtual environment directory
 webxr-graph/processed_files
 webxr-graph/.env
+scrapeDateScript/venv
 
