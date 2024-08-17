@@ -2,7 +2,7 @@
 
 This project visualizes privately hosted GitHub Markdown files created by LogSeq
 
-This is my LogSeq personal knowledge based, which is about 10 months old.
+This is my LogSeq personal knowledge based, which is about 10 months old. I am NOT a programmer, this was an AI project with Claude in the main, using Continue extension in VSCode. There will be issues, I have no doubt, but it's working out so far.
 
 ![image](https://github.com/user-attachments/assets/ba7c3204-89b5-4a1c-826c-e21f15cbbe7c)
 
