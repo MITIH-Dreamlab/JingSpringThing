@@ -126,15 +126,19 @@ sequenceDiagram
         WebXRVisualization->>Client: Render frame
     end
 ```
-<<<<<<< HEAD
 # Key Components
 server.js: Handles server-side operations, including GitHub API interactions and graph data processing.
 script.js: Manages client-side WebXR visualization and user interactions.
 ## GraphSimulation: Handles the physics simulation for node positioning.
-Usage
-Use a WebXR-compatible browser to view the 3D graph.
-Press the spacebar to randomize node positions.
-Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
+
+## Usage
+
+- Use a WebXR-compatible browser to view the 3D graph.
+- Press the spacebar to randomize node positions.
+- Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
+- The simulation automatically switches between GPU and CPU based on device capabilities.
+- Node labels become visible when the camera is close to them.
+- Use WASD keys for camera movement in spoofed VR mode.
 
 # TODO
 
@@ -191,20 +195,6 @@ Nodes are colored based on their hyperlink count, ranging from blue (low) to red
    - Enhance node movements with more sophisticated physics, such as elastic and magnetic effects, to make the interactions feel more lifelike.
    - Adjust simulation parameters dynamically based on the size and complexity of the graph.
 
-## Key Components
-
-- `server.js`: Handles server-side operations, including GitHub API interactions and graph data processing.
-- `script.js`: Manages client-side WebXR visualization, user interactions, and real-time updates.
-- `GraphSimulation.js`: Handles the physics simulation for node positioning, supporting both GPU and CPU computations.
-
-## Usage
-
-- Use a WebXR-compatible browser to view the 3D graph.
-- Press the spacebar to randomize node positions.
-- Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
-- The simulation automatically switches between GPU and CPU based on device capabilities.
-- Node labels become visible when the camera is close to them.
-- Use WASD keys for camera movement in spoofed VR mode.
 
 ## Performance Considerations
 
