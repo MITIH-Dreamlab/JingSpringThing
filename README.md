@@ -2,7 +2,7 @@
 
 This project visualizes GitHub Markdown files as a 3D graph using WebXR. It fetches Markdown files from a specified GitHub repository, parses them to create nodes and edges, and then uses Three.js to render this graph in an immersive 3D space.
 
-![The current WebXR render](screenshot.png)
+![image](https://github.com/user-attachments/assets/873809d5-d8bd-44c3-884c-ce9418e273ef)
 
 ## Features
 
@@ -13,6 +13,11 @@ This project visualizes GitHub Markdown files as a 3D graph using WebXR. It fetc
 - Efficiently checks for file changes before downloading
 - Randomize node positions with spacebar
 - Color nodes based on hyperlink count
+- GPU-accelerated force-directed graph layout with CPU fallback
+- Dynamic node labeling for closer nodes
+- Real-time updates via WebSocket
+- Responsive design (handles window resizing)
+- Debug overlay with node and edge counts and simulation type (CPU/GPU)
 
 ## Getting Started
 
@@ -25,25 +30,33 @@ This project visualizes GitHub Markdown files as a 3D graph using WebXR. It fetc
 ### Setup
 
 1. **Clone the Repository:**
-
    ```bash
    git clone https://github.com/yourusername/webxr-graph.git
    cd webxr-graph
-Set up Environment Variables: Create a .env file in the root directory and add your GitHub access token:
+   ```
 
-GITHUB_ACCESS_TOKEN=your_token_here
-GITHUB_OWNER=your_github_username
-GITHUB_REPO=your_repo_name
-GITHUB_DIRECTORY=path/to/markdown/files
-Build and Run with Docker:
+2. **Set up Environment Variables:** 
+   Create a `.env` file in the root directory and add your GitHub access token:
+   ```
+   GITHUB_ACCESS_TOKEN=your_token_here
+   GITHUB_OWNER=your_github_username
+   GITHUB_REPO=your_repo_name
+   GITHUB_DIRECTORY=path/to/markdown/files
+   ```
 
-./start_docker.sh
-This script builds the Docker image and runs the container, mapping port 8443 and mounting the processed_files directory.
+3. **Build and Run with Docker:**
+   ```bash
+   ./start_docker.sh
+   ```
+   This script builds the Docker image and runs the container, mapping port 8443 and mounting the processed_files directory.
 
-Access the Application: Open a WebXR-compatible browser and navigate to https://localhost:8443
+4. **Access the Application:** 
+   Open a WebXR-compatible browser and navigate to `https://localhost:8443`
 
 ## Architecture
-Class Diagram
+
+### Class Diagram
+
 ```mermaid
 classDiagram
     class Server {
@@ -59,6 +72,9 @@ classDiagram
         +updateEdgeData()
         +updateNodePositions()
         +setSimulationParameters()
+        +compute()
+        +computeCPU()
+        +initComputeRenderer()
     }
     class WebXRVisualization {
         +initScene()
@@ -66,11 +82,15 @@ classDiagram
         +animate()
         +updateGraphObjects()
         +randomizeNodePositions()
+        +loadData()
+        +setupWebSocket()
     }
     Server --> GraphSimulation : updates
     GraphSimulation --> WebXRVisualization : renders
 ```
-Sequence Diagram
+
+### Sequence Diagram
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -78,7 +98,6 @@ sequenceDiagram
     participant GitHub
     participant GraphSimulation
     participant WebXRVisualization
-
     Client->>Server: Request graph data
     Server->>GitHub: Fetch Markdown metadata
     GitHub-->>Server: Return metadata
@@ -89,18 +108,44 @@ sequenceDiagram
     Server->>GraphSimulation: Update graph data
     GraphSimulation->>WebXRVisualization: Render updated graph
     WebXRVisualization-->>Client: Display 3D graph
+    loop Animation
+        WebXRVisualization->>GraphSimulation: Compute simulation step
+        GraphSimulation-->>WebXRVisualization: Updated positions
+        WebXRVisualization->>WebXRVisualization: Update graph objects
+        WebXRVisualization->>Client: Render frame
+    end
 ```
-# Key Components
-server.js: Handles server-side operations, including GitHub API interactions and graph data processing.
-script.js: Manages client-side WebXR visualization and user interactions.
-## GraphSimulation: Handles the physics simulation for node positioning.
-Usage
-Use a WebXR-compatible browser to view the 3D graph.
-Press the spacebar to randomize node positions.
-Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
+
+## Key Components
+
+- `server.js`: Handles server-side operations, including GitHub API interactions and graph data processing.
+- `script.js`: Manages client-side WebXR visualization, user interactions, and real-time updates.
+- `GraphSimulation.js`: Handles the physics simulation for node positioning, supporting both GPU and CPU computations.
+
+## Usage
+
+- Use a WebXR-compatible browser to view the 3D graph.
+- Press the spacebar to randomize node positions.
+- Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
+- The simulation automatically switches between GPU and CPU based on device capabilities.
+- Node labels become visible when the camera is close to them.
+- Use WASD keys for camera movement in spoofed VR mode.
+
+## Performance Considerations
+
+- The application uses object pooling for nodes and edges to optimize performance.
+- GPU-accelerated force-directed graph layout is used when supported, with a fallback to CPU computation.
+- Dynamic node labeling helps reduce rendering load for distant nodes.
+
+## Debugging
+
+- A debug overlay displays the current node count, edge count, and simulation type (GPU/CPU).
+- Console logs provide detailed information about the initialization process and any errors encountered.
+
 ## Contributing
+
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
-This project is licensed under the Creative Commons CC0 license.
 
+This project is licensed under the Creative Commons CC0 license.
