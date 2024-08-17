@@ -1,6 +1,15 @@
-# WebXR Graph Visualization
+# WebXR Graph Visualization of Logseq Knowledge Graphs
 
-This project visualizes GitHub Markdown files as a 3D graph using WebXR. It fetches Markdown files from a specified GitHub repository, parses them to create nodes and edges, and then uses Three.js to render this graph in an immersive 3D space.
+This project visualizes privately hosted GitHub Markdown files created by LogSeq
+
+This is my LogSeq personal knowledge based, which is about 10 months old.
+
+![image](https://github.com/user-attachments/assets/ba7c3204-89b5-4a1c-826c-e21f15cbbe7c)
+
+When I commit changes to the graph into a private GitHub repo it's automatically parsed for public pages and pushed to a website
+https://narrativegoldmine.com/#/graph
+
+The 2D graph seen there is fine, but a bit useless. I wanted something I can explore in mixed reality, and this project is the start of that. It pulls from the public labelled eleemnts of the repo. and creates a force directed 3D graph using WebXR. It uses Three.js to render this graph in an immersive 3D space.
 
 ![image](https://github.com/user-attachments/assets/873809d5-d8bd-44c3-884c-ce9418e273ef)
 
