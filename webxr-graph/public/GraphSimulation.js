@@ -17,12 +17,16 @@ export class GraphSimulation {
         this.edges = edges;
         this.initDimensions();
         this.simulationParams = {}; // Initialize simulation parameters
+        this.useCPUSimulation = false; // Default to GPU simulation
         try {
             this.initComputeRenderer();
         } catch (error) {
             console.warn('GPU computation not available, falling back to CPU simulation');
             this.useCPUSimulation = true;
         }
+        
+        // Set the simulation type for easy access
+        this.simulationType = this.useCPUSimulation ? 'CPU' : 'GPU';
     }
 
     /**
@@ -229,6 +233,11 @@ export class GraphSimulation {
                 // Apply damping
                 vel.xyz *= damping;
 
+                // Check for NaN
+                if (isnan(vel.x) || isnan(vel.y) || isnan(vel.z)) {
+                    vel.xyz = vec3(0.0);
+                }
+
                 gl_FragColor = vel;
             }
         `;
@@ -326,9 +335,61 @@ export class GraphSimulation {
             }
 
             // Update position
-            this.nodes[i].x += this.velocities[i].x * deltaTime;
-            this.nodes[i].y += this.velocities[i].y * deltaTime;
-            this.nodes[i].z += this.velocities[i].z * deltaTime;
+            const newX = this.nodes[i].x + this.velocities[i].x * deltaTime;
+            const newY = this.nodes[i].y + this.velocities[i].y * deltaTime;
+            const newZ = this.nodes[i].z + this.velocities[i].z * deltaTime;
+
+            if (isNaN(newX) || isNaN(newY) || isNaN(newZ)) {
+                console.warn(`NaN position computed for node ${i}: (${newX}, ${newY}, ${newZ})`);
+                continue; // Skip this node
+            }
+
+            this.nodes[i].x = newX;
+            this.nodes[i].y = newY;
+            this.nodes[i].z = newZ;
+        }
+    }
+
+    /**
+     * Updates the node data for the simulation.
+     * @param {Array} newNodes - The new array of nodes
+     */
+    updateNodeData(newNodes) {
+        this.nodes = newNodes;
+        this.initDimensions();
+        if (!this.useCPUSimulation) {
+            const dtPosition = this.gpuCompute.createTexture();
+            this.fillPositionTexture(dtPosition);
+            this.positionVariable.material.uniforms.texturePosition.value = dtPosition;
+        }
+    }
+
+    /**
+     * Updates the edge data for the simulation.
+     * @param {Array} newEdges - The new array of edges
+     */
+    updateEdgeData(newEdges) {
+        this.edges = newEdges;
+        if (!this.useCPUSimulation) {
+            this.velocityVariable.material.uniforms.edgeTexture.value = this.createEdgeTexture();
+            this.velocityVariable.material.uniforms.edgeCount.value = this.edges.length;
+        }
+    }
+
+    /**
+     * Sets the simulation parameters.
+     * @param {Object} params - The simulation parameters
+     */
+    setSimulationParameters(params) {
+        this.simulationParams = { ...this.simulationParams, ...params };
+        if (!this.useCPUSimulation) {
+            const velocityUniforms = this.velocityVariable.material.uniforms;
+            velocityUniforms.repulsionStrength.value = params.repulsionStrength || velocityUniforms.repulsionStrength.value;
+            velocityUniforms.attractionStrength.value = params.attractionStrength || velocityUniforms.attractionStrength.value;
+            velocityUniforms.maxSpeed.value = params.maxSpeed || velocityUniforms.maxSpeed.value;
+            velocityUniforms.damping.value = params.damping || velocityUniforms.damping.value;
+            velocityUniforms.centeringForce.value = params.centeringForce || velocityUniforms.centeringForce.value;
+            velocityUniforms.edgeDistance.value = params.edgeDistance || velocityUniforms.edgeDistance.value;
         }
     }
 }
