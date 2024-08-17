@@ -1,27 +1,3 @@
-/**
- * script.js
- *
- * This script creates a 3D visualization of a graph structure using Three.js and WebGL.
- * It includes support for VR (or VR spoofing), real-time updates via WebSocket,
- * GPU-accelerated force-directed graph layout, and debug features like node randomization.
- *
- * Features:
- * - 3D visualization of nodes (spheres) and edges (lines)
- * - VR support with option for VR spoofing
- * - Real-time graph updates via WebSocket
- * - GPU-accelerated force-directed graph layout
- * - Dynamic node labeling for closer nodes
- * - Responsive design (handles window resizing)
- * - Debug overlay with node and edge counts and simulation type (CPU/GPU)
- *
- * Dependencies:
- * - Three.js (imported via CDN)
- * - GraphSimulation (custom class for GPU-accelerated physics)
- *
- * @version 3.2
- * @license MIT
- */
-
 // Import necessary Three.js modules
 import * as THREE from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
@@ -35,7 +11,7 @@ import { GraphSimulation } from './GraphSimulation.js';
 // Global variables for Three.js components
 let renderer, scene, camera, controls;
 
-// Graph data and simulation
+// Graph data and simulation instance
 let nodes = [], edges = [];
 let graphSimulation;
 
@@ -84,8 +60,7 @@ function updateStatus(message) {
 function initScene() {
     updateStatus('Initializing Scene');
 
-    // Check for WebGL support
-    if (THREE.WebGL.isWebGLAvailable()) {
+    try {
         // Create the WebGL renderer
         renderer = new THREE.WebGLRenderer({ antialias: true });
 
@@ -129,12 +104,13 @@ function initScene() {
         window.addEventListener('resize', onWindowResize, false);
 
         console.log('Scene initialized');
-    } else {
-        // Display a warning message if WebGL is not available
-        const warning = THREE.WebGL.getWebGLErrorMessage();
+    } catch (error) {
+        console.error('Error initializing scene:', error);
+        updateStatus('WebGL not supported or error initializing scene');
+        const warning = document.createElement('p');
+        warning.textContent = 'WebGL is not supported in your browser or there was an error initializing the scene.';
         document.body.appendChild(warning);
-        updateStatus('WebGL 2 not supported');
-        throw new Error('WebGL 2 not supported');
+        throw new Error('WebGL not supported or error initializing scene');
     }
 }
 
@@ -246,7 +222,17 @@ async function loadData() {
         // Fetch graph data from the server
         const response = await fetch('/graph-data');
         const graphData = await response.json();
-        console.log('Received graph data:', graphData); // Debug log
+        console.log('Received graph data:', graphData);
+
+        // Validate node positions
+        graphData.nodes.forEach(node => {
+            if (typeof node.x !== 'number' || typeof node.y !== 'number' || typeof node.z !== 'number') {
+                console.warn(`Invalid position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
+                node.x = Math.random() * 100 - 50;
+                node.y = Math.random() * 100 - 50;
+                node.z = Math.random() * 100 - 50;
+            }
+        });
 
         // Update the graph with the loaded data
         updateGraphData(graphData);
@@ -343,7 +329,8 @@ function updateGraphData(graphData) {
             });
 
             // Update simulation type display
-            simulationTypeEl.textContent = `Simulation: ${graphSimulation.useCPUSimulation ? 'CPU' : 'GPU'}`;
+            simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
+            updateStatus(`Graph simulation initialized (${graphSimulation.simulationType})`);
 
         } catch (error) {
             console.error('Error initializing GraphSimulation:', error);
@@ -356,8 +343,9 @@ function updateGraphData(graphData) {
             graphSimulation.updateNodeData(nodes);
             graphSimulation.updateEdgeData(edges);
 
-            // Update simulation type display
-            simulationTypeEl.textContent = `Simulation: ${graphSimulation.useCPUSimulation ? 'CPU' : 'GPU'}`;
+            // Update simulation type display (in case it has changed)
+            simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
+            updateStatus(`Graph data updated (${graphSimulation.simulationType} simulation)`);
 
         } catch (error) {
             console.error('Error updating GraphSimulation:', error);
@@ -468,11 +456,16 @@ function updateGraphObjects() {
         }
 
         // Update node position
-        mesh.position.set(
-            positionArray[index * 4],
-            positionArray[index * 4 + 1],
-            positionArray[index * 4 + 2]
-        );
+        const x = positionArray[index * 4];
+        const y = positionArray[index * 4 + 1];
+        const z = positionArray[index * 4 + 2];
+
+        if (isNaN(x) || isNaN(y) || isNaN(z)) {
+            console.warn(`NaN position detected for node ${node.name}: (${x}, ${y}, ${z})`);
+            return; // Skip this node
+        }
+
+        mesh.position.set(x, y, z);
 
         // Update node size, color, and user data
         mesh.scale.setScalar(calculateNodeSize(node.size));
@@ -609,6 +602,13 @@ function animate(time) {
     // Perform graph simulation if initialized
     if (graphSimulation) {
         try {
+            // Check if simulation type has changed
+            const currentSimType = graphSimulation.simulationType;
+            if (currentSimType !== simulationTypeEl.textContent.split(': ')[1]) {
+                simulationTypeEl.textContent = `Simulation: ${currentSimType}`;
+                updateStatus(`Simulation type changed to ${currentSimType}`);
+            }
+
             // Compute the next step of the simulation
             graphSimulation.compute(deltaTime);
 
@@ -678,6 +678,17 @@ async function init() {
     // Load initial graph data
     await loadData();
 
+    // Check initial node positions
+    nodes.forEach((node, index) => {
+        if (isNaN(node.x) || isNaN(node.y) || isNaN(node.z)) {
+            console.warn(`Invalid initial position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
+            // Set to a default position
+            node.x = 0;
+            node.y = 0;
+            node.z = 0;
+        }
+    });
+
     // Start the animation loop
     animate(0);
 }
@@ -685,13 +696,18 @@ async function init() {
 // Load the font before starting the application
 const loader = new FontLoader();
 loader.load(
-    'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
+    'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', // Ensure this path is correct, or adjust as per your setup
     function (loadedFont) {
         font = loadedFont;
         console.log('Font loaded successfully');
     },
     function (xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        // Ensure xhr.total is greater than 0 to avoid irregular percentage values
+        if (xhr.total > 0) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        } else {
+            console.warn('Could not determine loading percentage');
+        }
     },
     function (err) {
         console.error('An error happened while loading the font:', err);
