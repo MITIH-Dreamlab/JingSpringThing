@@ -13,6 +13,8 @@ The 2D graph seen there is fine, but a bit useless. I wanted something I can exp
 
 ![image](https://github.com/user-attachments/assets/873809d5-d8bd-44c3-884c-ce9418e273ef)
 
+![image](./optimized-output.gif)
+
 ## Features
 
 - Fetch and parse Markdown files from GitHub
