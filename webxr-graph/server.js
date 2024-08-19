@@ -9,7 +9,7 @@ const crypto = require('crypto');
 const WebSocket = require('ws');
 require('dotenv').config();
 
-// Constants for file paths and GitHub configurations
+// Constants for file paths and configurations
 const PROCESSED_STORAGE_PATH = '/usr/src/app/data/processed_files';
 const MARKDOWN_STORAGE_PATH = path.join(PROCESSED_STORAGE_PATH, 'markdown');
 const GRAPH_DATA_PATH = path.join(PROCESSED_STORAGE_PATH, 'graph-data.json');
@@ -17,15 +17,21 @@ const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_DIRECTORY = process.env.GITHUB_DIRECTORY;
 const GITHUB_ACCESS_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
+const RAGFLOW_BASE_URL = process.env.RAGFLOW_BASE_URL;
+const RAGFLOW_API_KEY = process.env.RAGFLOW_API_KEY;
 
 // Express app setup
 const app = express();
+app.use(express.json());
+app.use(express.static('public'));
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
 // WebSocket server
 let wss;
 
+// Store the active conversation ID
+let activeConversationId = null;
 /**
  * Initializes HTTPS options by reading key and certificate files.
  * @returns {Promise<void>}
@@ -371,14 +377,55 @@ async function refreshGraphData() {
     }
 }
 
+/**
+ * Creates a new conversation with the RAGFlow server.
+ * @param {string} userId - Unique identifier for the user.
+ * @returns {Promise<string>} The conversation ID.
+ */
+async function createConversation(userId) {
+    try {
+        const response = await axios.get(`${RAGFLOW_BASE_URL}api/new_conversation`, {
+            headers: { 'Authorization': `Bearer ${RAGFLOW_API_KEY}` },
+            params: { user_id: userId }
+        });
+        return response.data.data.id;
+    } catch (error) {
+        console.error('Error creating conversation:', error);
+        throw new Error('Failed to create conversation');
+    }
+}
+
+/**
+ * Sends a message to the RAGFlow server and gets the response.
+ * @param {string} conversationId - The ID of the active conversation.
+ * @param {string} message - The user's message.
+ * @returns {Promise<Object>} The response from RAGFlow.
+ */
+async function sendMessage(conversationId, message) {
+    try {
+        const response = await axios.post(`${RAGFLOW_BASE_URL}api/completion`, {
+            conversation_id: conversationId,
+            messages: [{ role: 'user', content: message }],
+            stream: false
+        }, {
+            headers: {
+                'Authorization': `Bearer ${RAGFLOW_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending message:', error);
+        throw new Error('Failed to send message');
+    }
+}
+
+
 
 // Set up Express routes
 app.use(express.static('public'));
 
-/**
- * Route to get graph data.
- * Sends the current graph data and initiates a background refresh.
- */
+// Define routes
 app.get('/graph-data', async (req, res) => {
     try {
         const graphData = await loadGraphData();
@@ -401,10 +448,6 @@ app.get('/graph-data', async (req, res) => {
     }
 });
 
-/**
- * Route to test GitHub API access.
- * Useful for debugging GitHub API issues.
- */
 app.get('/test-github-api', async (req, res) => {
     try {
         const response = await axios.get(
@@ -420,6 +463,28 @@ app.get('/test-github-api', async (req, res) => {
     } catch (error) {
         console.error('Error testing GitHub API:', error);
         res.status(500).json({ error: 'Failed to access GitHub API', details: error.message });
+    }
+});
+
+app.post('/api/chat/init', async (req, res) => {
+    try {
+        const userId = req.body.userId || 'default-user';
+        activeConversationId = await createConversation(userId);
+        res.json({ success: true, conversationId: activeConversationId });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to initialize chat' });
+    }
+});
+
+app.post('/api/chat/message', async (req, res) => {
+    if (!activeConversationId) {
+        return res.status(400).json({ error: 'Chat not initialized' });
+    }
+    try {
+        const response = await sendMessage(activeConversationId, req.body.message);
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to process message' });
     }
 });
 
@@ -440,6 +505,7 @@ async function main() {
             console.log('New WebSocket connection');
             ws.on('message', (message) => {
                 console.log('Received:', message);
+                // Handle WebSocket messages if needed
             });
         });
 
@@ -461,5 +527,6 @@ async function main() {
 
 // Start the application
 main().catch((err) => {
-    console.error('Unexpected error:', err); process.exit(1); 
+    console.error('Unexpected error:', err);
+    process.exit(1);
 });
