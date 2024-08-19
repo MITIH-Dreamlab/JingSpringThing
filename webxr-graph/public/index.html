@@ -16,6 +16,31 @@
             padding: 10px;
             font-family: Arial, sans-serif;
         }
+        #questionContainer {
+            position: fixed;
+            bottom: 10%;
+            width: 100%;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #questionInput {
+            width: 60%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #askButton {
+            padding: 10px;
+            font-size: 16px;
+        }
+        #answerBox {
+            margin-top: 10px;
+            font-size: 16px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
     </style>
     <!-- Import map for local Three.js modules resolution -->
     <script type="importmap">
@@ -34,6 +59,11 @@
         <p id="nodeCount">Nodes: -</p>
         <p id="edgeCount">Edges: -</p>
         <p id="simulationType">Simulation: -</p>
+    </div>
+    <div id="questionContainer">
+        <input type="text" id="questionInput" placeholder="Ask a question..."/>
+        <button id="askButton">Ask</button>
+        <div id="answerBox"></div>
     </div>
     <script type="module" src="/script.js"></script>
 </body>

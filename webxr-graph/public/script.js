@@ -28,13 +28,13 @@ let lastTime = 0;
 let font;
 
 // Constants for graph visualization
-const NODE_BASE_SIZE = 5; // Base size for nodes
-const NODE_SIZE_EXPONENT = 0.5; // Exponent for node size scaling
-const MAX_FILE_SIZE = 1000000; // Maximum file size (1MB) for node size calculation
-const MAX_HYPERLINK_COUNT = 2000; // Maximum hyperlink count for node color calculation
-const MAX_EDGE_WEIGHT = 100; // Maximum edge weight for edge color calculation
-const INITIAL_POSITION_RANGE = 1000; // Range for initial random node positions
-const TEXT_VISIBILITY_THRESHOLD = 100; // Distance threshold for showing node labels
+const NODE_BASE_SIZE = 5;
+const NODE_SIZE_EXPONENT = 0.5;
+const MAX_FILE_SIZE = 1000000;
+const MAX_HYPERLINK_COUNT = 2000;
+const MAX_EDGE_WEIGHT = 100;
+const INITIAL_POSITION_RANGE = 1000;
+const TEXT_VISIBILITY_THRESHOLD = 100;
 
 // VR Spoofing flag (set to false for real WebXR in production)
 const SPOOF_VR = true;
@@ -81,7 +81,7 @@ function initScene() {
 
         // Create a perspective camera
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
+        
         // Set the camera's initial position
         camera.position.set(0, 0, 200);
 
@@ -188,281 +188,284 @@ function randomizeNodePositions() {
         positionArray[i * 4 + 3] = 1; // W component (homogeneous coordinates)
     }
 
-    // Update the node positions in the graph simulation
-    graphSimulation.updateNodePositions(positionArray);
+        // Update the node positions in the graph simulation
+        graphSimulation.updateNodePositions(positionArray);
 
-    console.log('Node positions randomized');
-
-    // Update the visual representation of the graph
-    updateGraphObjects();
-}
-
+        console.log('Node positions randomized');
+    
+        // Update the visual representation of the graph
+        updateGraphObjects();
+    }
+    
 /**
  * Sets up keyboard controls
  */
 function setupKeyboardControls() {
     // Add an event listener for key presses
     document.addEventListener('keydown', (event) => {
-        // If the spacebar is pressed, randomize node positions
-        if (event.code === 'Space') {
+        // If Control+R is pressed, randomize node positions
+        if (event.ctrlKey && event.code === 'KeyR') {
+            event.preventDefault(); // Prevent the default browser refresh action
             randomizeNodePositions();
         }
     });
 
-    console.log('Keyboard controls set up. Press spacebar to randomize node positions.');
+    console.log('Keyboard controls set up. Press Control+R to randomize node positions.');
 }
 
-/**
- * Loads initial graph data from the server and sets up WebSocket
- */
-async function loadData() {
-    updateStatus('Loading graph data');
-
-    try {
-        // Fetch graph data from the server
-        const response = await fetch('/graph-data');
-        const graphData = await response.json();
-        console.log('Received graph data:', graphData);
-
-        // Validate node positions
-        graphData.nodes.forEach(node => {
-            if (typeof node.x !== 'number' || typeof node.y !== 'number' || typeof node.z !== 'number') {
-                console.warn(`Invalid position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
-                node.x = Math.random() * 100 - 50;
-                node.y = Math.random() * 100 - 50;
-                node.z = Math.random() * 100 - 50;
-            }
-        });
-
-        // Update the graph with the loaded data
-        updateGraphData(graphData);
-        updateStatus('Graph data loaded');
-
-        // Set up WebSocket connection for real-time updates
-        setupWebSocket();
-    } catch (error) {
-        console.error('Error loading graph data:', error);
-        updateStatus('Error loading graph data');
-    }
-}
-
-/**
- * Sets up WebSocket connection for real-time updates
- */
-function setupWebSocket() {
-    // Determine the appropriate WebSocket protocol (ws or wss) based on the current page protocol
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-
-    // Create a new WebSocket connection to the server
-    socket = new WebSocket(`${protocol}//${window.location.host}`);
-
-    // Event handler for when the WebSocket connection is opened
-    socket.onopen = () => {
-        console.log('WebSocket connection established');
-        updateStatus('WebSocket connected');
-    };
-
-    // Event handler for when a message is received from the server
-    socket.onmessage = (event) => {
-        // Parse the received message as JSON
-        const updatedGraphData = JSON.parse(event.data);
-        console.log('Received updated graph data:', updatedGraphData); // Debug log
-
-        // Update the graph with the new data
-        updateGraphData(updatedGraphData);
-        updateStatus('Graph data updated');
-    };
-
-    // Event handler for WebSocket errors
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        updateStatus('WebSocket error');
-    };
-
-    // Event handler for when the WebSocket connection is closed
-    socket.onclose = () => {
-        console.log('WebSocket connection closed');
-        updateStatus('WebSocket disconnected');
-    };
-}
-
-/**
- * Updates the graph data and recreates graph objects
- * @param {Object} graphData - The new graph data
- */
-function updateGraphData(graphData) {
-    // Check if the graph data is valid
-    if (!graphData || !graphData.nodes || !graphData.edges) {
-        console.error('Invalid graph data received:', graphData);
-        return;
-    }
-
-    // Update the nodes and edges arrays with the new data
-    nodes = graphData.nodes;
-    edges = graphData.edges;
-
-    console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
-
-    // Update debug information in the DOM
-    nodeCountEl.textContent = `Nodes: ${nodes.length}`;
-    edgeCountEl.textContent = `Edges: ${edges.length}`;
-
-    // Initialize or update the GraphSimulation
-    if (!graphSimulation) {
+    
+    /**
+     * Loads initial graph data from the server and sets up WebSocket
+     */
+    async function loadData() {
+        updateStatus('Loading graph data');
+    
         try {
-            // Check if the renderer is initialized
-            if (!renderer) {
-                throw new Error('Renderer not initialized');
-            }
-
-            // Create a new GraphSimulation instance
-            graphSimulation = new GraphSimulation(renderer, nodes, edges);
-
-            // Set initial simulation parameters
-            graphSimulation.setSimulationParameters({
-                repulsionStrength: 60.0,
-                attractionStrength: 0.15,
-                maxSpeed: 12.0,
-                damping: 0.98,
-                centeringForce: 0.005,
-                edgeDistance: 5.0
-            });
-
-            // Update simulation type display
-            simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
-            updateStatus(`Graph simulation initialized (${graphSimulation.simulationType})`);
-
-        } catch (error) {
-            console.error('Error initializing GraphSimulation:', error);
-            updateStatus('Error initializing simulation');
-            return; // Exit the function if we can't initialize the simulation
-        }
-    } else {
-        try {
-            // Update the node and edge data in the existing GraphSimulation instance
-            graphSimulation.updateNodeData(nodes);
-            graphSimulation.updateEdgeData(edges);
-
-            // Update simulation type display (in case it has changed)
-            simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
-            updateStatus(`Graph data updated (${graphSimulation.simulationType} simulation)`);
-
-        } catch (error) {
-            console.error('Error updating GraphSimulation:', error);
-            updateStatus('Error updating simulation');
-            return; // Exit the function if we can't update the simulation
-        }
-    }
-
-    // Update the visual representation of the graph
-    try {
-        updateGraphObjects();
-    } catch (error) {
-        console.error('Error updating graph objects:', error);
-        updateStatus('Error updating graph visualization');
-    }
-
-    // If we've made it this far without errors, update the status
-    updateStatus('Graph data updated successfully');
-}
-
-/**
- * Updates 3D objects for nodes and edges
- */
-function updateGraphObjects() {
-    // Check if the graph simulation is initialized
-    if (!graphSimulation) {
-        console.error('GraphSimulation not initialized');
-        return;
-    }
-
-    // Get node positions based on simulation type
-    let positionArray;
-    if (graphSimulation.useCPUSimulation) {
-        // For CPU simulation, get positions directly from nodes
-        positionArray = new Float32Array(nodes.length * 4);
-        nodes.forEach((node, index) => {
-            positionArray[index * 4] = node.x;
-            positionArray[index * 4 + 1] = node.y;
-            positionArray[index * 4 + 2] = node.z;
-            positionArray[index * 4 + 3] = 1;
-        });
-    } else if (graphSimulation.gpuCompute) {
-        // For GPU simulation, read positions from the GPU computation result
-        const WIDTH = graphSimulation.WIDTH;
-        const HEIGHT = graphSimulation.HEIGHT;
-        positionArray = new Float32Array(WIDTH * HEIGHT * 4);
-        renderer.readRenderTargetPixels(
-            graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
-            0, 0, WIDTH, HEIGHT,
-            positionArray
-        );
-    } else {
-        console.error('Neither CPU nor GPU simulation is available');
-        return;
-    }
-
-    // Update or create nodes
-    nodes.forEach((node, index) => {
-        let mesh = nodePool[index];
-
-        // Create a new node mesh if it doesn't exist
-        if (!mesh) {
-            // Create a new icosahedron geometry for the node
-            const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1);
-
-            // Create a new Phong material for the node
-            const material = new THREE.MeshPhongMaterial();
-
-            // Create a new mesh using the geometry and material
-            mesh = new THREE.Mesh(geometry, material);
-
-            // Add the mesh to the node pool
-            nodePool[index] = mesh;
-
-            // Add the mesh to the scene
-            scene.add(mesh);
-
-            // Create a text label for the node (hidden by default)
-            if (font) {
-                try {
-                    // Create a new text geometry using the loaded font
-                    const textGeometry = new TextGeometry(node.name, {
-                        font: font,
-                        size: NODE_BASE_SIZE * 0.5,
-                        height: 0.1,
-                    });
-
-                    // Create a new basic material for the text
-                    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-                    // Create a new mesh for the text
-                    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-                    // Position the text above the node
-                    textMesh.position.y = NODE_BASE_SIZE * 1.5;
-
-                    // Hide the text by default
-                    textMesh.visible = false;
-
-                    // Add the text mesh as a child of the node mesh
-                    mesh.add(textMesh);
-                } catch (error) {
-                    console.warn('Error creating text for node:', node.name, error);
+            // Fetch graph data from the server
+            const response = await fetch('/graph-data');
+            const graphData = await response.json();
+            console.log('Received graph data:', graphData);
+    
+            // Validate node positions
+            graphData.nodes.forEach(node => {
+                if (typeof node.x !== 'number' || typeof node.y !== 'number' || typeof node.z !== 'number') {
+                    console.warn(`Invalid position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
+                    node.x = Math.random() * 100 - 50;
+                    node.y = Math.random() * 100 - 50;
+                    node.z = Math.random() * 100 - 50;
                 }
-            } else {
-                console.warn('Font not loaded, skipping text label for node:', node.name);
+            });
+    
+            // Update the graph with the loaded data
+            updateGraphData(graphData);
+            updateStatus('Graph data loaded');
+    
+            // Set up WebSocket connection for real-time updates
+            setupWebSocket();
+        } catch (error) {
+            console.error('Error loading graph data:', error);
+            updateStatus('Error loading graph data');
+        }
+    }
+    
+    /**
+     * Sets up WebSocket connection for real-time updates
+     */
+    function setupWebSocket() {
+        // Determine the appropriate WebSocket protocol (ws or wss) based on the current page protocol
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    
+        // Create a new WebSocket connection to the server
+        socket = new WebSocket(`${protocol}//${window.location.host}`);
+    
+        // Event handler for when the WebSocket connection is opened
+        socket.onopen = () => {
+            console.log('WebSocket connection established');
+            updateStatus('WebSocket connected');
+        };
+    
+        // Event handler for when a message is received from the server
+        socket.onmessage = (event) => {
+            // Parse the received message as JSON
+            const updatedGraphData = JSON.parse(event.data);
+            console.log('Received updated graph data:', updatedGraphData); // Debug log
+    
+            // Update the graph with the new data
+            updateGraphData(updatedGraphData);
+            updateStatus('Graph data updated');
+        };
+    
+        // Event handler for WebSocket errors
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            updateStatus('WebSocket error');
+        };
+    
+        // Event handler for when the WebSocket connection is closed
+        socket.onclose = () => {
+            console.log('WebSocket connection closed');
+            updateStatus('WebSocket disconnected');
+        };
+    }
+    
+    /**
+     * Updates the graph data and re-creates graph objects
+     * @param {Object} graphData - The new graph data
+     */
+    function updateGraphData(graphData) {
+        // Check if the graph data is valid
+        if (!graphData || !graphData.nodes || !graphData.edges) {
+            console.error('Invalid graph data received:', graphData);
+            return;
+        }
+    
+        // Update the nodes and edges arrays with the new data
+        nodes = graphData.nodes;
+        edges = graphData.edges;
+    
+        console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
+    
+        // Update debug information in the DOM
+        nodeCountEl.textContent = `Nodes: ${nodes.length}`;
+        edgeCountEl.textContent = `Edges: ${edges.length}`;
+    
+        // Initialize or update the GraphSimulation
+        if (!graphSimulation) {
+            try {
+                // Check if the renderer is initialized
+                if (!renderer) {
+                    throw new Error('Renderer not initialized');
+                }
+    
+                // Create a new GraphSimulation instance
+                graphSimulation = new GraphSimulation(renderer, nodes, edges);
+    
+                // Set initial simulation parameters
+                graphSimulation.setSimulationParameters({
+                    repulsionStrength: 60.0,
+                    attractionStrength: 0.15,
+                    maxSpeed: 12.0,
+                    damping: 0.98,
+                    centeringForce: 0.005,
+                    edgeDistance: 5.0
+                });
+    
+                // Update simulation type display
+                simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
+                updateStatus(`Graph simulation initialized (${graphSimulation.simulationType})`);
+
+            } catch (error) {
+                console.error('Error initializing GraphSimulation:', error);
+                updateStatus('Error initializing simulation');
+                return; // Exit the function if we can't initialize the simulation
+            }
+        } else {
+            try {
+                // Update the node and edge data in the existing GraphSimulation instance
+                graphSimulation.updateNodeData(nodes);
+                graphSimulation.updateEdgeData(edges);
+    
+                // Update simulation type display (in case it has changed)
+                simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
+                updateStatus(`Graph data updated (${graphSimulation.simulationType} simulation)`);
+    
+            } catch (error) {
+                console.error('Error updating GraphSimulation:', error);
+                updateStatus('Error updating simulation');
+                return; // Exit the function if we can't update the simulation
             }
         }
-
-        // Update node position
-        const x = positionArray[index * 4];
-        const y = positionArray[index * 4 + 1];
-        const z = positionArray[index * 4 + 2];
-
-        if (isNaN(x) || isNaN(y) || isNaN(z)) {
-            console.warn(`NaN position detected for node ${node.name}: (${x}, ${y}, ${z})`);
-            return; // Skip this node
+    
+        // Update the visual representation of the graph
+        try {
+            updateGraphObjects();
+        } catch (error) {
+            console.error('Error updating graph objects:', error);
+            updateStatus('Error updating graph visualization');
+        }
+    
+        // If we've made it this far without errors, update the status
+        updateStatus('Graph data updated successfully');
+    }
+    
+    /**
+     * Updates 3D objects for nodes and edges
+     */
+    function updateGraphObjects() {
+        // Check if the graph simulation is initialized
+        if (!graphSimulation) {
+            console.error('GraphSimulation not initialized');
+            return;
+        }
+    
+        // Get node positions based on simulation type
+        let positionArray;
+        if (graphSimulation.useCPUSimulation) {
+            // For CPU simulation, get positions directly from nodes
+            positionArray = new Float32Array(nodes.length * 4);
+            nodes.forEach((node, index) => {
+                positionArray[index * 4] = node.x;
+                positionArray[index * 4 + 1] = node.y;
+                positionArray[index * 4 + 2] = node.z;
+                positionArray[index * 4 + 3] = 1;
+            });
+        } else if (graphSimulation.gpuCompute) {
+            // For GPU simulation, read positions from the GPU computation result
+            const WIDTH = graphSimulation.WIDTH;
+            const HEIGHT = graphSimulation.HEIGHT;
+            positionArray = new Float32Array(WIDTH * HEIGHT * 4);
+            renderer.readRenderTargetPixels(
+                graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
+                0, 0, WIDTH, HEIGHT,
+                positionArray
+            );
+        } else {
+            console.error('Neither CPU nor GPU simulation is available');
+            return;
+        }
+    
+        // Update or create nodes
+        nodes.forEach((node, index) => {
+            let mesh = nodePool[index];
+    
+            // Create a new node mesh if it doesn't exist
+            if (!mesh) {
+                // Create a new icosahedron geometry for the node
+                const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1);
+    
+                // Create a new Phong material for the node
+                const material = new THREE.MeshPhongMaterial();
+    
+                // Create a new mesh using the geometry and material
+                mesh = new THREE.Mesh(geometry, material);
+    
+                // Add the mesh to the node pool
+                nodePool[index] = mesh;
+    
+                // Add the mesh to the scene
+                scene.add(mesh);
+    
+                // Create a text label for the node (hidden by default)
+                if (font) {
+                    try {
+                        // Create a new text geometry using the loaded font
+                        const textGeometry = new TextGeometry(node.name, {
+                            font: font,
+                            size: NODE_BASE_SIZE * 0.5,
+                            height: 0.1,
+                        });
+    
+                        // Create a new basic material for the text
+                        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    
+                        // Create a new mesh for the text
+                        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    
+                        // Position the text above the node
+                        textMesh.position.y = NODE_BASE_SIZE * 1.5;
+    
+                        // Hide the text by default
+                        textMesh.visible = false;
+    
+                        // Add the text mesh as a child of the node mesh
+                        mesh.add(textMesh);
+                    } catch (error) {
+                        console.warn('Error creating text for node:', node.name, error);
+                    }
+                } else {
+                    console.warn('Font not loaded, skipping text label for node:', node.name);
+                }
+            }
+    
+            // Update node position
+            const x = positionArray[index * 4];
+            const y = positionArray[index * 4 + 1];
+            const z = positionArray[index * 4 + 2];
+    
+            if (isNaN(x) || isNaN(y) || isNaN(z)) {
+                console.warn(`NaN position detected for node ${node.name}: (${x}, ${y}, ${z})`);
+                return;
+            // Skip this node
         }
 
         mesh.position.set(x, y, z);
@@ -700,6 +703,7 @@ loader.load(
     function (loadedFont) {
         font = loadedFont;
         console.log('Font loaded successfully');
+        init(); // Initialize the application after the font is loaded
     },
     function (xhr) {
         // Ensure xhr.total is greater than 0 to avoid irregular percentage values
@@ -714,5 +718,43 @@ loader.load(
     }
 );
 
-// Initialize the application
-init();
+/**
+ * Event listener for the "Ask" button
+ */
+document.getElementById('askButton').addEventListener('click', async () => {
+    const question = document.getElementById('questionInput').value;
+
+    if (!question) {
+        alert("Please enter a question!");
+        return;
+    }
+
+    try {
+        const initResponse = await fetch('/api/chat/init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: 'webxr-user' }),
+        });
+        const initData = await initResponse.json();
+
+        if (!initData.success) {
+            throw new Error('Failed to initialize chat');
+        }
+
+        const messageResponse = await fetch('/api/chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: question }),
+        });
+        const messageData = await messageResponse.json();
+
+        document.getElementById('answerBox').innerText = messageData.data.answer;
+    } catch (error) {
+        console.error("Error asking question:", error);
+        alert("There was an error processing your question. Please try again.");
+    }
+});
