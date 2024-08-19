@@ -220,6 +220,14 @@ sequenceDiagram
    - Enhance node movements with more sophisticated physics, such as elastic and magnetic effects, to make the interactions feel more lifelike.
    - Adjust simulation parameters dynamically based on the size and complexity of the graph.
 
+13. **Voice to Voice**:
+    - Whisper MLX
+    - Silero VAD v5
+    - MeloTTS
+
+14: **Chat with avatar**
+   - Jarvis style head and shoulders interactive agent
+
 
 ## Performance Considerations
 
