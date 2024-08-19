@@ -1,6 +1,3 @@
-Based on the current context and the changes we've made, here's an updated version of the README.md:
-
-```markdown
 # WebXR Graph Visualization of Logseq Knowledge Graphs with RAGFlow Integration
 
 This project visualizes privately hosted GitHub Markdown files created by LogSeq and integrates with RAGFlow for question answering capabilities.
