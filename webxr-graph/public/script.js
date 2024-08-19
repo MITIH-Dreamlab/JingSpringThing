@@ -8,12 +8,6 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 // Import the custom GraphSimulation class
 import { GraphSimulation } from './GraphSimulation.js';
 
-// Import RAGFlow API interaction functions
-import { setApiKey, createConversation, getAnswer } from './ragflow_api.js';
-
-// Set the API key
-setApiKey('your-api-key-here');
-
 // Global variables for Three.js components
 let renderer, scene, camera, controls;
 
@@ -203,20 +197,22 @@ function randomizeNodePositions() {
         updateGraphObjects();
     }
     
-    /**
-     * Sets up keyboard controls
-     */
-    function setupKeyboardControls() {
-        // Add an event listener for key presses
-        document.addEventListener('keydown', (event) => {
-            // If the spacebar is pressed, randomize node positions
-            if (event.code === 'Space') {
-                randomizeNodePositions();
-            }
-        });
-    
-        console.log('Keyboard controls set up. Press spacebar to randomize node positions.');
-    }
+/**
+ * Sets up keyboard controls
+ */
+function setupKeyboardControls() {
+    // Add an event listener for key presses
+    document.addEventListener('keydown', (event) => {
+        // If Control+R is pressed, randomize node positions
+        if (event.ctrlKey && event.code === 'KeyR') {
+            event.preventDefault(); // Prevent the default browser refresh action
+            randomizeNodePositions();
+        }
+    });
+
+    console.log('Keyboard controls set up. Press Control+R to randomize node positions.');
+}
+
     
     /**
      * Loads initial graph data from the server and sets up WebSocket
@@ -726,7 +722,6 @@ loader.load(
  * Event listener for the "Ask" button
  */
 document.getElementById('askButton').addEventListener('click', async () => {
-    const user_id = "webxr-user"; // Unique identifier for the user. This can be dynamic.
     const question = document.getElementById('questionInput').value;
 
     if (!question) {
@@ -735,12 +730,31 @@ document.getElementById('askButton').addEventListener('click', async () => {
     }
 
     try {
-        const conversation_id = await createConversation(user_id);
-        const answer = await getAnswer(conversation_id, question);
-        document.getElementById('answerBox').innerText = answer;
+        const initResponse = await fetch('/api/chat/init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: 'webxr-user' }),
+        });
+        const initData = await initResponse.json();
+
+        if (!initData.success) {
+            throw new Error('Failed to initialize chat');
+        }
+
+        const messageResponse = await fetch('/api/chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: question }),
+        });
+        const messageData = await messageResponse.json();
+
+        document.getElementById('answerBox').innerText = messageData.data.answer;
     } catch (error) {
         console.error("Error asking question:", error);
         alert("There was an error processing your question. Please try again.");
     }
 });
-
