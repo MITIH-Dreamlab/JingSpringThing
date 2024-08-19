@@ -19,3 +19,4 @@ VOLUME /usr/src/app/data
 
 USER node
 CMD ["node", "server.js"]
+
