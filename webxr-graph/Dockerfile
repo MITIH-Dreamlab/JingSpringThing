@@ -1,22 +1,34 @@
-FROM node:14
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
-RUN apt-get update && apt-get install -y openssl
-COPY . .
-COPY .env .
+FROM node:16
 
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Install openssl for certificate generation
+RUN apt-get update && apt-get install -y openssl
+
+# Copy application code
+COPY . .
+
+# Generate SSL certificate
 RUN chmod +x ./generate-cert.sh && ./generate-cert.sh
 
-# Remove these lines as they might conflict with the VOLUME instruction
-# RUN mkdir -p /usr/src/app/data/processed_files/markdown
-# RUN chown -R node:node /usr/src/app/data
+# Create data directory and set permissions
+RUN mkdir -p /usr/src/app/data && chown -R node:node /usr/src/app
 
+# Expose port
 EXPOSE 8443
 
-# Move the VOLUME instruction here
+# Create volume for persistent data
 VOLUME /usr/src/app/data
 
+# Switch to non-root user
 USER node
-CMD ["node", "server.js"]
 
+# Start the application
+CMD ["node", "server.js"]
