@@ -39,21 +39,37 @@ const TEXT_VISIBILITY_THRESHOLD = 100;
 // VR Spoofing flag (set to false for real WebXR in production)
 const SPOOF_VR = true;
 
-// Debug elements in the DOM
-const statusEl = document.getElementById('status');
-const nodeCountEl = document.getElementById('nodeCount');
-const edgeCountEl = document.getElementById('edgeCount');
-const simulationTypeEl = document.getElementById('simulationType');
+// Chat window elements
+const chatWindow = document.getElementById('chatWindow');
+const questionInput = document.getElementById('questionInput');
+const askButton = document.getElementById('askButton');
+const smartPane = document.getElementById('smartPane');
+const resizeHandle = document.getElementById('resizeHandle');
+
+// Chat-related variables
+let currentConversationId = null;
 
 /**
- * Updates the status message on the page and in the console
+ * Updates the status message and adds it to the chat window
  * @param {string} message - The status message to display
  */
 function updateStatus(message) {
-    statusEl.textContent = `Status: ${message}`;
+    addMessageToChat('System', `Status: ${message}`);
     console.log(`Status: ${message}`);
 }
 
+/**
+ * Adds a message to the chat window
+ * @param {string} sender - The sender of the message
+ * @param {string} message - The message content
+ */
+function addMessageToChat(sender, message) {
+    const messageElement = document.createElement('div');
+    messageElement.className = 'chat-message';
+    messageElement.innerHTML = `<strong>${sender}:</strong> ${marked.parse(message)}`;
+    chatWindow.appendChild(messageElement);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
 /**
  * Initializes the 3D scene, camera, and renderer
  */
@@ -81,7 +97,7 @@ function initScene() {
 
         // Create a perspective camera
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
+
         // Set the camera's initial position
         camera.position.set(0, 0, 200);
 
@@ -107,9 +123,6 @@ function initScene() {
     } catch (error) {
         console.error('Error initializing scene:', error);
         updateStatus('WebGL not supported or error initializing scene');
-        const warning = document.createElement('p');
-        warning.textContent = 'WebGL is not supported in your browser or there was an error initializing the scene.';
-        document.body.appendChild(warning);
         throw new Error('WebGL not supported or error initializing scene');
     }
 }
@@ -188,15 +201,15 @@ function randomizeNodePositions() {
         positionArray[i * 4 + 3] = 1; // W component (homogeneous coordinates)
     }
 
-        // Update the node positions in the graph simulation
-        graphSimulation.updateNodePositions(positionArray);
+    // Update the node positions in the graph simulation
+    graphSimulation.updateNodePositions(positionArray);
 
-        console.log('Node positions randomized');
-    
-        // Update the visual representation of the graph
-        updateGraphObjects();
-    }
-    
+    console.log('Node positions randomized');
+
+    // Update the visual representation of the graph
+    updateGraphObjects();
+}
+
 /**
  * Sets up keyboard controls
  */
@@ -213,259 +226,256 @@ function setupKeyboardControls() {
     console.log('Keyboard controls set up. Press Control+R to randomize node positions.');
 }
 
-    
-    /**
-     * Loads initial graph data from the server and sets up WebSocket
-     */
-    async function loadData() {
-        updateStatus('Loading graph data');
-    
-        try {
-            // Fetch graph data from the server
-            const response = await fetch('/graph-data');
-            const graphData = await response.json();
-            console.log('Received graph data:', graphData);
-    
-            // Validate node positions
-            graphData.nodes.forEach(node => {
-                if (typeof node.x !== 'number' || typeof node.y !== 'number' || typeof node.z !== 'number') {
-                    console.warn(`Invalid position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
-                    node.x = Math.random() * 100 - 50;
-                    node.y = Math.random() * 100 - 50;
-                    node.z = Math.random() * 100 - 50;
-                }
-            });
-    
-            // Update the graph with the loaded data
-            updateGraphData(graphData);
-            updateStatus('Graph data loaded');
-    
-            // Set up WebSocket connection for real-time updates
-            setupWebSocket();
-        } catch (error) {
-            console.error('Error loading graph data:', error);
-            updateStatus('Error loading graph data');
-        }
-    }
-    
-    /**
-     * Sets up WebSocket connection for real-time updates
-     */
-    function setupWebSocket() {
-        // Determine the appropriate WebSocket protocol (ws or wss) based on the current page protocol
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    
-        // Create a new WebSocket connection to the server
-        socket = new WebSocket(`${protocol}//${window.location.host}`);
-    
-        // Event handler for when the WebSocket connection is opened
-        socket.onopen = () => {
-            console.log('WebSocket connection established');
-            updateStatus('WebSocket connected');
-        };
-    
-        // Event handler for when a message is received from the server
-        socket.onmessage = (event) => {
-            // Parse the received message as JSON
-            const updatedGraphData = JSON.parse(event.data);
-            console.log('Received updated graph data:', updatedGraphData); // Debug log
-    
-            // Update the graph with the new data
-            updateGraphData(updatedGraphData);
-            updateStatus('Graph data updated');
-        };
-    
-        // Event handler for WebSocket errors
-        socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            updateStatus('WebSocket error');
-        };
-    
-        // Event handler for when the WebSocket connection is closed
-        socket.onclose = () => {
-            console.log('WebSocket connection closed');
-            updateStatus('WebSocket disconnected');
-        };
-    }
-    
-    /**
-     * Updates the graph data and re-creates graph objects
-     * @param {Object} graphData - The new graph data
-     */
-    function updateGraphData(graphData) {
-        // Check if the graph data is valid
-        if (!graphData || !graphData.nodes || !graphData.edges) {
-            console.error('Invalid graph data received:', graphData);
-            return;
-        }
-    
-        // Update the nodes and edges arrays with the new data
-        nodes = graphData.nodes;
-        edges = graphData.edges;
-    
-        console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
-    
-        // Update debug information in the DOM
-        nodeCountEl.textContent = `Nodes: ${nodes.length}`;
-        edgeCountEl.textContent = `Edges: ${edges.length}`;
-    
-        // Initialize or update the GraphSimulation
-        if (!graphSimulation) {
-            try {
-                // Check if the renderer is initialized
-                if (!renderer) {
-                    throw new Error('Renderer not initialized');
-                }
-    
-                // Create a new GraphSimulation instance
-                graphSimulation = new GraphSimulation(renderer, nodes, edges);
-    
-                // Set initial simulation parameters
-                graphSimulation.setSimulationParameters({
-                    repulsionStrength: 60.0,
-                    attractionStrength: 0.15,
-                    maxSpeed: 12.0,
-                    damping: 0.98,
-                    centeringForce: 0.005,
-                    edgeDistance: 5.0
-                });
-    
-                // Update simulation type display
-                simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
-                updateStatus(`Graph simulation initialized (${graphSimulation.simulationType})`);
+/**
+ * Loads initial graph data from the server and sets up WebSocket
+ */
+async function loadData() {
+    updateStatus('Loading graph data');
 
-            } catch (error) {
-                console.error('Error initializing GraphSimulation:', error);
-                updateStatus('Error initializing simulation');
-                return; // Exit the function if we can't initialize the simulation
+    try {
+        // Fetch graph data from the server
+        const response = await fetch('/graph-data');
+        const graphData = await response.json();
+        console.log('Received graph data:', graphData);
+
+        // Validate node positions
+        graphData.nodes.forEach(node => {
+            if (typeof node.x !== 'number' || typeof node.y !== 'number' || typeof node.z !== 'number') {
+                console.warn(`Invalid position for node ${node.name}: (${node.x}, ${node.y}, ${node.z})`);
+                node.x = Math.random() * 100 - 50;
+                node.y = Math.random() * 100 - 50;
+                node.z = Math.random() * 100 - 50;
             }
-        } else {
-            try {
-                // Update the node and edge data in the existing GraphSimulation instance
-                graphSimulation.updateNodeData(nodes);
-                graphSimulation.updateEdgeData(edges);
-    
-                // Update simulation type display (in case it has changed)
-                simulationTypeEl.textContent = `Simulation: ${graphSimulation.simulationType}`;
-                updateStatus(`Graph data updated (${graphSimulation.simulationType} simulation)`);
-    
-            } catch (error) {
-                console.error('Error updating GraphSimulation:', error);
-                updateStatus('Error updating simulation');
-                return; // Exit the function if we can't update the simulation
-            }
-        }
-    
-        // Update the visual representation of the graph
-        try {
-            updateGraphObjects();
-        } catch (error) {
-            console.error('Error updating graph objects:', error);
-            updateStatus('Error updating graph visualization');
-        }
-    
-        // If we've made it this far without errors, update the status
-        updateStatus('Graph data updated successfully');
+        });
+
+        // Update the graph with the loaded data
+        updateGraphData(graphData);
+        updateStatus('Graph data loaded');
+
+        // Set up WebSocket connection for real-time updates
+        setupWebSocket();
+    } catch (error) {
+        console.error('Error loading graph data:', error);
+        updateStatus('Error loading graph data');
     }
-    
-    /**
-     * Updates 3D objects for nodes and edges
-     */
-    function updateGraphObjects() {
-        // Check if the graph simulation is initialized
-        if (!graphSimulation) {
-            console.error('GraphSimulation not initialized');
-            return;
-        }
-    
-        // Get node positions based on simulation type
-        let positionArray;
-        if (graphSimulation.useCPUSimulation) {
-            // For CPU simulation, get positions directly from nodes
-            positionArray = new Float32Array(nodes.length * 4);
-            nodes.forEach((node, index) => {
-                positionArray[index * 4] = node.x;
-                positionArray[index * 4 + 1] = node.y;
-                positionArray[index * 4 + 2] = node.z;
-                positionArray[index * 4 + 3] = 1;
-            });
-        } else if (graphSimulation.gpuCompute) {
-            // For GPU simulation, read positions from the GPU computation result
-            const WIDTH = graphSimulation.WIDTH;
-            const HEIGHT = graphSimulation.HEIGHT;
-            positionArray = new Float32Array(WIDTH * HEIGHT * 4);
-            renderer.readRenderTargetPixels(
-                graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
-                0, 0, WIDTH, HEIGHT,
-                positionArray
-            );
-        } else {
-            console.error('Neither CPU nor GPU simulation is available');
-            return;
-        }
-    
-        // Update or create nodes
-        nodes.forEach((node, index) => {
-            let mesh = nodePool[index];
-    
-            // Create a new node mesh if it doesn't exist
-            if (!mesh) {
-                // Create a new icosahedron geometry for the node
-                const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1);
-    
-                // Create a new Phong material for the node
-                const material = new THREE.MeshPhongMaterial();
-    
-                // Create a new mesh using the geometry and material
-                mesh = new THREE.Mesh(geometry, material);
-    
-                // Add the mesh to the node pool
-                nodePool[index] = mesh;
-    
-                // Add the mesh to the scene
-                scene.add(mesh);
-    
-                // Create a text label for the node (hidden by default)
-                if (font) {
-                    try {
-                        // Create a new text geometry using the loaded font
-                        const textGeometry = new TextGeometry(node.name, {
-                            font: font,
-                            size: NODE_BASE_SIZE * 0.5,
-                            height: 0.1,
-                        });
-    
-                        // Create a new basic material for the text
-                        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    
-                        // Create a new mesh for the text
-                        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    
-                        // Position the text above the node
-                        textMesh.position.y = NODE_BASE_SIZE * 1.5;
-    
-                        // Hide the text by default
-                        textMesh.visible = false;
-    
-                        // Add the text mesh as a child of the node mesh
-                        mesh.add(textMesh);
-                    } catch (error) {
-                        console.warn('Error creating text for node:', node.name, error);
-                    }
-                } else {
-                    console.warn('Font not loaded, skipping text label for node:', node.name);
-                }
+}
+
+/**
+ * Sets up WebSocket connection for real-time updates
+ */
+function setupWebSocket() {
+    // Determine the appropriate WebSocket protocol (ws or wss) based on the current page protocol
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+    // Create a new WebSocket connection to the server
+    socket = new WebSocket(`${protocol}//${window.location.host}`);
+
+    // Event handler for when the WebSocket connection is opened
+    socket.onopen = () => {
+        console.log('WebSocket connection established');
+        updateStatus('WebSocket connected');
+    };
+
+    // Event handler for when a message is received from the server
+    socket.onmessage = (event) => {
+        // Parse the received message as JSON
+        const updatedGraphData = JSON.parse(event.data);
+        console.log('Received updated graph data:', updatedGraphData); // Debug log
+
+        // Update the graph with the new data
+        updateGraphData(updatedGraphData);
+        updateStatus('Graph data updated');
+    };
+
+    // Event handler for WebSocket errors
+    socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        updateStatus('WebSocket error');
+    };
+
+    // Event handler for when the WebSocket connection is closed
+    socket.onclose = () => {
+        console.log('WebSocket connection closed');
+        updateStatus('WebSocket disconnected');
+    };
+}
+
+/**
+ * Updates the graph data and re-creates graph objects
+ * @param {Object} graphData - The new graph data
+ */
+function updateGraphData(graphData) {
+    // Check if the graph data is valid
+    if (!graphData || !graphData.nodes || !graphData.edges) {
+        console.error('Invalid graph data received:', graphData);
+        return;
+    }
+
+    // Update the nodes and edges arrays with the new data
+    nodes = graphData.nodes;
+    edges = graphData.edges;
+
+    console.log(`Updating graph with ${nodes.length} nodes and ${edges.length} edges`);
+
+    // Update debug information in the chat
+    addMessageToChat('System', `Nodes: ${nodes.length}, Edges: ${edges.length}`);
+
+    // Initialize or update the GraphSimulation
+    if (!graphSimulation) {
+        try {
+            // Check if the renderer is initialized
+            if (!renderer) {
+                throw new Error('Renderer not initialized');
             }
-    
-            // Update node position
-            const x = positionArray[index * 4];
-            const y = positionArray[index * 4 + 1];
-            const z = positionArray[index * 4 + 2];
-    
-            if (isNaN(x) || isNaN(y) || isNaN(z)) {
-                console.warn(`NaN position detected for node ${node.name}: (${x}, ${y}, ${z})`);
-                return;
-            // Skip this node
+
+            // Create a new GraphSimulation instance
+            graphSimulation = new GraphSimulation(renderer, nodes, edges);
+
+            // Set initial simulation parameters
+            graphSimulation.setSimulationParameters({
+                repulsionStrength: 60.0,
+                attractionStrength: 0.15,
+                maxSpeed: 12.0,
+                damping: 0.98,
+                centeringForce: 0.005,
+                edgeDistance: 5.0
+            });
+
+            // Update simulation type in chat
+            addMessageToChat('System', `Simulation: ${graphSimulation.simulationType}`);
+            updateStatus(`Graph simulation initialized (${graphSimulation.simulationType})`);
+
+        } catch (error) {
+            console.error('Error initializing GraphSimulation:', error);
+            updateStatus('Error initializing simulation');
+            return; // Exit the function if we can't initialize the simulation
+        }
+    } else {
+        try {
+            // Update the node and edge data in the existing GraphSimulation instance
+            graphSimulation.updateNodeData(nodes);
+            graphSimulation.updateEdgeData(edges);
+
+            // Update simulation type in chat (in case it has changed)
+            addMessageToChat('System', `Simulation: ${graphSimulation.simulationType}`);
+            updateStatus(`Graph data updated (${graphSimulation.simulationType} simulation)`);
+
+        } catch (error) {
+            console.error('Error updating GraphSimulation:', error);
+            updateStatus('Error updating simulation');
+            return; // Exit the function if we can't update the simulation
+        }
+    }
+
+    // Update the visual representation of the graph
+    try {
+        updateGraphObjects();
+    } catch (error) {
+        console.error('Error updating graph objects:', error);
+        updateStatus('Error updating graph visualization');
+    }
+
+    // If we've made it this far without errors, update the status
+    updateStatus('Graph data updated successfully');
+}
+
+/**
+ * Updates 3D objects for nodes and edges
+ */
+function updateGraphObjects() {
+    // Check if the graph simulation is initialized
+    if (!graphSimulation) {
+        console.error('GraphSimulation not initialized');
+        return;
+    }
+
+    // Get node positions based on simulation type
+    let positionArray;
+    if (graphSimulation.useCPUSimulation) {
+        // For CPU simulation, get positions directly from nodes
+        positionArray = new Float32Array(nodes.length * 4);
+        nodes.forEach((node, index) => {
+            positionArray[index * 4] = node.x;
+            positionArray[index * 4 + 1] = node.y;
+            positionArray[index * 4 + 2] = node.z;
+            positionArray[index * 4 + 3] = 1;
+        });
+    } else if (graphSimulation.gpuCompute) {
+        // For GPU simulation, read positions from the GPU computation result
+        const WIDTH = graphSimulation.WIDTH;
+        const HEIGHT = graphSimulation.HEIGHT;
+        positionArray = new Float32Array(WIDTH * HEIGHT * 4);
+        renderer.readRenderTargetPixels(
+            graphSimulation.gpuCompute.getCurrentRenderTarget(graphSimulation.positionVariable),
+            0, 0, WIDTH, HEIGHT,
+            positionArray
+        );
+    } else {
+        console.error('Neither CPU nor GPU simulation is available');
+        return;
+    }
+
+    // Update or create nodes
+    nodes.forEach((node, index) => {
+        let mesh = nodePool[index];
+
+        // Create a new node mesh if it doesn't exist
+        if (!mesh) {
+            // Create a new icosahedron geometry for the node
+            const geometry = new THREE.IcosahedronGeometry(NODE_BASE_SIZE, 1);
+
+            // Create a new Phong material for the node
+            const material = new THREE.MeshPhongMaterial();
+
+            // Create a new mesh using the geometry and material
+            mesh = new THREE.Mesh(geometry, material);
+
+            // Add the mesh to the node pool
+            nodePool[index] = mesh;
+
+            // Add the mesh to the scene
+            scene.add(mesh);
+
+            // Create a text label for the node (hidden by default)
+            if (font) {
+                try {
+                    // Create a new text geometry using the loaded font
+                    const textGeometry = new TextGeometry(node.name, {
+                        font: font,
+                        size: NODE_BASE_SIZE * 0.5,
+                        height: 0.1,
+                    });
+
+                    // Create a new basic material for the text
+                    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+                    // Create a new mesh for the text
+                    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+                    // Position the text above the node
+                    textMesh.position.y = NODE_BASE_SIZE * 1.5;
+
+                    // Hide the text by default
+                    textMesh.visible = false;
+
+                    // Add the text mesh as a child of the node mesh
+                    mesh.add(textMesh);
+                } catch (error) {
+                    console.warn('Error creating text for node:', node.name, error);
+                }
+            } else {
+                console.warn('Font not loaded, skipping text label for node:', node.name);
+            }
+        }
+
+        // Update node position
+        const x = positionArray[index * 4];
+        const y = positionArray[index * 4 + 1];
+        const z = positionArray[index * 4 + 2];
+
+        if (isNaN(x) || isNaN(y) || isNaN(z)) {
+            console.warn(`NaN position detected for node ${node.name}: (${x}, ${y}, ${z})`);
+            return;
         }
 
         mesh.position.set(x, y, z);
@@ -607,9 +617,10 @@ function animate(time) {
         try {
             // Check if simulation type has changed
             const currentSimType = graphSimulation.simulationType;
-            if (currentSimType !== simulationTypeEl.textContent.split(': ')[1]) {
-                simulationTypeEl.textContent = `Simulation: ${currentSimType}`;
+            if (currentSimType !== graphSimulation.lastReportedSimType) {
+                addMessageToChat('System', `Simulation: ${currentSimType}`);
                 updateStatus(`Simulation type changed to ${currentSimType}`);
+                graphSimulation.lastReportedSimType = currentSimType;
             }
 
             // Compute the next step of the simulation
@@ -659,6 +670,56 @@ function render() {
 }
 
 /**
+ * Initializes a new chat
+ */
+async function initializeChat() {
+    try {
+        const response = await fetch('/api/chat/init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: 'webxr-user' }),
+        });
+        const data = await response.json();
+        if (data.success) {
+            currentConversationId = data.conversationId;
+            addMessageToChat('System', 'Chat initialized');
+        } else {
+            throw new Error(data.error || 'Failed to initialize chat');
+        }
+    } catch (error) {
+        console.error("Error initializing chat:", error);
+        addMessageToChat('System', "There was an error initializing the chat. Please try again.");
+    }
+}
+
+
+/**
+ * Loads chat history
+ */
+async function loadChatHistory() {
+    if (!currentConversationId) return;
+
+    try {
+        const response = await fetch(`/api/chat/history/${currentConversationId}`);
+        const data = await response.json();
+
+        if (data.retcode === 0) {
+            chatWindow.innerHTML = ''; // Clear existing messages
+            data.data.message.forEach(msg => {
+                addMessageToChat(msg.role === 'user' ? 'User' : 'AI', msg.content);
+            });
+        } else {
+            throw new Error('Failed to load chat history');
+        }
+    } catch (error) {
+        console.error("Error loading chat history:", error);
+        addMessageToChat('System', "There was an error loading the chat history.");
+    }
+}
+
+/**
  * Initializes the application
  */
 async function init() {
@@ -692,9 +753,16 @@ async function init() {
         }
     });
 
+    // Initialize chat
+    await initializeChat();
+
+    // Load chat history
+    await loadChatHistory();
+
     // Start the animation loop
     animate(0);
 }
+
 
 // Load the font before starting the application
 const loader = new FontLoader();
@@ -718,43 +786,130 @@ loader.load(
     }
 );
 
-/**
- * Event listener for the "Ask" button
- */
-document.getElementById('askButton').addEventListener('click', async () => {
-    const question = document.getElementById('questionInput').value;
+// Event listener for the "Ask" button
+askButton.addEventListener('click', async () => {
+    const question = questionInput.value;
 
     if (!question) {
-        alert("Please enter a question!");
+        addMessageToChat('System', "Please enter a question!");
         return;
     }
 
-    try {
-        const initResponse = await fetch('/api/chat/init', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId: 'webxr-user' }),
-        });
-        const initData = await initResponse.json();
+    addMessageToChat('User', question);
+    questionInput.value = ''; // Clear input after sending
 
-        if (!initData.success) {
-            throw new Error('Failed to initialize chat');
+    try {
+        if (!currentConversationId) {
+            await initializeChat();
         }
 
-        const messageResponse = await fetch('/api/chat/message', {
+        const response = await fetch('/api/chat/message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: question }),
+            body: JSON.stringify({ 
+                conversationId: currentConversationId,
+                message: question 
+            }),
         });
-        const messageData = await messageResponse.json();
+        const data = await response.json();
 
-        document.getElementById('answerBox').innerText = messageData.data.answer;
+        if (data.retcode === 0) {
+            addMessageToChat('AI', data.data.answer);
+        } else {
+            throw new Error('Failed to get answer');
+        }
     } catch (error) {
         console.error("Error asking question:", error);
-        alert("There was an error processing your question. Please try again.");
+        addMessageToChat('System', "There was an error processing your question. Please try again.");
     }
 });
+
+
+// Set up resizable pane functionality
+let isDragging = false;
+
+resizeHandle.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const newHeight = e.clientY;
+    smartPane.style.height = `${newHeight}px`;
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// Add event listener for 'Enter' key in the question input
+questionInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent default 'Enter' behavior
+        askButton.click(); // Trigger the ask button click event
+    }
+});
+
+// Function to toggle fullscreen mode
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch((err) => {
+            console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+
+// Add event listener for fullscreen toggle (e.g., F11 key)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F11') {
+        e.preventDefault(); // Prevent default F11 behavior
+        toggleFullScreen();
+    }
+});
+
+// Function to save chat history
+function saveChatHistory() {
+    const chatHistory = chatWindow.innerHTML;
+    const blob = new Blob([chatHistory], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'chat_history.html';
+    a.click();
+}
+
+// Add event listener for saving chat history (e.g., Ctrl+S)
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault(); // Prevent default save behavior
+        saveChatHistory();
+    }
+});
+
+// Function to clear chat history
+function clearChatHistory() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        chatWindow.innerHTML = '';
+        addMessageToChat('System', 'Chat history cleared.');
+    }
+}
+
+// Add event listener for clearing chat history (e.g., Ctrl+L)
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault(); // Prevent default behavior
+        clearChatHistory();
+    }
+});
+
+// Add these instructions to the initial messages
+addMessageToChat('System', 'Press F11 to toggle fullscreen mode.');
+addMessageToChat('System', 'Press Ctrl+S to save chat history.');
+addMessageToChat('System', 'Press Ctrl+L to clear chat history.');
