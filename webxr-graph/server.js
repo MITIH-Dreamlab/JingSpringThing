@@ -6,7 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const crypto = require('crypto');
 const WebSocket = require('ws');
-const cors = require('cors');
+// const cors = require('cors');
 require('dotenv').config();
 
 // Constants for file paths and configurations
@@ -24,7 +24,7 @@ const RAGFLOW_API_KEY = process.env.RAGFLOW_API_KEY;
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
-app.use(cors());  // Enable CORS for all routes
+// app.use(cors());  // Enable CORS for all routes
 
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
@@ -34,6 +34,21 @@ let wss;
 
 // Store the active conversation ID
 let activeConversationId = null;
+
+/**
+ * Cleans up problematic chars.
+ */
+function sanitizeInput(input) {
+    if (typeof input !== 'string') {
+        return '';
+    }
+    return input.replace(/\\/g, '\\\\')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t')
+                .trim();
+}
+
 
 /**
  * Initializes HTTPS options by reading key and certificate files.
@@ -406,9 +421,12 @@ async function createConversation(userId) {
  */
 async function sendMessage(conversationId, message) {
     try {
+        const sanitizedMessage = sanitizeInput(message);
+        console.log('Sanitized message:', sanitizedMessage); // For debugging
+
         const response = await axios.post(`${RAGFLOW_BASE_URL}api/completion`, {
             conversation_id: conversationId,
-            messages: [{ role: 'user', content: message }],
+            messages: [{ role: 'user', content: sanitizedMessage }],
             stream: false
         }, {
             headers: {
@@ -419,7 +437,7 @@ async function sendMessage(conversationId, message) {
         return response.data;
     } catch (error) {
         console.error('Error sending message:', error);
-        throw new Error('Failed to send message: ' + error.message);
+        throw new Error('Failed to send message');
     }
 }
 
@@ -437,7 +455,7 @@ app.post('/api/chat/init', async (req, res) => {
         res.json({ success: true, conversationId: activeConversationId });
     } catch (error) {
         console.error('Error initializing chat:', error);
-        res.status(500).json({ error: 'Failed to initialize chat', details: error.message });
+        res.status(500).json({ error: 'Failed to initialize chat' });
     }
 });
 
@@ -450,7 +468,7 @@ app.post('/api/chat/message', async (req, res) => {
         res.json(response);
     } catch (error) {
         console.error('Error processing message:', error);
-        res.status(500).json({ error: 'Failed to process message', details: error.message });
+        res.status(500).json({ error: 'Failed to process message' });
     }
 });
 
@@ -512,28 +530,6 @@ app.get('/test-github-api', async (req, res) => {
     } catch (error) {
         console.error('Error testing GitHub API:', error);
         res.status(500).json({ error: 'Failed to access GitHub API', details: error.message });
-    }
-});
-
-app.post('/api/chat/init', async (req, res) => {
-    try {
-        const userId = req.body.userId || 'default-user';
-        activeConversationId = await createConversation(userId);
-        res.json({ success: true, conversationId: activeConversationId });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to initialize chat' });
-    }
-});
-
-app.post('/api/chat/message', async (req, res) => {
-    if (!activeConversationId) {
-        return res.status(400).json({ error: 'Chat not initialized' });
-    }
-    try {
-        const response = await sendMessage(activeConversationId, req.body.message);
-        res.json(response);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to process message' });
     }
 });
 
