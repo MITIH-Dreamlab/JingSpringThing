@@ -11,7 +11,11 @@
     "ws": "^8.13.0",
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
-    "fs-extra": "^9.0.0"
+    "fs-extra": "^9.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "path": "^0.12.7",
+    "https": "^1.0.0"
   },
   "author": "Your Name",
   "license": "ISC"
