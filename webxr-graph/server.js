@@ -1,5 +1,4 @@
 // server.js
-
 const express = require('express');
 const https = require('https');
 const fs = require('fs/promises');
@@ -7,6 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const crypto = require('crypto');
 const WebSocket = require('ws');
+const cors = require('cors');
 require('dotenv').config();
 
 // Constants for file paths and configurations
@@ -24,6 +24,8 @@ const RAGFLOW_API_KEY = process.env.RAGFLOW_API_KEY;
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
+app.use(cors());  // Enable CORS for all routes
+
 const port = process.env.PORT || 8443; // Using port 8443 for HTTPS
 let httpsOptions;
 
@@ -32,6 +34,7 @@ let wss;
 
 // Store the active conversation ID
 let activeConversationId = null;
+
 /**
  * Initializes HTTPS options by reading key and certificate files.
  * @returns {Promise<void>}
@@ -424,6 +427,51 @@ async function sendMessage(conversationId, message) {
 
 // Set up Express routes
 app.use(express.static('public'));
+
+// Chat-related routes
+// Chat-related routes
+app.post('/api/chat/init', async (req, res) => {
+    try {
+        const userId = req.body.userId || 'default-user';
+        activeConversationId = await createConversation(userId);
+        res.json({ success: true, conversationId: activeConversationId });
+    } catch (error) {
+        console.error('Error initializing chat:', error);
+        res.status(500).json({ error: 'Failed to initialize chat' });
+    }
+});
+
+app.post('/api/chat/message', async (req, res) => {
+    if (!activeConversationId) {
+        return res.status(400).json({ error: 'Chat not initialized' });
+    }
+    try {
+        const response = await sendMessage(activeConversationId, req.body.message);
+        res.json(response);
+    } catch (error) {
+        console.error('Error processing message:', error);
+        res.status(500).json({ error: 'Failed to process message' });
+    }
+});
+
+// Get chat history
+app.get('/api/chat/history/:id', async (req, res) => {
+    try {
+        const conversationId = req.params.id;
+        // Here you would typically fetch the chat history for the given conversation ID
+        // For now, we'll just return a dummy history
+        const history = [
+            { role: 'system', content: 'Chat initialized' },
+            { role: 'user', content: 'Hello' },
+            { role: 'assistant', content: 'Hi there! How can I help you?' }
+        ];
+        res.json({ retcode: 0, data: { message: history } });
+    } catch (error) {
+        console.error('Error fetching chat history:', error);
+        res.status(500).json({ retcode: 1, error: 'Failed to fetch chat history' });
+    }
+});
+
 
 // Define routes
 app.get('/graph-data', async (req, res) => {
