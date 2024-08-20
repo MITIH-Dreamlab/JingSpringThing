@@ -682,17 +682,18 @@ async function initializeChat() {
             body: JSON.stringify({ userId: 'webxr-user' }),
         });
         const data = await response.json();
-        if (data.retcode === 0) {
-            currentConversationId = data.data.id;
+        if (data.success) {
+            currentConversationId = data.conversationId;
             addMessageToChat('System', 'Chat initialized');
         } else {
-            throw new Error('Failed to initialize chat');
+            throw new Error(data.error || 'Failed to initialize chat');
         }
     } catch (error) {
         console.error("Error initializing chat:", error);
         addMessageToChat('System', "There was an error initializing the chat. Please try again.");
     }
 }
+
 
 /**
  * Loads chat history

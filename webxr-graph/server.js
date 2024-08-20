@@ -394,7 +394,7 @@ async function createConversation(userId) {
         return response.data.data.id;
     } catch (error) {
         console.error('Error creating conversation:', error);
-        throw new Error('Failed to create conversation');
+        throw new Error('Failed to create conversation: ' + error.message);
     }
 }
 
@@ -419,7 +419,7 @@ async function sendMessage(conversationId, message) {
         return response.data;
     } catch (error) {
         console.error('Error sending message:', error);
-        throw new Error('Failed to send message');
+        throw new Error('Failed to send message: ' + error.message);
     }
 }
 
@@ -437,7 +437,7 @@ app.post('/api/chat/init', async (req, res) => {
         res.json({ success: true, conversationId: activeConversationId });
     } catch (error) {
         console.error('Error initializing chat:', error);
-        res.status(500).json({ error: 'Failed to initialize chat' });
+        res.status(500).json({ error: 'Failed to initialize chat', details: error.message });
     }
 });
 
@@ -450,9 +450,10 @@ app.post('/api/chat/message', async (req, res) => {
         res.json(response);
     } catch (error) {
         console.error('Error processing message:', error);
-        res.status(500).json({ error: 'Failed to process message' });
+        res.status(500).json({ error: 'Failed to process message', details: error.message });
     }
 });
+
 
 // Get chat history
 app.get('/api/chat/history/:id', async (req, res) => {
