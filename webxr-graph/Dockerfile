@@ -3,11 +3,11 @@ FROM node:16
 # Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json (if it exists)
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
 # Install openssl for certificate generation
 RUN apt-get update && apt-get install -y openssl
@@ -21,7 +21,6 @@ RUN chmod +x ./generate-cert.sh && ./generate-cert.sh
 # Create data directory and set permissions
 RUN mkdir -p /usr/src/app/data && chown -R node:node /usr/src/app
 
-# Expose port
 EXPOSE 8443
 
 # Create volume for persistent data
