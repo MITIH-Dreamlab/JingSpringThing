@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ] # Adjust branch name as needed.
+    branches: [ feature-branch ] # Adjust branch name as needed.
   pull_request:
-    branches: [ main ]
+    branches: [ feature-branch ]
 
 jobs:
   build-and-test:
