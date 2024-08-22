@@ -15,7 +15,6 @@ jobs:
         image: docker:dind 
         options: >-
           --privileged 
-          --storage-driver=overlay2 
 
     steps:
       - name: Checkout code
