@@ -3,73 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>WebXR Graph Visualization</title>
-    <style>
-        body { 
-            margin: 0; 
-            font-family: Arial, sans-serif;
-            overflow: hidden; /* Prevent scrollbars */
-        }
-        canvas { 
-            display: block; 
-        }
-        /* New smart pane styles */
-        #smartPane {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 30%; /* Initial height, can be resized */
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-        #chatWindow {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        #chatInput {
-            display: flex;
-            padding: 10px;
-        }
-        #questionInput {
-            flex-grow: 1;
-            padding: 5px;
-            font-size: 16px;
-        }
-        #askButton {
-            padding: 5px 10px;
-            font-size: 16px;
-            margin-left: 10px;
-        }
-        #resizeHandle {
-            width: 100%;
-            height: 10px;
-            background: #444;
-            cursor: ns-resize;
-        }
-        /* Markdown styles */
-        .markdown-body {
-            color: white;
-        }
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-            border-bottom: 1px solid #ffffff3d;
-            padding-bottom: 0.3em;
-        }
-        .markdown-body code {
-            background-color: #ffffff1a;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-        }
-        .markdown-body pre {
-            background-color: #ffffff0d;
-            padding: 16px;
-            overflow: auto;
-        }
-    </style>
-    <!-- Import map for local Three.js modules resolution -->
+    <meta name="description" content="Interactive 3D graph visualization using WebXR">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles/main.css">
     <script type="importmap">
     {
         "imports": {
@@ -78,24 +16,24 @@
         }
     }
     </script>
-    <!-- Include marked library for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <!-- Main canvas for WebXR visualization -->
-    <canvas id="graphCanvas"></canvas>
+    <canvas id="graphCanvas" aria-label="3D Graph Visualization"></canvas>
 
-    <!-- New smart pane with chat interface -->
-    <div id="smartPane">
-        <div id="chatWindow"></div>
+    <div id="smartPane" aria-label="Chat Interface">
+        <div id="chatWindow" role="log" aria-live="polite"></div>
         <div id="chatInput">
-            <input type="text" id="questionInput" placeholder="Ask a question..."/>
-            <button id="askButton">Ask</button>
+            <label for="questionInput" class="visually-hidden">Enter your question</label>
+            <input type="text" id="questionInput" placeholder="Ask a question..." aria-label="Question input">
+            <button id="askButton" aria-label="Submit question">Ask</button>
         </div>
-        <div id="resizeHandle"></div>
+        <div id="resizeHandle" role="separator" aria-label="Resize chat window" tabindex="0"></div>
     </div>
 
-    <!-- Main script file -->
-    <script type="module" src="/script.js"></script>
+    <!-- New button for SpaceMouse initialization -->
+    <button id="initSpaceMouseButton" aria-label="Initialize SpaceMouse" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">Initialize SpaceMouse</button>
+    <button id="debugToggle" style="position: fixed; top: 50px; left: 10px; z-index: 1000;">Toggle Debug Mode</button>
+    <script type="module" src="/js/script.js"></script>
 </body>
 </html>
