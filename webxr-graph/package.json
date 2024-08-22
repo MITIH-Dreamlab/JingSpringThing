@@ -4,7 +4,10 @@
   "description": "WebXR-based 3D Graph Visualization of GitHub Markdown files",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest", // Script to run tests
+    "lint": "eslint .", // Script to run ESLint on the current directory
+    "lint:fix": "eslint . --fix" // Script to automatically fix linting issues
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -16,6 +19,10 @@
     "crypto": "^1.0.1",
     "path": "^0.12.7",
     "https": "^1.0.0"
+  },
+  "devDependencies": {
+    "jest": "^27.x", // Specify the version of Jest you want to use
+    "eslint": "^8.x" // Specify the version of ESLint you want to use
   },
   "author": "Your Name",
   "license": "ISC"

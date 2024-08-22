@@ -1,0 +1,18 @@
+# Dockerfile.test
+
+FROM node:16
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json (if it exists)
+COPY package*.json ./
+
+# Install dependencies including devDependencies
+RUN npm install
+
+# Copy application code
+COPY . .
+
+# Run linting and tests
+CMD ["npm", "run", "lint"] # Change this line if you want to run tests instead or add another CMD for testing.
