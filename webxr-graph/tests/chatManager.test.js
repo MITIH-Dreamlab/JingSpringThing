@@ -1,7 +1,7 @@
 // chatManager.test.js
 
-import { addMessageToChat, initializeChat, loadChatHistory, sendMessage } from './chatManager';
-import { addDebugMessage } from './utils';
+import { addMessageToChat, initializeChat, loadChatHistory, sendMessage } from '../public/js/chatManager';
+import { addDebugMessage } from '../public/js/utils';
 
 jest.mock('./utils', () => ({
     addDebugMessage: jest.fn(),

@@ -1,7 +1,7 @@
 // server.test.js
 
 const fs = require('fs/promises');
-const { sanitizeInput, loadGraphData, saveGraphData, initialize } = require('./server'); // Adjust path as necessary
+const { sanitizeInput, loadGraphData, saveGraphData, initialize } = require('../server'); // Adjust path as necessary
 
 // Mocking the file system operations
 jest.mock('fs/promises');

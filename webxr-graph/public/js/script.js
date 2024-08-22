@@ -34,7 +34,7 @@ const state = {
     xrControllers: []
 };
 
-/**
+cd /**
  * Initializes the application.
  * @async
  */

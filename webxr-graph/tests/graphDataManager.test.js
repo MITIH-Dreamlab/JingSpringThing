@@ -1,7 +1,7 @@
 // graphDataManager.test.js
 
-import { loadData, setDebugMode, validateGraphData } from './graphDataManager';
-import { addDebugMessage } from './chatManager';
+import { loadData, setDebugMode, validateGraphData } from '../public/js/graphDataManager';
+import { addDebugMessage } from '../public/js/chatManager';
 
 jest.mock('./chatManager');
 
