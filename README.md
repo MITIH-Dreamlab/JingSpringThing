@@ -4,7 +4,8 @@ This project visualizes privately hosted GitHub Markdown files created by LogSeq
 
 This is my LogSeq personal knowledge base, which is about 10 months old. I am NOT a programmer, this was an AI project with Claude in the main, using Continue extension in VSCode. There will be issues, I have no doubt, but it's working out so far.
 
-![image](https://github.com/user-attachments/assets/ba7c3204-89b5-4a1c-826c-e21f15cbbe7c)
+![image](https://github.com/user-attachments/assets/fcbd6eb1-e2a1-4fea-a3df-4303b17e2b48)
+
 
 When I commit changes to the graph into a private GitHub repo it's automatically parsed for public pages and pushed to a website
 https://narrativegoldmine.com/#/graph
@@ -219,6 +220,14 @@ sequenceDiagram
 12. **Advanced Physics Simulation**:
    - Enhance node movements with more sophisticated physics, such as elastic and magnetic effects, to make the interactions feel more lifelike.
    - Adjust simulation parameters dynamically based on the size and complexity of the graph.
+
+13. **Voice to Voice**:
+    - Whisper MLX
+    - Silero VAD v5
+    - MeloTTS
+
+14: **Chat with avatar**
+   - Jarvis style head and shoulders interactive agent
 
 
 ## Performance Considerations
