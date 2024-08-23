@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ feature-branch ] # Adjust branch name as needed.
+    branches: [ feature-branch ]
   pull_request:
     branches: [ feature-branch ]
 
@@ -10,12 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    services:
-      docker:
-        image: docker:dind 
-        options: >-
-          --privileged 
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -23,18 +17,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       
-      - name: Debug - List contents of webxr-graph directory
-        run: ls -la webxr-graph
+      - name: Build Docker image
+        run: docker build -t my-app-test -f webxr-graph/Dockerfile.test ./webxr-graph
       
-      - name: Debug - Cat package.json
-        run: cat webxr-graph/package.json
+      - name: Run linting
+        run: docker run my-app-test npm run lint
       
-      - name: Build and run tests
-        run: |
-          docker build -t my-app-test -f webxr-graph/Dockerfile.test ./webxr-graph
-          docker run my-app-test
-      
-      - name: Debug - Docker build logs
-        if: failure()
-        run: docker build -t my-app-test -f webxr-graph/Dockerfile.test ./webxr-graph --progress=plain
+      - name: Run tests
+        run: docker run my-app-test npm test
 

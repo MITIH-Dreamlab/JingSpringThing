@@ -1,54 +1,70 @@
 // chatManager.test.js
 
-import { addMessageToChat, initializeChat, loadChatHistory, sendMessage } from '../public/js/chatManager';
-import { addDebugMessage } from '../public/js/utils';
+import { addMessageToChat, addDebugMessage, initializeChat, loadChatHistory, sendMessage, setupChatEventListeners } from '../public/js/chatManager';
+import { updateStatus } from '../public/js/utils';
 
-jest.mock('./utils', () => ({
-    addDebugMessage: jest.fn(),
-    addMessageToChat: jest.fn()
+jest.mock('../public/js/utils', () => ({
+    updateStatus: jest.fn(),
 }));
 
 describe('Chat Manager Functions', () => {
+    let mockFetch;
+
     beforeEach(() => {
         jest.clearAllMocks();
-        document.body.innerHTML = `<div id="chatWindow"></div>`;
-        window.currentConversationId = null; // Reset before each test
+        document.body.innerHTML = `
+            <div id="chatWindow"></div>
+            <input id="questionInput" />
+            <button id="askButton"></button>
+        `;
+        global.currentConversationId = null;
+        mockFetch = jest.fn();
+        global.fetch = mockFetch;
+        global.marked = { parse: jest.fn(text => text) };
     });
 
-    it('should add a message to chat', () => {
+    afterEach(() => {
+        delete global.fetch;
+        delete global.marked;
+    });
+
+    test('addMessageToChat adds a message to the chat window', () => {
         const sender = 'User';
         const message = 'Hello!';
         
         addMessageToChat(sender, message);
         
-        expect(addMessageToChat).toHaveBeenCalledWith(sender, expect.any(String));
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain(sender);
+        expect(chatWindow.innerHTML).toContain(message);
     });
 
-    it('should initialize chat successfully', async () => {
-        global.fetch = jest.fn().mockResolvedValue({
-            json: jest.fn().mockResolvedValue({ success: true, conversationId: '123' })
+    test('addDebugMessage adds a debug message to the chat', () => {
+        const message = 'Debug message';
+        
+        addDebugMessage(message);
+        
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('Debug');
+        expect(chatWindow.innerHTML).toContain(message);
+    });
+
+    test('initializeChat initializes chat successfully', async () => {
+        mockFetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({ success: true, conversationId: '123' })
         });
 
         await initializeChat();
 
-        expect(addMessageToChat).toHaveBeenCalledWith('System', 'Chat initialized');
+        expect(mockFetch).toHaveBeenCalledWith('/api/chat/init', expect.any(Object));
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('Chat initialized');
     });
 
-    it('should handle errors during chat initialization', async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
-
-        await initializeChat();
-
-        expect(addDebugMessage).toHaveBeenCalledWith("There was an error initializing the chat. Please try again.");
-    });
-
-    it('should load chat history successfully', async () => {
-        // Mocking currentConversationId
-        window.currentConversationId = '123';
-
-        // Mocking fetch to simulate API response
-        global.fetch = jest.fn().mockResolvedValue({
-            json: jest.fn().mockResolvedValue({
+    test('loadChatHistory loads chat history successfully', async () => {
+        global.currentConversationId = '123';
+        mockFetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({
                 retcode: 0,
                 data: { message: [{ role: 'user', content: 'Hello!' }] }
             })
@@ -56,30 +72,57 @@ describe('Chat Manager Functions', () => {
 
         await loadChatHistory();
 
-        expect(addMessageToChat).toHaveBeenCalledWith('User', 'Hello!');
-        expect(addDebugMessage).toHaveBeenCalledWith('Chat history loaded successfully.');
+        expect(mockFetch).toHaveBeenCalledWith('/api/chat/history/123');
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('Hello!');
     });
 
-    it('should handle errors when loading chat history', async () => {
-        window.currentConversationId = '123';
+    test('sendMessage sends a message successfully', async () => {
+        global.currentConversationId = '123';
+        mockFetch.mockResolvedValueOnce({
+            json: () => Promise.resolve({ retcode: 0, data: { answer: "It's great!" } })
+        });
+
+        await sendMessage('What is WebXR?');
+
+        expect(mockFetch).toHaveBeenCalledWith('/api/chat/message', expect.any(Object));
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain("It's great!");
+    });
+
+    test('setupChatEventListeners sets up event listeners correctly', () => {
+        const addEventListenerSpy = jest.spyOn(HTMLElement.prototype, 'addEventListener');
         
-        global.fetch = jest.fn().mockRejectedValue(new Error("Fetch error"));
+        setupChatEventListeners();
+
+        expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
+        expect(addEventListenerSpy).toHaveBeenCalledWith('keypress', expect.any(Function));
+    });
+
+    test('sendMessage handles empty input', async () => {
+        await sendMessage('   ');
+
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('Please enter a question!');
+        expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    test('initializeChat handles error', async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+        await initializeChat();
+
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('There was an error initializing the chat. Please try again.');
+    });
+
+    test('loadChatHistory handles missing conversation ID', async () => {
+        global.currentConversationId = null;
 
         await loadChatHistory();
 
-        expect(addDebugMessage).toHaveBeenCalledWith("There was an error loading the chat history.");
+        const chatWindow = document.getElementById('chatWindow');
+        expect(chatWindow.innerHTML).toContain('No active conversation to load history from.');
+        expect(mockFetch).not.toHaveBeenCalled();
     });
-
-    it('should send a message successfully', async () => {
-       const question = "What is WebXR?";
-       window.currentConversationId = "123";
-       
-       global.fetch = jest.fn()
-           .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue({ success: true }) }) // For init
-           .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue({ retcode: 0, data: { answer: "It's great!" } }) }); // For sending message
-
-       await sendMessage(question);
-
-       expect(addMessageToChat).toHaveBeenCalledWith('AI', "It's great!");
-   });
 });

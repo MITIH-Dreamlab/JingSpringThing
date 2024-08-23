@@ -13,14 +13,23 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Install global dependencies if needed (uncomment if required)
-# RUN npm install -g eslint jest
+# Add ESLint configuration
+RUN echo '{ "extends": "eslint:recommended", "env": { "node": true, "es6": true } }' > .eslintrc.json
 
-# Run linting (if eslint is installed and configured)
-RUN npm run lint || echo "Linting skipped"
+# Add Babel configuration for Jest
+RUN echo '{ "presets": ["@babel/preset-env"] }' > .babelrc
 
-# Run tests (if configured)
-RUN npm test || echo "Tests skipped"
+# Update Jest configuration in package.json
+RUN npm pkg set jest.transform='{"^.+\\.js$": "babel-jest"}'
+
+# Install Babel dependencies
+RUN npm install --save-dev @babel/core @babel/preset-env babel-jest
+
+# Run linting
+RUN npm run lint || echo "Linting completed with warnings"
+
+# Run tests
+RUN npm test || echo "Tests completed with failures"
 
 # Set the default command to echo a message
-CMD ["echo", "Build completed successfully. Use 'docker run' with specific commands to run tests or lint."]
+CMD ["echo", "Build completed. Use 'docker run' with specific commands to run tests or lint."]
