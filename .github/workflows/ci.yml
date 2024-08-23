@@ -25,4 +25,3 @@ jobs:
       
       - name: Run tests
         run: docker run my-app-test npm test
-

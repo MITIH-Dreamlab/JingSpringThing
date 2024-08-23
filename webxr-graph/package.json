@@ -1,8 +1,12 @@
 {
+  "name": "webxr-graph-visualization",
+  "version": "1.0.0",
+  "description": "WebXR-based 3D Graph Visualization of GitHub Markdown files",
   "type": "module",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -22,5 +26,22 @@
     "eslint": "^8.x",
     "jest": "^27.x",
     "jest-environment-jsdom": "^27.x"
-  }
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/webxr-graph-visualization.git"
+  },
+  "keywords": [
+    "webxr",
+    "3d",
+    "graph",
+    "visualization",
+    "github",
+    "markdown"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
 }
