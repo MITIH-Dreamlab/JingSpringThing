@@ -25,7 +25,8 @@ jobs:
       
       - name: Build Docker Image for Tests
         run: |
-          docker build -t my-app-test -f /webxr-graph/Dockerfile.test .
+          docker build -t my-app-test -f webxr-graph/Dockerfile.test ./webxr-graph
+      
       
       - name: Run Lint Test in Docker Container
         run: |
