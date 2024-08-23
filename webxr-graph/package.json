@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "WebXR-based 3D Graph Visualization of GitHub Markdown files",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "test": "jest",
-    "lint": "eslint .", 
-    "lint:fix": "eslint . --fix" 
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -16,13 +17,26 @@
     "dotenv": "^10.0.0",
     "fs-extra": "^9.0.0",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
-    "path": "^0.12.7",
-    "https": "^1.0.0"
+    "three": "^0.137.0"
   },
   "devDependencies": {
-    "jest": "^27.x", 
-    "eslint": "^8.x" 
+    "@babel/core": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "babel-jest": "^27.0.6",
+    "eslint": "^8.x",
+    "jest": "^27.x",
+    "jest-environment-jsdom": "^27.x"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleFileExtensions": ["js", "json"],
+    "testPathIgnorePatterns": ["/node_modules/"],
+    "moduleNameMapper": {
+      "^three$": "<rootDir>/node_modules/three/build/three.module.js"
+    }
   },
   "author": "Your Name",
   "license": "ISC"
