@@ -1,8 +1,4 @@
 {
-  "name": "webxr-graph-visualization",
-  "version": "1.0.0",
-  "description": "WebXR-based 3D Graph Visualization of GitHub Markdown files",
-  "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
@@ -26,18 +22,5 @@
     "eslint": "^8.x",
     "jest": "^27.x",
     "jest-environment-jsdom": "^27.x"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "transform": {
-      "^.+\\.js$": "babel-jest"
-    },
-    "moduleFileExtensions": ["js", "json"],
-    "testPathIgnorePatterns": ["/node_modules/"],
-    "moduleNameMapper": {
-      "^three$": "<rootDir>/node_modules/three/build/three.module.js"
-    }
-  },
-  "author": "Your Name",
-  "license": "ISC"
+  }
 }
