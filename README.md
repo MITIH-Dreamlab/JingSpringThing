@@ -76,6 +76,19 @@ The 2D graph seen there is fine, but a bit useless. I wanted something I can exp
 ```mermaid
 classDiagram
     class Server {
+        -PROCESSED_STORAGE_PATH: string
+        -MARKDOWN_STORAGE_PATH: string
+        -GRAPH_DATA_PATH: string
+        -GITHUB_OWNER: string
+        -GITHUB_REPO: string
+        -GITHUB_DIRECTORY: string
+        -GITHUB_ACCESS_TOKEN: string
+        -RAGFLOW_BASE_URL: string
+        -RAGFLOW_API_KEY: string
+        +initialize()
+        +initializeHttpsOptions()
+        +loadGraphData()
+        +saveGraphData()
         +fetchMarkdownMetadata()
         +compareAndIdentifyUpdates()
         +fetchAndUpdateFiles()
@@ -85,33 +98,48 @@ classDiagram
         +createConversation()
         +sendMessage()
     }
+
     class GraphSimulation {
-        +updateNodeData()
-        +updateEdgeData()
+        -nodes: array
+        -edges: array
+        -simulation: ForceSimulation
+        +initSimulation()
+        +updateData(nodes, edges)
+        +tick()
         +updateNodePositions()
-        +setSimulationParameters()
-        +compute()
-        +computeCPU()
-        +initComputeRenderer()
     }
+
     class WebXRVisualization {
-        +initScene()
+        -scene: THREE.Scene
+        -camera: THREE.PerspectiveCamera
+        -renderer: THREE.WebGLRenderer
+        -graphObjects: object
+        +init()
         +setupXR()
         +animate()
         +updateGraphObjects()
-        +randomizeNodePositions()
         +loadData()
         +setupWebSocket()
     }
+
     class RAGFlowIntegration {
+        -conversationId: string
         +initializeChat()
         +sendQuestion()
         +displayAnswer()
     }
-    Server --> GraphSimulation : updates
-    GraphSimulation --> WebXRVisualization : renders
-    Server --> RAGFlowIntegration : manages
-    WebXRVisualization --> RAGFlowIntegration : interacts
+
+    class WebSocket {
+        +onmessage()
+        +send()
+    }
+
+    Server --> GraphSimulation: Provides data
+    Server --> WebSocket: Sends updates
+    WebXRVisualization --> GraphSimulation: Uses for layout
+    WebXRVisualization --> WebSocket: Receives updates
+    WebXRVisualization --> RAGFlowIntegration: Integrates chat
+    Server --> RAGFlowIntegration: Manages conversations
 ```
 
 ### Sequence Diagram
@@ -122,32 +150,39 @@ sequenceDiagram
     participant Server
     participant GitHub
     participant GraphSimulation
-    participant WebXRVisualization
+    participant WebSocket
     participant RAGFlow
-    Client->>Server: Request graph data
-    Server->>GitHub: Fetch Markdown metadata
+
+    Client->>Server: GET /graph-data
+    Server->>Server: loadGraphData()
+    Server-->>Client: Send initial graph data
+    Server->>GitHub: fetchMarkdownMetadata()
     GitHub-->>Server: Return metadata
-    Server->>Server: Compare and identify updates
-    Server->>GitHub: Fetch updated files
+    Server->>Server: compareAndIdentifyUpdates()
+    Server->>GitHub: fetchAndUpdateFiles()
     GitHub-->>Server: Return file contents
-    Server->>Server: Extract references and build edges
-    Server->>GraphSimulation: Update graph data
-    GraphSimulation->>WebXRVisualization: Render updated graph
-    WebXRVisualization-->>Client: Display 3D graph
-    loop Animation
-        WebXRVisualization->>GraphSimulation: Compute simulation step
-        GraphSimulation-->>WebXRVisualization: Updated positions
-        WebXRVisualization->>WebXRVisualization: Update graph objects
-        WebXRVisualization->>Client: Render frame
-    end
-    Client->>Server: Initialize chat
-    Server->>RAGFlow: Create conversation
+    Server->>Server: buildEdges()
+    Server->>Server: saveGraphData()
+    Server->>WebSocket: Send updated graph data
+    WebSocket-->>Client: Receive updated graph data
+
+    Client->>Server: POST /api/chat/init
+    Server->>RAGFlow: createConversation()
     RAGFlow-->>Server: Return conversation ID
-    Server-->>Client: Confirm chat initialization
-    Client->>Server: Send question
-    Server->>RAGFlow: Send message
-    RAGFlow-->>Server: Return answer
-    Server-->>Client: Display answer
+    Server-->>Client: Send conversation ID
+
+    Client->>Server: POST /api/chat/message
+    Server->>RAGFlow: sendMessage()
+    RAGFlow-->>Server: Return response
+    Server-->>Client: Send chat response
+
+    loop Animation
+        Client->>Client: requestAnimationFrame()
+        Client->>GraphSimulation: updateNodePositions()
+        GraphSimulation-->>Client: Return updated positions
+        Client->>Client: updateGraphObjects()
+        Client->>Client: render()
+    end
 ```
 
 ## Key Components
