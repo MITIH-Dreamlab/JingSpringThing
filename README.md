@@ -234,96 +234,55 @@ sequenceDiagram
 
 ```
 
-## Key Components
+The primary differences between the older (but working) design and the newer (non-functional) design lie in the complexity and modularity of the components, as well as how certain functionalities are distributed across these components. Here’s a detailed breakdown:
 
-- `server.js`: Handles server-side operations, including GitHub API interactions, graph data processing, and RAGFlow API communication.
-- `script.js`: Manages client-side WebXR visualization, user interactions, real-time updates, and chat interface.
-- `GraphSimulation.js`: Handles the physics simulation for node positioning, supporting both GPU and CPU computations.
+### 1. **Class Structure and Responsibilities**
+   - **Server Class**:
+     - **Older Design**: The Server class manages the core logic for loading and saving graph data, fetching and updating files from GitHub, and managing conversations with RAGFlow. This class is monolithic, handling many responsibilities in one place.
+     - **Newer Design**: The Server class still handles many of the same responsibilities, but there is more interaction with other specialized classes, suggesting a more modular approach. It provides data to other classes, like `GraphSimulation` and `GraphDataManager`, and interacts more with a `WebSocket` for real-time updates.
 
-## Usage
+   - **GraphSimulation Class**:
+     - **Older Design**: This class is simpler, focused on managing nodes, edges, and a force simulation algorithm (`ForceSimulation`). It includes methods for initializing the simulation, updating data, and calculating node positions.
+     - **Newer Design**: The `GraphSimulation` class is more complex, handling both GPU and CPU computations, which suggests a more sophisticated simulation environment. It also includes more methods to update node and edge data and set simulation parameters, reflecting an expanded role in managing the simulation's execution.
 
-- Use a WebXR-compatible browser to view the 3D graph.
-- Press the spacebar to randomize node positions.
-- Nodes are colored based on their hyperlink count, ranging from blue (low) to red (high).
-- The simulation automatically switches between GPU and CPU based on device capabilities.
-- Node labels become visible when the camera is close to them.
-- Use WASD keys for camera movement in spoofed VR mode.
-- Use the chat interface at the bottom of the screen to ask questions about the knowledge graph.
+   - **WebXRVisualization Class**:
+     - **Older Design**: The class handles rendering, scene setup, and updating graph objects in a straightforward manner. It interacts directly with the `GraphSimulation` class and receives updates via WebSocket.
+     - **Newer Design**: The `WebXRVisualization` class now interacts with more components, such as `Interface`, `ChatManager`, and `GraphDataManager`. This design suggests a more integrated approach where visualization also considers user input, chat management, and more dynamic data management.
 
-# TODO
+   - **RAGFlowIntegration Class**:
+     - **Older Design**: Manages the initialization and communication with RAGFlow for chat conversations.
+     - **Newer Design**: The role is similar, but the integration seems more tightly coupled with the `Server` and `ChatManager`, possibly indicating a more interconnected architecture.
 
-## Features and Interactions
+   - **New Classes in the Newer Design**:
+     - **Interface**: Manages user input, particularly from devices like a SpaceMouse, which adds a layer of interactivity not present in the older design.
+     - **ChatManager**: Centralizes the chat functionality, separating it from the Server, which might make the codebase more modular and easier to maintain.
+     - **GraphDataManager**: Separates the logic for managing graph data updates and real-time communication, enhancing modularity and possibly reducing the load on the `Server` class.
 
-1. **Hand Interaction (VR/AR)**:
-    - Implement hand tracking to allow users to grab and manipulate nodes in 3D space. 
-    - Use pinch gestures to select nodes and make dragging intuitive.
-    - Leverage hand models to show real-time interactions, enhancing immersion.
+### 2. **Sequence Flow**
+   - **Graph Data Handling**:
+     - **Older Design**: The Server directly manages fetching data, comparing updates, building edges, and then sending this data to the client via WebSocket. The client then updates the graph using the `GraphSimulation` class.
+     - **Newer Design**: The process is more distributed. The `Server` still handles the fetching and updating logic, but the `GraphDataManager` now handles receiving updated data via WebSocket and passing it to `GraphSimulation`. This distribution could allow for more flexibility and scalability, though it adds complexity.
 
-2. **Mouse Click and Drag (Desktop/Mobile)**:
-    - Enable users to click and drag nodes using a mouse for desktop browsers.
-    - Implement kinetic dragging, where nodes continue to move slightly after releasing them to simulate inertia.
+   - **Chat Functionality**:
+     - **Older Design**: Chat functionality is straightforward, with the `Server` directly interacting with RAGFlow to manage conversations and relay messages.
+     - **Newer Design**: The chat process is more distributed, with a `ChatManager` handling chat events and integrating with both the `Server` and `RAGFlowIntegration`. This could allow for better separation of concerns and easier management of chat features.
 
-3. **Pass-Through AR (Meta Quest 3)**:
-    - Integrate pass-through AR to allow users to see their real-world environment while interacting with the graph.
-    - Use spatial anchors to place nodes at fixed points in the user's environment, making the experience more tangible.
+   - **User Interaction and Visualization**:
+     - **Older Design**: The client interacts directly with the `GraphSimulation` and renders updates in a loop.
+     - **Newer Design**: The client’s interaction is mediated through multiple classes (`Interface`, `WebXRVisualization`, `GraphSimulation`), allowing for a richer user interaction model, including device input handling and more complex simulation updates.
 
-4. **Navigation Keys Improvement**:
-    - Redefine navigation keys for ease of use and accessibility.
-    - Allow customization of key bindings for user preferences.
-    - Include smooth panning and zooming capabilities with keyboard shortcuts.
+### 3. **Design Complexity and Modularity**
+   - **Older Design**: Simpler and more direct, with fewer components and interactions. It is easier to follow but less flexible in terms of scalability or introducing new features without modifying the existing classes.
+   - **Newer Design**: More modular with responsibilities distributed across more classes. This design could support more complex features, such as GPU computation in simulations or richer user interfaces. However, this added complexity could lead to more integration issues, as indicated by the non-functional status of the newer design.
 
-5. **Interactive Node Summaries**:
-    - Allow users to double-click or shake a node to view a summary of the Markdown content.
-    - Display the summary in a floating, draggable window within the 3D space.
-    - Highlight and focus on the selected node, fading out non-related nodes to minimize clutter.
+### 4. **Potential Points of Failure in the Newer Design**
+   - **Increased Interdependencies**: The newer design has more interdependencies between classes, which could make debugging and maintaining the system more challenging.
+   - **More Complex Data Flow**: The flow of data, especially between `Server`, `GraphDataManager`, and `GraphSimulation`, is more complex. If any part of this chain fails, it could cause the entire system to malfunction.
+   - **Higher Cognitive Load**: The increased number of components and interactions increases the cognitive load required to understand the system, which could lead to integration issues or bugs being harder to trace and fix.
 
-6. **Search and Filter Functionality**:
-    - Integrate a search bar where users can type keywords to find and highlight specific nodes.
-    - Implement filters to show or hide nodes based on tags or content type.
+### Current progress
 
-7. **Tags and Color Coding**:
-    - Use tags to categorize nodes and color-code them for visual distinction.
-    - Allow users to customize tag categories and corresponding colors.
-
-8. **Audio Feedback and Narration**:
-    - Add audio feedback for interactions (e.g., a subtle sound when grabbing or moving a node).
-    - Implement text-to-speech for node summaries, where users can listen to the Markdown content instead of reading it.
-
-9. **Collaborative Mode**:
-    - Develop a multi-user mode where multiple users can interact with the same graph in real-time.
-    - Allow users to see each other's hand movements and interactions (e.g., different colored hand representations).
-
-10. **Heatmap Visualization**:
-    - Implement heatmap functionalities to show the most interacted-with nodes.
-    - Help users identify critical information quickly by visualizing interaction density.
-
-11. **Bookmarking and Annotations**:
-    - Allow users to bookmark nodes and add annotations to them.
-    - Provide a side panel where users can view and edit their bookmarks and notes.
-
-12. **Advanced Physics Simulation**:
-   - Enhance node movements with more sophisticated physics, such as elastic and magnetic effects, to make the interactions feel more lifelike.
-   - Adjust simulation parameters dynamically based on the size and complexity of the graph.
-
-13. **Voice to Voice**:
-    - Whisper MLX
-    - Silero VAD v5
-    - MeloTTS
-
-14: **Chat with avatar**
-   - Jarvis style head and shoulders interactive agent
-
-
-## Performance Considerations
-
-- The application uses object pooling for nodes and edges to optimize performance.
-- GPU-accelerated force-directed graph layout is used when supported, with a fallback to CPU computation.
-- Dynamic node labeling helps reduce rendering load for distant nodes.
-
-## Debugging
-
-- A debug overlay displays the current node count, edge count, and simulation type (GPU/CPU).
-- Console logs provide detailed information about the initialization process and any errors encountered.
+I am trying to create unit tests to figure out the issues.
 
 ## Contributing
 
