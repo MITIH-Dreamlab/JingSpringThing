@@ -7,7 +7,7 @@ use std::path::Path;
 use std::fs::File as StdFile;
 use std::io::{BufRead, BufReader};
 use log::{info, error};
-use std::env; 
+use std::env;
 
 /// Represents the application settings loaded from configuration files 
 /// and environment variables.
@@ -24,7 +24,7 @@ pub struct Settings {
     #[serde(default)] 
     pub ragflow: RAGFlowConfig,
     /// Configuration settings for GitHub integration.
-    #[serde(default)] // Use default if not in settings.toml
+    #[serde(default)] 
     pub github: GitHubConfig,
     /// Default configuration settings.
     pub default: DefaultConfig,
@@ -61,7 +61,7 @@ pub struct RAGFlowConfig {
 }
 
 /// Configuration for GitHub API integration.
-#[derive(Debug, Deserialize, Clone, Default)] // Derive Default
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct GitHubConfig {
     /// Personal Access Token for GitHub API.
     pub access_token: String,
@@ -117,58 +117,58 @@ impl Settings {
         // Deserialize into Settings struct.
         let mut settings: Settings = config_map.try_deserialize()?;
 
-        // Override settings with environment variables if present
+        // Manually override settings with environment variables if present
         // GitHub Config
-        if let Ok(access_token) = env::var("GITHUB_ACCESS_TOKEN") {
+        if let Ok(access_token) = env::var("GITHUB__ACCESS_TOKEN") {
             settings.github.access_token = access_token;
         }
-        if let Ok(owner) = env::var("GITHUB_OWNER") {
+        if let Ok(owner) = env::var("GITHUB__OWNER") {
             settings.github.owner = owner;
         }
-        if let Ok(repo) = env::var("GITHUB_REPO") {
+        if let Ok(repo) = env::var("GITHUB__REPO") {
             settings.github.repo = repo;
         }
-        if let Ok(directory) = env::var("GITHUB_DIRECTORY") {
+        if let Ok(directory) = env::var("GITHUB__DIRECTORY") {
             settings.github.directory = directory;
         }
         // RAGFlow Config
-        if let Ok(api_key) = env::var("RAGFLOW_API_KEY") {
+        if let Ok(api_key) = env::var("RAGFLOW__API_KEY") {
             settings.ragflow.api_key = api_key;
         }
-        if let Ok(base_url) = env::var("RAGFLOW_BASE_URL") {
+        if let Ok(base_url) = env::var("RAGFLOW__BASE_URL") {
             settings.ragflow.api_base_url = base_url;
         }
         // Perplexity Config
-        if let Ok(api_key) = env::var("PERPLEXITY_API_KEY") {
+        if let Ok(api_key) = env::var("PERPLEXITY__API_KEY") {
             settings.perplexity.api_key = api_key;
         }
-        if let Ok(model) = env::var("PERPLEXITY_MODEL") {
+        if let Ok(model) = env::var("PERPLEXITY__MODEL") {
             settings.perplexity.model = model;
         }
-        if let Ok(api_base_url) = env::var("PERPLEXITY_API_URL") {
+        if let Ok(api_base_url) = env::var("PERPLEXITY__API_URL") {
             settings.perplexity.api_base_url = api_base_url;
         }
-        if let Ok(max_tokens) = env::var("PERPLEXITY_MAX_TOKENS").map(|s| s.parse::<u32>()) {
+        if let Ok(max_tokens) = env::var("PERPLEXITY__MAX_TOKENS").map(|s| s.parse::<u32>()) {
             if let Ok(max_tokens) = max_tokens {
                 settings.perplexity.max_tokens = max_tokens;
             }
         }
-        if let Ok(temperature) = env::var("PERPLEXITY_TEMPERATURE").map(|s| s.parse::<f32>()) {
+        if let Ok(temperature) = env::var("PERPLEXITY__TEMPERATURE").map(|s| s.parse::<f32>()) {
             if let Ok(temperature) = temperature {
                 settings.perplexity.temperature = temperature;
             }
         }
-        if let Ok(top_p) = env::var("PERPLEXITY_TOP_P").map(|s| s.parse::<f32>()) {
+        if let Ok(top_p) = env::var("PERPLEXITY__TOP_P").map(|s| s.parse::<f32>()) {
             if let Ok(top_p) = top_p {
                 settings.perplexity.top_p = top_p;
             }
         }
-        if let Ok(presence_penalty) = env::var("PERPLEXITY_PRESENCE_PENALTY").map(|s| s.parse::<f32>()) {
+        if let Ok(presence_penalty) = env::var("PERPLEXITY__PRESENCE_PENALTY").map(|s| s.parse::<f32>()) {
             if let Ok(presence_penalty) = presence_penalty {
                 settings.perplexity.presence_penalty = presence_penalty;
             }
         }
-        if let Ok(frequency_penalty) = env::var("PERPLEXITY_FREQUENCY_PENALTY").map(|s| s.parse::<f32>()) {
+        if let Ok(frequency_penalty) = env::var("PERPLEXITY__FREQUENCY_PENALTY").map(|s| s.parse::<f32>()) {
             if let Ok(frequency_penalty) = frequency_penalty {
                 settings.perplexity.frequency_penalty = frequency_penalty;
             }

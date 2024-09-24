@@ -8,7 +8,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use std::collections::HashMap;
 use crate::services::file_service::{GitHubService, RealGitHubService};
-use crate::services::perplexity_service::{PerplexityService, PerplexityServiceImpl}; 
+use crate::services::perplexity_service::{PerplexityServiceImpl}; 
 use crate::models::graph::GraphData;
 use crate::utils::websocket_manager::WebSocketManager;
 use crate::utils::gpu_compute::GPUCompute;
@@ -24,6 +24,8 @@ mod utils;
 async fn main() -> std::io::Result<()> {
     // Load environment variables.
     dotenv::dotenv().ok();
+    println!("Environment: {:?}", std::env::vars().collect::<Vec<_>>());
+
 
     // Initialise logger.
     env_logger::init();

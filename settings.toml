@@ -39,3 +39,9 @@ max_concurrent_requests = 5
 max_retries = 3
 retry_delay = 5
 api_client_timeout = 30
+
+[github]
+access_token = ""
+owner = "jjohare"
+repo = "logseq"
+directory = "mainKnowledgeGraph"
