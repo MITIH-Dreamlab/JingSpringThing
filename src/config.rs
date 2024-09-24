@@ -7,8 +7,10 @@ use std::path::Path;
 use std::fs::File as StdFile;
 use std::io::{BufRead, BufReader};
 use log::{info, error};
+use std::env; 
 
-/// Represents the application settings loaded from configuration files and environment variables.
+/// Represents the application settings loaded from configuration files 
+/// and environment variables.
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     /// The prompt used for AI interactions.
@@ -19,15 +21,17 @@ pub struct Settings {
     /// Configuration settings for Perplexity AI integration.
     pub perplexity: PerplexityConfig,
     /// Configuration settings for RAGFlow integration.
+    #[serde(default)] 
     pub ragflow: RAGFlowConfig,
     /// Configuration settings for GitHub integration.
+    #[serde(default)] // Use default if not in settings.toml
     pub github: GitHubConfig,
     /// Default configuration settings.
     pub default: DefaultConfig,
 }
 
 /// Configuration for Perplexity AI API integration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct PerplexityConfig {
     /// API key for authenticating with Perplexity AI.
     pub api_key: String,
@@ -48,7 +52,7 @@ pub struct PerplexityConfig {
 }
 
 /// Configuration for RAGFlow integration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct RAGFlowConfig {
     /// API key for authenticating with RAGFlow.
     pub api_key: String,
@@ -57,7 +61,7 @@ pub struct RAGFlowConfig {
 }
 
 /// Configuration for GitHub API integration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Default)] // Derive Default
 pub struct GitHubConfig {
     /// Personal Access Token for GitHub API.
     pub access_token: String,
@@ -83,7 +87,8 @@ pub struct DefaultConfig {
 }
 
 impl Settings {
-    /// Creates a new `Settings` instance by loading configuration from files and environment variables.
+    /// Creates a new `Settings` instance by loading configuration from 
+    /// files and environment variables.
     pub fn new() -> Result<Self, ConfigError> {
         // Load environment variables from .env file.
         dotenv().ok();
@@ -111,6 +116,63 @@ impl Settings {
 
         // Deserialize into Settings struct.
         let mut settings: Settings = config_map.try_deserialize()?;
+
+        // Override settings with environment variables if present
+        // GitHub Config
+        if let Ok(access_token) = env::var("GITHUB_ACCESS_TOKEN") {
+            settings.github.access_token = access_token;
+        }
+        if let Ok(owner) = env::var("GITHUB_OWNER") {
+            settings.github.owner = owner;
+        }
+        if let Ok(repo) = env::var("GITHUB_REPO") {
+            settings.github.repo = repo;
+        }
+        if let Ok(directory) = env::var("GITHUB_DIRECTORY") {
+            settings.github.directory = directory;
+        }
+        // RAGFlow Config
+        if let Ok(api_key) = env::var("RAGFLOW_API_KEY") {
+            settings.ragflow.api_key = api_key;
+        }
+        if let Ok(base_url) = env::var("RAGFLOW_BASE_URL") {
+            settings.ragflow.api_base_url = base_url;
+        }
+        // Perplexity Config
+        if let Ok(api_key) = env::var("PERPLEXITY_API_KEY") {
+            settings.perplexity.api_key = api_key;
+        }
+        if let Ok(model) = env::var("PERPLEXITY_MODEL") {
+            settings.perplexity.model = model;
+        }
+        if let Ok(api_base_url) = env::var("PERPLEXITY_API_URL") {
+            settings.perplexity.api_base_url = api_base_url;
+        }
+        if let Ok(max_tokens) = env::var("PERPLEXITY_MAX_TOKENS").map(|s| s.parse::<u32>()) {
+            if let Ok(max_tokens) = max_tokens {
+                settings.perplexity.max_tokens = max_tokens;
+            }
+        }
+        if let Ok(temperature) = env::var("PERPLEXITY_TEMPERATURE").map(|s| s.parse::<f32>()) {
+            if let Ok(temperature) = temperature {
+                settings.perplexity.temperature = temperature;
+            }
+        }
+        if let Ok(top_p) = env::var("PERPLEXITY_TOP_P").map(|s| s.parse::<f32>()) {
+            if let Ok(top_p) = top_p {
+                settings.perplexity.top_p = top_p;
+            }
+        }
+        if let Ok(presence_penalty) = env::var("PERPLEXITY_PRESENCE_PENALTY").map(|s| s.parse::<f32>()) {
+            if let Ok(presence_penalty) = presence_penalty {
+                settings.perplexity.presence_penalty = presence_penalty;
+            }
+        }
+        if let Ok(frequency_penalty) = env::var("PERPLEXITY_FREQUENCY_PENALTY").map(|s| s.parse::<f32>()) {
+            if let Ok(frequency_penalty) = frequency_penalty {
+                settings.perplexity.frequency_penalty = frequency_penalty;
+            }
+        }
 
         // Load topics from CSV file using a relative path.
         settings.topics = Self::load_topics_from_csv("data/topics.csv")?;

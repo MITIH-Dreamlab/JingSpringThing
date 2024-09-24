@@ -3,8 +3,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/controls/OrbitControls.js';
 import { initXRSession, handleXRSession } from '../xr/xrSetup.js';
-import { initXRInteraction, addNodeLabels, updateLabelOrientations } from '../xr/xrInteraction.js';
+import { initXRInteraction } from '../xr/xrInteraction.js';
 import { isGPUAvailable, initGPU, computeOnGPU } from '../gpuUtils.js';
+
+// Import post-processing modules
+import { EffectComposer } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 /**
  * WebXRVisualization class manages the 3D graph visualization with WebXR support.
@@ -16,18 +21,25 @@ export class WebXRVisualization {
      */
     constructor(graphDataManager) {
         this.graphDataManager = graphDataManager;
+
+        // Three.js essentials
         this.scene = null;
         this.camera = null;
         this.renderer = null;
         this.controls = null;
-        this.nodeLabels = [];
-        this.labelsGroup = null;
+        this.composer = null; // For post-processing
+
+        // GPU acceleration
         this.gpu = null;
         this.isGPUEnabled = false;
 
         // Mesh pools for nodes and edges
         this.nodeMeshes = new Map();
         this.edgeMeshes = new Map();
+
+        // Holographic elements
+        this.hologramGroup = new THREE.Group(); // Group for holographic shells and effects
+        this.particleSystem = null;
     }
 
     /**
@@ -57,7 +69,7 @@ export class WebXRVisualization {
     }
 
     /**
-     * Initializes the Three.js scene, camera, renderer, and controls.
+     * Initializes the Three.js scene, camera, renderer, controls, and holographic elements.
      */
     initThreeJS() {
         // Create the scene
@@ -69,7 +81,7 @@ export class WebXRVisualization {
             75,
             window.innerWidth / window.innerHeight,
             0.1,
-            1000
+            2000
         );
         this.camera.position.set(0, 0, 100);
 
@@ -86,18 +98,132 @@ export class WebXRVisualization {
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
 
-        // Add ambient light to the scene
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Set up post-processing
+        this.initPostProcessing();
+
+        // Add lights to the scene
+        this.addLights();
+
+        // Create holographic elements
+        this.createHologramStructure();
+
+        // Add hologram group to the scene
+        this.scene.add(this.hologramGroup);
+    }
+
+    /**
+     * Initializes post-processing effects like bloom.
+     */
+    initPostProcessing() {
+        // Create composer for post-processing
+        this.composer = new EffectComposer(this.renderer);
+
+        // Add render pass
+        const renderPass = new RenderPass(this.scene, this.camera);
+        this.composer.addPass(renderPass);
+
+        // Add bloom pass
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5, // strength
+            0.4, // radius
+            0.85 // threshold
+        );
+        this.composer.addPass(bloomPass);
+    }
+
+    /**
+     * Adds ambient and directional lights to the scene.
+     */
+    addLights() {
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
         this.scene.add(ambientLight);
 
-        // Add directional light to the scene
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        // Directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         directionalLight.position.set(50, 50, 50);
         this.scene.add(directionalLight);
+    }
 
-        // Create a group for labels
-        this.labelsGroup = new THREE.Group();
-        this.scene.add(this.labelsGroup);
+    /**
+     * Creates the holographic spherical structure with layers, wireframes, and particle systems.
+     */
+    createHologramStructure() {
+        const numShells = 5; // Number of concentric shells
+        const shellSpacing = 20; // Spacing between shells
+        const shellMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.1,
+            side: THREE.DoubleSide,
+        });
+
+        // Create concentric holographic shells
+        for (let i = 0; i < numShells; i++) {
+            const radius = 50 + i * shellSpacing;
+            const geometry = new THREE.SphereGeometry(radius, 64, 64);
+            const shell = new THREE.Mesh(geometry, shellMaterial.clone());
+            shell.material.opacity = 0.2 - i * 0.03; // Decrease opacity for inner shells
+            shell.rotationSpeed = 0.001 + i * 0.0005; // Vary rotation speed
+            this.hologramGroup.add(shell);
+        }
+
+        // Add wireframes to shells
+        this.hologramGroup.children.forEach((shell) => {
+            const wireframeGeometry = new THREE.EdgesGeometry(shell.geometry);
+            const wireframeMaterial = new THREE.LineBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.2,
+            });
+            const wireframe = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+            shell.add(wireframe);
+        });
+
+        // Create dynamic particle system
+        this.createParticleSystem();
+    }
+
+    /**
+     * Creates a particle system to simulate energy flow within the hologram.
+     */
+    createParticleSystem() {
+        const particleCount = 1000;
+        const particles = new THREE.BufferGeometry();
+        const positions = [];
+        const velocities = [];
+
+        // Initialize particle positions and velocities
+        for (let i = 0; i < particleCount; i++) {
+            const radius = Math.random() * 100;
+            const theta = Math.random() * 2 * Math.PI;
+            const phi = Math.random() * Math.PI;
+
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+
+            positions.push(x, y, z);
+            velocities.push(Math.random() * 0.02 - 0.01, Math.random() * 0.02 - 0.01, Math.random() * 0.02 - 0.01);
+        }
+
+        particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        particles.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 3));
+
+        // Particle material
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 1,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            opacity: 0.7,
+            depthWrite: false,
+        });
+
+        // Create particle system
+        this.particleSystem = new THREE.Points(particles, particleMaterial);
+        this.hologramGroup.add(this.particleSystem);
     }
 
     /**
@@ -126,25 +252,19 @@ export class WebXRVisualization {
         const graphData = this.graphDataManager.getGraphData();
         if (!graphData) return;
 
-        // Update nodes
-        graphData.nodes.forEach(node => {
-            if (this.nodeMeshes.has(node.id)) {
-                const mesh = this.nodeMeshes.get(node.id);
-                mesh.position.set(node.x, node.y, node.z);
-            } else {
-                // Create a new node mesh
-                const geometry = new THREE.SphereGeometry(1.5, 16, 16);
-                const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(node.x, node.y, node.z);
-                mesh.userData = { id: node.id, name: node.label };
-                this.scene.add(mesh);
-                this.nodeMeshes.set(node.id, mesh);
-            }
-        });
+        // Update nodes and edges
+        this.updateNodes(graphData.nodes);
+        this.updateEdges(graphData.edges);
+    }
+
+    /**
+     * Updates nodes in the scene based on graph data.
+     * @param {Array} nodes - Array of node objects.
+     */
+    updateNodes(nodes) {
+        const existingNodeIds = new Set(nodes.map((node) => node.id));
 
         // Remove nodes that no longer exist
-        const existingNodeIds = new Set(graphData.nodes.map(node => node.id));
         this.nodeMeshes.forEach((mesh, nodeId) => {
             if (!existingNodeIds.has(nodeId)) {
                 this.scene.remove(mesh);
@@ -152,8 +272,45 @@ export class WebXRVisualization {
             }
         });
 
-        // Update edges
-        graphData.edges.forEach(edge => {
+        // Add or update nodes
+        nodes.forEach((node) => {
+            if (this.nodeMeshes.has(node.id)) {
+                const mesh = this.nodeMeshes.get(node.id);
+                mesh.position.set(node.x, node.y, node.z);
+            } else {
+                // Create a new node mesh
+                const geometry = new THREE.SphereGeometry(2, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ color: this.getNodeColor(node) });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(node.x, node.y, node.z);
+                mesh.userData = { id: node.id, name: node.label };
+
+                // Add interaction event
+                mesh.callback = () => this.onSelect(mesh);
+
+                this.scene.add(mesh);
+                this.nodeMeshes.set(node.id, mesh);
+            }
+        });
+    }
+
+    /**
+     * Updates edges in the scene based on graph data.
+     * @param {Array} edges - Array of edge objects.
+     */
+    updateEdges(edges) {
+        const existingEdgeKeys = new Set(edges.map((edge) => `${edge.source}-${edge.target}`));
+
+        // Remove edges that no longer exist
+        this.edgeMeshes.forEach((line, edgeKey) => {
+            if (!existingEdgeKeys.has(edgeKey)) {
+                this.scene.remove(line);
+                this.edgeMeshes.delete(edgeKey);
+            }
+        });
+
+        // Add or update edges
+        edges.forEach((edge) => {
             const edgeKey = `${edge.source}-${edge.target}`;
             if (this.edgeMeshes.has(edgeKey)) {
                 const line = this.edgeMeshes.get(edgeKey);
@@ -174,10 +331,16 @@ export class WebXRVisualization {
                 const sourceMesh = this.nodeMeshes.get(edge.source);
                 const targetMesh = this.nodeMeshes.get(edge.target);
                 if (sourceMesh && targetMesh) {
-                    const geometry = new THREE.BufferGeometry().setFromPoints([
-                        new THREE.Vector3(sourceMesh.position.x, sourceMesh.position.y, sourceMesh.position.z),
-                        new THREE.Vector3(targetMesh.position.x, targetMesh.position.y, targetMesh.position.z)
-                    ]);
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(6); // 2 points * 3 coordinates
+                    positions[0] = sourceMesh.position.x;
+                    positions[1] = sourceMesh.position.y;
+                    positions[2] = sourceMesh.position.z;
+                    positions[3] = targetMesh.position.x;
+                    positions[4] = targetMesh.position.y;
+                    positions[5] = targetMesh.position.z;
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
                     const material = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
                     const line = new THREE.Line(geometry, material);
                     this.scene.add(line);
@@ -185,52 +348,22 @@ export class WebXRVisualization {
                 }
             }
         });
-
-        // Remove edges that no longer exist
-        const existingEdgeKeys = new Set(graphData.edges.map(edge => `${edge.source}-${edge.target}`));
-        this.edgeMeshes.forEach((line, edgeKey) => {
-            if (!existingEdgeKeys.has(edgeKey)) {
-                this.scene.remove(line);
-                this.edgeMeshes.delete(edgeKey);
-            }
-        });
-
-        // Add or update labels
-        this.addLabels(graphData.nodes);
     }
 
     /**
-     * Adds labels as billboards to nodes.
-     * @param {Array} nodes - Array of node objects.
+     * Determines the color of a node based on its properties.
+     * @param {object} node - The node object.
+     * @returns {THREE.Color} - The color of the node.
      */
-    addLabels(nodes) {
-        // Clear existing labels
-        while (this.labelsGroup.children.length > 0) {
-            const label = this.labelsGroup.children[0];
-            this.labelsGroup.remove(label);
+    getNodeColor(node) {
+        // Example: Color nodes based on a 'type' property
+        if (node.type === 'core') {
+            return new THREE.Color(0xffa500); // Orange for core nodes
+        } else if (node.type === 'secondary') {
+            return new THREE.Color(0x00ffff); // Cyan for secondary nodes
+        } else {
+            return new THREE.Color(0x00ff00); // Green for default nodes
         }
-
-        // Load font and create labels
-        const loader = new THREE.FontLoader();
-        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-            nodes.forEach(node => {
-                const textGeometry = new THREE.TextGeometry(node.label, {
-                    font: font,
-                    size: 2,
-                    height: 0.1,
-                    curveSegments: 12,
-                    bevelEnabled: false,
-                });
-
-                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-                textMesh.position.set(node.x, node.y + 5, node.z);
-                textMesh.lookAt(this.camera.position); // Make the label face the camera
-
-                this.labelsGroup.add(textMesh);
-                this.nodeLabels.push(textMesh);
-            });
-        });
     }
 
     /**
@@ -243,37 +376,73 @@ export class WebXRVisualization {
             // Update controls
             this.controls.update();
 
-            // Update label orientations to face the camera
-            this.updateLabels();
+            // Rotate hologram shells
+            this.rotateHologram();
+
+            // Update particle system
+            this.updateParticles();
 
             // GPU acceleration (if enabled)
             if (this.isGPUEnabled && this.gpu) {
                 computeOnGPU(this.gpu, { /* Pass necessary data */ });
             }
 
-            // Render the scene
-            this.renderer.render(this.scene, this.camera);
+            // Render the scene with post-processing
+            this.composer.render();
         };
 
         animateLoop();
     }
 
     /**
-     * Updates the orientation of labels to always face the camera.
+     * Rotates the hologram shells at different speeds.
      */
-    updateLabels() {
-        this.nodeLabels.forEach(label => {
-            label.lookAt(this.camera.position);
+    rotateHologram() {
+        this.hologramGroup.children.forEach((shell) => {
+            shell.rotation.y += shell.rotationSpeed;
         });
+    }
+
+    /**
+     * Updates the particle system positions to simulate energy flow.
+     */
+    updateParticles() {
+        const positions = this.particleSystem.geometry.attributes.position.array;
+        const velocities = this.particleSystem.geometry.attributes.velocity.array;
+
+        for (let i = 0; i < positions.length; i += 3) {
+            positions[i] += velocities[i] * 0.1;
+            positions[i + 1] += velocities[i + 1] * 0.1;
+            positions[i + 2] += velocities[i + 2] * 0.1;
+
+            // Reset particle if it goes beyond a certain radius
+            const distance = Math.sqrt(
+                positions[i] * positions[i] +
+                positions[i + 1] * positions[i + 1] +
+                positions[i + 2] * positions[i + 2]
+            );
+            if (distance > 150) {
+                positions[i] = positions[i] * -1;
+                positions[i + 1] = positions[i + 1] * -1;
+                positions[i + 2] = positions[i + 2] * -1;
+            }
+        }
+
+        this.particleSystem.geometry.attributes.position.needsUpdate = true;
     }
 
     /**
      * Handles window resize events by updating camera and renderer dimensions.
      */
     onWindowResize() {
+        // Update camera
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
 
+        // Update renderer
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Update composer
+        this.composer.setSize(window.innerWidth, window.innerHeight);
     }
 }

@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 use crate::AppState;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 use crate::services::ragflow_service::{RAGFlowService, Message};
 use log::{info, error};
 
@@ -46,7 +46,7 @@ pub struct ChatHistoryResponse {
 /// # Returns
 ///
 /// An HTTP response containing the RAGFlow service's response or an error.
-pub async fn send_message(state: web::Data<AppState>, msg: web::Json<Message>) -> HttpResponse {
+pub async fn send_message(_state: web::Data<AppState>, msg: web::Json<Message>) -> HttpResponse {
     let conversation_id = msg.0.conversation_id.clone().unwrap_or_else(|| "default".to_string());
     let message_content = msg.0.message.clone();
 
@@ -82,7 +82,7 @@ pub async fn send_message(state: web::Data<AppState>, msg: web::Json<Message>) -
 /// # Returns
 ///
 /// An HTTP response containing the new conversation ID or an error.
-pub async fn init_chat(state: web::Data<AppState>, user_id: web::Json<String>) -> HttpResponse {
+pub async fn init_chat(_state: web::Data<AppState>, user_id: web::Json<String>) -> HttpResponse {
     let user_id = user_id.into_inner();
 
     info!("Initializing chat for user: {}", user_id);
@@ -117,7 +117,7 @@ pub async fn init_chat(state: web::Data<AppState>, user_id: web::Json<String>) -
 /// # Returns
 ///
 /// An HTTP response containing the chat history or an error.
-pub async fn get_chat_history(state: web::Data<AppState>, path: web::Path<String>) -> HttpResponse {
+pub async fn get_chat_history(_state: web::Data<AppState>, path: web::Path<String>) -> HttpResponse {
     let conversation_id = path.into_inner();
 
     info!("Retrieving chat history for conversation: {}", conversation_id);
