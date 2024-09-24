@@ -1,15 +1,31 @@
-// src/models/edge.rs
+// edge.rs
+
 use serde::{Serialize, Deserialize};
 
+/// Represents an edge connecting two nodes in the graph.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Edge {
-    pub source: u32,
-    pub target: u32,
+    /// ID of the source node.
+    pub source: String,
+    /// ID of the target node.
+    pub target: String,
+    /// Weight of the edge.
     pub weight: f32,
 }
 
 impl Edge {
-    pub fn new(source: u32, target: u32, weight: f32) -> Self {
+    /// Creates a new `Edge` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `source` - ID of the source node.
+    /// * `target` - ID of the target node.
+    /// * `weight` - Weight of the edge.
+    ///
+    /// # Returns
+    ///
+    /// A new `Edge` instance.
+    pub fn new(source: String, target: String, weight: f32) -> Self {
         Edge { source, target, weight }
     }
 }

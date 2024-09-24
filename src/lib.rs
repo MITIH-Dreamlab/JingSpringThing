@@ -1,3 +1,5 @@
+// lib.rs
+
 pub mod app_state;
 pub mod config;
 pub mod handlers;
@@ -17,13 +19,13 @@ pub use services::perplexity_service::{
     PerplexityError,
     call_perplexity_api,
     process_markdown,
-    RealApiClient,
+    ApiClient,
     PerplexityService,
     clean_logseq_links,
     process_markdown_block,
     select_context_blocks,
     PerplexityResponse,
-    Message,
+    Message as PerplexityMessage,
     Choice,
     Delta,
     Usage,

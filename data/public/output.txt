@@ -1,0 +1,910 @@
+File: ./favicon.ico
+
+File: ./index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR Graph Visualization</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        #scene-container { width: 100vw; height: 100vh; }
+        #chat-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-container"></div>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Ask a question...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
+File: ./js/app.js
+import { WebsocketService } from './services/websocketService.js';
+import { GraphDataManager } from './services/graphDataManager.js';
+import { WebXRVisualization } from './components/webXRVisualization.js';
+import { ChatManager } from './components/chatManager.js';
+
+class App {
+    constructor() {
+        this.websocketService = new WebsocketService();
+        this.graphDataManager = new GraphDataManager(this.websocketService);
+        this.webXRVisualization = new WebXRVisualization(this.graphDataManager);
+        this.chatManager = new ChatManager(this.websocketService);
+
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        this.websocketService.on('open', () => {
+            console.log('WebSocket connection established');
+            this.graphDataManager.requestInitialData();
+        });
+
+        this.websocketService.on('message', (data) => {
+            if (data.type === 'graphUpdate') {
+                this.graphDataManager.updateGraphData(data.graphData);
+                this.webXRVisualization.updateVisualization();
+            } else if (data.type === 'chatResponse') {
+                this.chatManager.displayResponse(data.message);
+            }
+        });
+
+        this.websocketService.on('error', (error) => {
+            console.error('WebSocket error:', error);
+        });
+
+        this.websocketService.on('close', () => {
+            console.log('WebSocket connection closed');
+        });
+    }
+
+    start() {
+        this.webXRVisualization.initialize();
+        this.chatManager.initialize();
+    }
+}
+
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.start();
+});
+File: ./js/index.js
+import { App } from './app.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.start();
+});
+File: ./js/xr/xrSetup.js
+export function initXRSession(renderer) {
+  // XR session initialization logic here
+  console.log('Initializing XR session');
+  return {
+    requestSession: () => Promise.resolve({ addEventListener: jest.fn() }),
+  };
+}
+
+export function setupXRButton(renderer) {
+  // XR button setup logic here
+  console.log('Setting up XR button');
+  return {
+    click: () => console.log('XR button clicked'),
+  };
+}
+
+export function onXRSessionStarted(session, renderer, scene, camera) {
+  // XR session started logic here
+  console.log('XR session started');
+  return {
+    requestAnimationFrame: (callback) => setTimeout(callback, 1000 / 60),
+  };
+}
+
+export function updateXRFrame(frame, scene, camera) {
+  // Update XR frame logic here
+  console.log('Updating XR frame');
+  return true;
+}
+File: ./js/xr/xrInteraction.js
+export function initXRInteraction(scene, camera) {
+  // XR interaction initialization logic here
+  console.log('Initializing XR interaction');
+  return {
+    update: () => console.log('Updating XR interaction'),
+    handleControllerEvent: (event) => console.log('Handling XR controller event:', event),
+  };
+}
+
+export function updateXRInteraction(xrInteraction) {
+  // Update XR interaction logic here
+  console.log('Updating XR interaction');
+  xrInteraction.update();
+  return true;
+}
+
+export function handleXRControllerEvent(xrInteraction, event) {
+  // Handle XR controller event logic here
+  console.log('Handling XR controller event:', event);
+  xrInteraction.handleControllerEvent(event);
+  return true;
+}
+File: ./js/services/ragflowService.js
+// public/js/services/ragflowService.js
+
+/**
+ * RAGflowService manages interactions with the RAGFlow API for AI-powered question answering.
+ */
+export class RAGflowService {
+  /**
+   * Creates a new RAGflowService instance.
+   * @param {WebsocketService} webSocket - The WebSocket service instance.
+   */
+  constructor(webSocket) {
+    this.webSocket = webSocket;
+    this.setupWebSocketListeners();
+  }
+
+  /**
+   * Sets up WebSocket listeners specific to RAGFlow interactions.
+   */
+  setupWebSocketListeners() {
+    // Listen for RAGFlow responses from the server
+    this.webSocket.on('message', (data) => {
+      if (data.type === 'ragflowResponse') {
+        this.handleRAGFlowResponse(data);
+      }
+    });
+  }
+
+  /**
+   * Sends a query to RAGFlow via WebSocket.
+   * @param {string} query - The user's question.
+   */
+  sendQuery(query) {
+    this.webSocket.send({
+      type: 'ragflowQuery',
+      question: query
+    });
+  }
+
+  /**
+   * Handles responses from RAGFlow.
+   * @param {object} data - The response data from the server.
+   */
+  handleRAGFlowResponse(data) {
+    const { answer } = data;
+    // Dispatch a custom event or use other mechanisms to pass the answer to ChatManager
+    const event = new CustomEvent('ragflowAnswer', { detail: answer });
+    window.dispatchEvent(event);
+  }
+}
+File: ./js/services/graphDataManager.js
+export class GraphDataManager {
+    constructor(websocketService) {
+        this.websocketService = websocketService;
+        this.graphData = null;
+    }
+
+    requestInitialData() {
+        this.websocketService.send({ type: 'getInitialData' });
+    }
+
+    updateGraphData(newData) {
+        this.graphData = newData;
+        console.log('Graph data updated:', this.graphData);
+    }
+
+    // Add more methods as needed for graph data management
+}
+File: ./js/services/websocketService.js
+export class WebsocketService {
+    constructor() {
+        this.socket = null;
+        this.listeners = {};
+        this.connect();
+    }
+
+    connect() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${wsProtocol}//${window.location.host}/ws/`; // Ensure /ws/ is appended
+        console.log('Attempting to connect to WebSocket at:', url);
+        this.socket = new WebSocket(url);
+
+        this.socket.onopen = () => {
+            console.log('WebSocket connection established');
+            this.emit('open');
+        };
+
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.emit('message', data);
+        };
+
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.emit('error', error);
+        };
+
+        this.socket.onclose = () => {
+            console.log('WebSocket connection closed. Attempting to reconnect...');
+            this.emit('close');
+            setTimeout(() => this.connect(), 5000);
+        };
+    }
+
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    }
+
+    emit(event, data) {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(callback => callback(data));
+        }
+    }
+
+    send(data) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify(data));
+        } else {
+            console.warn('WebSocket is not open. Unable to send message:', data);
+        }
+    }
+}
+File: ./js/components/webXRVisualization.js
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+
+export class WebXRVisualization {
+    constructor(graphDataManager) {
+        this.graphDataManager = graphDataManager;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.nodes = new Map();
+        this.edges = new Map();
+    }
+
+    initialize() {
+        this.initThreeJS();
+        this.initWebXR();
+        this.animate();
+    }
+
+    initThreeJS() {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('scene-container').appendChild(this.renderer.domElement);
+
+        // Add some basic lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        this.scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        this.scene.add(directionalLight);
+
+        this.camera.position.z = 5;
+    }
+
+    initWebXR() {
+        // Check if WebXR is supported
+        if ('xr' in navigator) {
+            navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+                if (supported) {
+                    const enterVRButton = document.createElement('button');
+                    enterVRButton.textContent = 'Enter VR';
+                    enterVRButton.onclick = this.enterVR.bind(this);
+                    document.body.appendChild(enterVRButton);
+                }
+            });
+        }
+    }
+
+    enterVR() {
+        navigator.xr.requestSession('immersive-vr').then((session) => {
+            this.renderer.xr.setSession(session);
+            this.renderer.xr.enabled = true;
+        });
+    }
+
+    updateVisualization() {
+        if (!this.graphDataManager.graphData) return;
+
+        // Clear existing nodes and edges
+        this.nodes.forEach(node => this.scene.remove(node));
+        this.edges.forEach(edge => this.scene.remove(edge));
+        this.nodes.clear();
+        this.edges.clear();
+
+        // Create new nodes
+        this.graphDataManager.graphData.nodes.forEach(nodeData => {
+            const geometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const nodeMesh = new THREE.Mesh(geometry, material);
+            nodeMesh.position.set(
+                Math.random() * 10 - 5,
+                Math.random() * 10 - 5,
+                Math.random() * 10 - 5
+            );
+            this.scene.add(nodeMesh);
+            this.nodes.set(nodeData.id, nodeMesh);
+        });
+
+        // Create new edges
+        this.graphDataManager.graphData.edges.forEach(edgeData => {
+            const sourceNode = this.nodes.get(edgeData.source);
+            const targetNode = this.nodes.get(edgeData.target);
+            if (sourceNode && targetNode) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    sourceNode.position,
+                    targetNode.position
+                ]);
+                const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+                const edgeLine = new THREE.Line(geometry, material);
+                this.scene.add(edgeLine);
+                this.edges.set(edgeData.id, edgeLine);
+            }
+        });
+    }
+
+    animate() {
+        this.renderer.setAnimationLoop(() => {
+            this.renderer.render(this.scene, this.camera);
+        });
+    }
+}
+File: ./js/components/visualization.js
+// public/js/components/visualization.js
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+/**
+ * Visualization class handles the creation and rendering of the 3D graph using Three.js.
+ */
+export class Visualization {
+  constructor() {
+    // Initialize Three.js components
+    this.initThreeJS();
+
+    // Store references to node and edge meshes for easy updates
+    this.nodeMeshes = new Map();
+    this.edgeMeshes = new Map();
+  }
+
+  /**
+   * Initializes Three.js scene, camera, renderer, and controls.
+   */
+  initThreeJS() {
+    // Create the scene
+    this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+    // Create the camera
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    this.camera.position.set(0, 0, 100);
+
+    // Create the renderer
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.xr.enabled = true; // Enable WebXR
+    document.body.appendChild(this.renderer.domElement);
+
+    // Add orbit controls for camera manipulation
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.05;
+
+    // Add ambient light to the scene
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    this.scene.add(ambientLight);
+
+    // Add directional light to the scene
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(50, 50, 50);
+    this.scene.add(directionalLight);
+
+    // Handle window resize events
+    window.addEventListener('resize', this.onWindowResize.bind(this), false);
+  }
+
+  /**
+   * Creates the initial graph visualization based on fetched graph data.
+   * @param {object} graphData - The graph data containing nodes and edges.
+   */
+  createGraph(graphData) {
+    this.createNodeObjects(graphData.nodes);
+    this.createEdgeObjects(graphData.edges);
+  }
+
+  /**
+   * Creates Three.js Mesh objects for each node and adds them to the scene.
+   * @param {Array} nodes - Array of node objects.
+   */
+  createNodeObjects(nodes) {
+    // Define geometry and material for nodes
+    const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+    nodes.forEach(node => {
+      // Create a mesh for each node
+      const mesh = new THREE.Mesh(geometry, material.clone());
+      mesh.position.set(node.x, node.y, node.z);
+      mesh.userData = { id: node.id, name: node.name };
+
+      // Add the mesh to the scene
+      this.scene.add(mesh);
+
+      // Store the mesh in the nodeMeshes map for easy access
+      this.nodeMeshes.set(node.id, mesh);
+    });
+  }
+
+  /**
+   * Creates Three.js Line objects for each edge and adds them to the scene.
+   * @param {Array} edges - Array of edge objects.
+   */
+  createEdgeObjects(edges) {
+    edges.forEach(edge => {
+      const sourceNode = this.nodeMeshes.get(edge.source);
+      const targetNode = this.nodeMeshes.get(edge.target);
+
+      if (sourceNode && targetNode) {
+        // Define geometry for the edge
+        const geometry = new THREE.BufferGeometry();
+        const vertices = new Float32Array([
+          sourceNode.position.x,
+          sourceNode.position.y,
+          sourceNode.position.z,
+          targetNode.position.x,
+          targetNode.position.y,
+          targetNode.position.z,
+        ]);
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+        // Define material for the edge
+        const material = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+
+        // Create the line object
+        const line = new THREE.Line(geometry, material);
+
+        // Add the line to the scene
+        this.scene.add(line);
+
+        // Store the line in the edgeMeshes map for easy access
+        this.edgeMeshes.set(`${edge.source}-${edge.target}`, line);
+      }
+    });
+  }
+
+  /**
+   * Updates the graph visualization based on new graph data received from the server.
+   * @param {object} graphData - The updated graph data containing nodes and edges.
+   */
+  updateGraph(graphData) {
+    // Update nodes
+    graphData.nodes.forEach(node => {
+      const mesh = this.nodeMeshes.get(node.id);
+      if (mesh) {
+        // Update node position
+        mesh.position.set(node.x, node.y, node.z);
+
+        // Optionally, update node properties like color or size
+        // Example: mesh.material.color.set(node.color || 0xff0000);
+      } else {
+        // If the node doesn't exist, create it
+        this.createNodeObjects([node]);
+      }
+    });
+
+    // Remove nodes that no longer exist
+    const existingNodeIds = new Set(graphData.nodes.map(node => node.id));
+    this.nodeMeshes.forEach((mesh, nodeId) => {
+      if (!existingNodeIds.has(nodeId)) {
+        this.scene.remove(mesh);
+        this.nodeMeshes.delete(nodeId);
+      }
+    });
+
+    // Update edges
+    graphData.edges.forEach(edge => {
+      const edgeKey = `${edge.source}-${edge.target}`;
+      const line = this.edgeMeshes.get(edgeKey);
+      const sourceNode = this.nodeMeshes.get(edge.source);
+      const targetNode = this.nodeMeshes.get(edge.target);
+
+      if (line && sourceNode && targetNode) {
+        // Update edge positions
+        const positions = line.geometry.attributes.position.array;
+        positions[0] = sourceNode.position.x;
+        positions[1] = sourceNode.position.y;
+        positions[2] = sourceNode.position.z;
+        positions[3] = targetNode.position.x;
+        positions[4] = targetNode.position.y;
+        positions[5] = targetNode.position.z;
+        line.geometry.attributes.position.needsUpdate = true;
+
+        // Optionally, update edge properties like color or opacity
+        // Example: line.material.color.set(edge.color || 0xffffff);
+      } else if (sourceNode && targetNode) {
+        // If the edge doesn't exist, create it
+        this.createEdgeObjects([edge]);
+      }
+    });
+
+    // Remove edges that no longer exist
+    const existingEdgeKeys = new Set(graphData.edges.map(edge => `${edge.source}-${edge.target}`));
+    this.edgeMeshes.forEach((line, edgeKey) => {
+      if (!existingEdgeKeys.has(edgeKey)) {
+        this.scene.remove(line);
+        this.edgeMeshes.delete(edgeKey);
+      }
+    });
+  }
+
+  /**
+   * Renders the scene using the Three.js renderer.
+   */
+  render() {
+    // Update orbit controls for smooth camera movement
+    this.controls.update();
+
+    // Render the scene
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Handles window resize events by updating camera and renderer dimensions.
+   */
+  onWindowResize() {
+    // Update camera aspect ratio
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    // Update renderer size
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+}
+File: ./js/components/graphSimulation.js
+// public/js/components/graphSimulation.js
+
+/**
+ * GraphSimulation is no longer needed on the client-side as the simulation is handled server-side.
+ * However, if any client-side computations or interactions are required, they can be added here.
+ */
+export class GraphSimulation {
+    constructor() {
+      // No initialization needed for server-side simulation
+      console.log('GraphSimulation initialized on client (no operations)');
+    }
+  
+    /**
+     * Placeholder compute method.
+     * No computations are performed client-side.
+     * @param {number} deltaTime - The time elapsed since the last frame.
+     */
+    compute(deltaTime) {
+      // No computations on client-side
+    }
+  
+    /**
+     * Placeholder method to get node positions.
+     * @returns {Array} Empty array as positions are managed server-side.
+     */
+    getNodePositions() {
+      return [];
+    }
+  
+    /**
+     * Placeholder method to update node data.
+     * @param {Array} nodes - Array of node objects.
+     */
+    updateNodeData(nodes) {
+      // No action needed
+    }
+  
+    /**
+     * Placeholder method to update edge data.
+     * @param {Array} edges - Array of edge objects.
+     */
+    updateEdgeData(edges) {
+      // No action needed
+    }
+  }
+  File: ./js/components/interface.js
+// public/js/components/interface.js
+
+/**
+ * Interface class manages UI elements like error messages and information panels.
+ */
+export class Interface {
+  /**
+   * Creates a new Interface instance.
+   * @param {Document} document - The DOM document.
+   */
+  constructor(document) {
+    this.document = document;
+    this.createUI();
+  }
+
+  /**
+   * Creates necessary UI elements and appends them to the DOM.
+   */
+  createUI() {
+    // Create Node Information Panel
+    this.createNodeInfoPanel();
+  }
+
+  /**
+   * Creates a panel to display information about selected nodes.
+   */
+  createNodeInfoPanel() {
+    const infoPanel = this.document.createElement('div');
+    infoPanel.id = 'node-info-panel';
+    infoPanel.style.position = 'absolute';
+    infoPanel.style.top = '10px';
+    infoPanel.style.left = '10px';
+    infoPanel.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    infoPanel.style.color = 'white';
+    infoPanel.style.padding = '10px';
+    infoPanel.style.borderRadius = '5px';
+    infoPanel.style.display = 'none'; // Hidden by default
+    this.document.body.appendChild(infoPanel);
+
+    this.nodeInfoPanel = infoPanel;
+  }
+
+  /**
+   * Displays an error message on the screen.
+   * @param {string} message - The error message to display.
+   */
+  displayErrorMessage(message) {
+    const errorContainer = this.document.createElement('div');
+    errorContainer.style.position = 'fixed';
+    errorContainer.style.top = '50%';
+    errorContainer.style.left = '50%';
+    errorContainer.style.transform = 'translate(-50%, -50%)';
+    errorContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+    errorContainer.style.color = 'white';
+    errorContainer.style.padding = '20px';
+    errorContainer.style.borderRadius = '5px';
+    errorContainer.style.zIndex = '1000';
+    errorContainer.textContent = message;
+
+    this.document.body.appendChild(errorContainer);
+
+    // Remove the error message after 5 seconds
+    setTimeout(() => {
+      this.document.body.removeChild(errorContainer);
+    }, 5000);
+  }
+
+  /**
+   * Updates the Node Information Panel with details of the selected node.
+   * @param {object} node - The node object containing its details.
+   */
+  updateNodeInfoPanel(node) {
+    if (!node) {
+      this.nodeInfoPanel.style.display = 'none';
+      return;
+    }
+
+    this.nodeInfoPanel.innerHTML = `
+      <h3>Node Information</h3>
+      <p><strong>ID:</strong> ${node.id}</p>
+      <p><strong>Name:</strong> ${node.name}</p>
+      <!-- Add more node properties as needed -->
+    `;
+    this.nodeInfoPanel.style.display = 'block';
+  }
+}
+File: ./js/components/chatManager.js
+export class ChatManager {
+    constructor(websocketService) {
+        this.websocketService = websocketService;
+        this.chatInput = null;
+        this.sendButton = null;
+        this.chatMessages = null;
+    }
+
+    initialize() {
+        this.chatInput = document.getElementById('chat-input');
+        this.sendButton = document.getElementById('send-button');
+        this.chatMessages = document.getElementById('chat-messages');
+
+        this.sendButton.addEventListener('click', this.sendMessage.bind(this));
+        this.chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                this.sendMessage();
+            }
+        });
+    }
+
+    sendMessage() {
+        const message = this.chatInput.value.trim();
+        if (message) {
+            this.websocketService.send({
+                type: 'chatMessage',
+                content: message
+            });
+            this.displayMessage('You', message);
+            this.chatInput.value = '';
+        }
+    }
+
+    displayMessage(sender, message) {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${sender}: ${message}`;
+        this.chatMessages.appendChild(messageElement);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    displayResponse(message) {
+        this.displayMessage('AI', message);
+    }
+}
+File: ./js/threeJS/threeSetup.js
+export function initThreeScene() {
+  // Three.js scene initialization logic here
+  console.log('Initializing Three.js scene');
+  return {
+    scene: {},
+    camera: {},
+    renderer: {
+      setSize: (width, height) => console.log(`Setting renderer size: ${width}x${height}`),
+      render: (scene, camera) => console.log('Rendering scene'),
+    },
+  };
+}
+
+export function createThreeCamera() {
+  // Create Three.js camera logic here
+  console.log('Creating Three.js camera');
+  return {};
+}
+
+export function createThreeRenderer() {
+  // Create Three.js renderer logic here
+  console.log('Creating Three.js renderer');
+  return {
+    setSize: (width, height) => console.log(`Setting renderer size: ${width}x${height}`),
+    render: (scene, camera) => console.log('Rendering scene'),
+  };
+}
+
+export function updateSceneSize(renderer, camera, width, height) {
+  // Update scene size logic here
+  console.log(`Updating scene size: ${width}x${height}`);
+  renderer.setSize(width, height);
+  return true;
+}
+File: ./js/threeJS/threeGraph.js
+import * as THREE from 'three';
+
+export class ForceGraph {
+  constructor(scene) {
+    this.scene = scene;
+    this.nodes = [];
+    this.links = [];
+    this.nodeObjects = new Map();
+    this.linkObjects = new Map();
+  }
+
+  updateGraph(data) {
+    this.nodes = data.nodes;
+    this.links = data.links;
+    this.renderGraph();
+  }
+
+  renderGraph() {
+    this.updateNodes();
+    this.updateLinks();
+  }
+
+  updateNodes() {
+    const newNodeIds = new Set(this.nodes.map(n => n.id));
+
+    // Remove nodes that no longer exist
+    for (const [id, object] of this.nodeObjects) {
+      if (!newNodeIds.has(id)) {
+        this.scene.remove(object);
+        this.nodeObjects.delete(id);
+      }
+    }
+
+    // Update existing nodes and add new ones
+    this.nodes.forEach(node => {
+      if (this.nodeObjects.has(node.id)) {
+        const nodeObject = this.nodeObjects.get(node.id);
+        nodeObject.position.set(node.x, node.y, node.z);
+      } else {
+        const geometry = new THREE.SphereGeometry(5);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(node.x, node.y, node.z);
+        this.scene.add(sphere);
+        this.nodeObjects.set(node.id, sphere);
+      }
+    });
+  }
+
+  updateLinks() {
+    const newLinkIds = new Set(this.links.map(l => `${l.source}-${l.target}`));
+
+    // Remove links that no longer exist
+    for (const [id, object] of this.linkObjects) {
+      if (!newLinkIds.has(id)) {
+        this.scene.remove(object);
+        this.linkObjects.delete(id);
+      }
+    }
+
+    // Update existing links and add new ones
+    this.links.forEach(link => {
+      const linkId = `${link.source}-${link.target}`;
+      const sourceNode = this.nodes.find(n => n.id === link.source);
+      const targetNode = this.nodes.find(n => n.id === link.target);
+
+      if (this.linkObjects.has(linkId)) {
+        const linkObject = this.linkObjects.get(linkId);
+        linkObject.geometry.setFromPoints([
+          new THREE.Vector3(sourceNode.x, sourceNode.y, sourceNode.z),
+          new THREE.Vector3(targetNode.x, targetNode.y, targetNode.z)
+        ]);
+      } else {
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(sourceNode.x, sourceNode.y, sourceNode.z),
+          new THREE.Vector3(targetNode.x, targetNode.y, targetNode.z)
+        ]);
+        const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+        const line = new THREE.Line(geometry, material);
+        this.scene.add(line);
+        this.linkObjects.set(linkId, line);
+      }
+    });
+  }
+}
+File: ./js/gpuUtils.js
+export function initGPU() {
+  // GPU initialization logic here
+  console.log('Initializing GPU');
+  return {
+    compute: (data) => console.log('Computing on GPU:', data),
+  };
+}
+
+export function computeOnGPU(gpu, data) {
+  // Compute on GPU logic here
+  console.log('Computing on GPU:', data);
+  gpu.compute(data);
+  return true;
+}
+
+export function isGPUAvailable() {
+  // Check GPU availability logic here
+  console.log('Checking GPU availability');
+  return true;
+}
