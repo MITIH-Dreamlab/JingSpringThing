@@ -908,3 +908,1617 @@ export function isGPUAvailable() {
   console.log('Checking GPU availability');
   return true;
 }
+File: ./favicon.ico
+
+File: ./output.txt
+File: ./index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR Graph Visualization</title>
+    <style>
+        /* Reset default margins and paddings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            overflow: hidden; 
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Container for the 3D scene */
+        #scene-container { 
+            width: 100vw; 
+            height: 100vh; 
+            display: block;
+        }
+
+        /* Chat container styling */
+        #chat-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            max-height: 60vh;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat messages area */
+        #chat-messages {
+            flex: 1;
+            margin-bottom: 10px;
+            overflow-y: auto;
+        }
+
+        /* Chat input area */
+        #chat-input-area {
+            display: flex;
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #send-button {
+            padding: 8px 12px;
+            margin-left: 8px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #send-button:hover {
+            background-color: #218838;
+        }
+
+        /* Fullscreen button styling */
+        #fullscreen-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #fullscreen-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            #chat-container {
+                width: 90%;
+                left: 5%;
+                bottom: 10px;
+            }
+
+            #fullscreen-button {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for the 3D scene -->
+    <div id="scene-container"></div>
+
+    <!-- Fullscreen toggle button -->
+    <button id="fullscreen-button">Toggle Fullscreen</button>
+
+    <!-- Chat container -->
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask a question...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <!-- Include the main application script -->
+    <script type="module" src="/js/app.js"></script>
+</body>
+</html>
+File: ./js/app.js
+// public/js/app.js
+
+import { WebsocketService } from './services/websocketService.js';
+import { GraphDataManager } from './services/graphDataManager.js';
+import { Visualization } from './components/visualization.js';
+import { ChatManager } from './components/chatManager.js';
+import { Interface } from './components/interface.js';
+import { RAGflowService } from './services/ragflowService.js';
+
+class App {
+    constructor() {
+        // Initialize services and components
+        this.websocketService = new WebsocketService();
+        this.graphDataManager = new GraphDataManager(this.websocketService);
+        this.visualization = new Visualization(this.graphDataManager);
+        this.chatManager = new ChatManager(this.websocketService);
+        this.interface = new Interface(document);
+
+        this.ragflowService = new RAGflowService(this.websocketService);
+
+        this.initializeEventListeners();
+    }
+
+    /**
+     * Sets up event listeners for WebSocket events and custom events.
+     */
+    initializeEventListeners() {
+        // WebSocket open event
+        this.websocketService.on('open', () => {
+            console.log('WebSocket connection established');
+            this.graphDataManager.requestInitialData();
+        });
+
+        // WebSocket message event
+        this.websocketService.on('message', (data) => {
+            if (data.type === 'graphUpdate') {
+                this.graphDataManager.updateGraphData(data.graphData);
+                this.visualization.updateVisualization();
+            } else if (data.type === 'chatResponse') {
+                this.chatManager.displayResponse(data.message);
+            }
+        });
+
+        // WebSocket error event
+        this.websocketService.on('error', (error) => {
+            console.error('WebSocket error:', error);
+            this.interface.displayErrorMessage('WebSocket connection error.');
+        });
+
+        // WebSocket close event
+        this.websocketService.on('close', () => {
+            console.log('WebSocket connection closed');
+            this.interface.displayErrorMessage('WebSocket connection closed.');
+        });
+
+        // Custom event for RAGFlow answers
+        window.addEventListener('ragflowAnswer', (event) => {
+            const answer = event.detail;
+            this.chatManager.displayResponse(answer);
+        });
+
+        // Fullscreen button event
+        const fullscreenButton = document.getElementById('fullscreen-button');
+        fullscreenButton.addEventListener('click', this.toggleFullscreen.bind(this));
+    }
+
+    /**
+     * Toggles the browser's fullscreen mode.
+     */
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                this.interface.displayErrorMessage('Unable to enter fullscreen mode.');
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    /**
+     * Starts the application by initializing visualization and chat components.
+     */
+    start() {
+        this.visualization.initialize();
+        this.chatManager.initialize();
+    }
+}
+
+// Initialize the application when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.start();
+});
+File: ./js/index.js
+import { App } from './app.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.start();
+});
+File: ./js/xr/xrSetup.js
+// public/js/xr/xrSetup.js
+
+import * as THREE from 'three';
+
+/**
+ * Initializes the WebXR session for immersive experiences.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {THREE.PerspectiveCamera} camera - The Three.js camera.
+ */
+export function initXRSession(renderer, scene, camera) {
+    if ('xr' in navigator) {
+        navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+            if (supported) {
+                const enterXRButton = document.createElement('button');
+                enterXRButton.id = 'enter-vr-button';
+                enterXRButton.textContent = 'Enter VR';
+                enterXRButton.style.position = 'absolute';
+                enterXRButton.style.top = '20px';
+                enterXRButton.style.right = '20px';
+                enterXRButton.style.padding = '10px 15px';
+                enterXRButton.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                enterXRButton.style.color = 'white';
+                enterXRButton.style.border = 'none';
+                enterXRButton.style.borderRadius = '4px';
+                enterXRButton.style.cursor = 'pointer';
+                enterXRButton.style.transition = 'background-color 0.3s';
+
+                enterXRButton.addEventListener('mouseenter', () => {
+                    enterXRButton.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                });
+
+                enterXRButton.addEventListener('mouseleave', () => {
+                    enterXRButton.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                });
+
+                enterXRButton.onclick = () => {
+                    renderer.xr.setReferenceSpaceType('local');
+                    navigator.xr.requestSession('immersive-vr').then((session) => {
+                        renderer.xr.setSession(session);
+                    });
+                };
+
+                document.body.appendChild(enterXRButton);
+            }
+        }).catch((err) => {
+            console.error('Error checking XR session support:', err);
+        });
+    } else {
+        console.warn('WebXR not supported in this browser.');
+    }
+}
+
+/**
+ * Handles the XR session's rendering loop.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {THREE.PerspectiveCamera} camera - The Three.js camera.
+ */
+export function handleXRSession(renderer, scene, camera) {
+    renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+    });
+}
+
+/**
+ * Updates the XR frame, if necessary.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {THREE.PerspectiveCamera} camera - The Three.js camera.
+ */
+export function updateXRFrame(renderer, scene, camera) {
+    // Additional updates can be handled here if needed
+    renderer.render(scene, camera);
+}
+File: ./js/xr/xrInteraction.js
+// public/js/xr/xrInteraction.js
+
+import * as THREE from 'three';
+
+/**
+ * Initializes XR controller interactions.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {THREE.Camera} camera - The Three.js camera.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ * @param {function} onSelect - Callback function when an object is selected.
+ */
+export function initXRInteraction(scene, camera, renderer, onSelect) {
+    const controller1 = renderer.xr.getController(0);
+    const controller2 = renderer.xr.getController(1);
+
+    controller1.addEventListener('select', onSelect);
+    controller2.addEventListener('select', onSelect);
+
+    scene.add(controller1);
+    scene.add(controller2);
+
+    // Optional: Add visual indicators for controllers
+    const controllerModelFactory = new THREE.XRControllerModelFactory();
+
+    const controllerGrip1 = renderer.xr.getControllerGrip(0);
+    controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+    scene.add(controllerGrip1);
+
+    const controllerGrip2 = renderer.xr.getControllerGrip(1);
+    controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+    scene.add(controllerGrip2);
+}
+
+/**
+ * Handles controller selection events.
+ * @param {THREE.Intersection[]} intersects - Array of intersected objects.
+ * @param {function} onSelect - Callback function to handle selection.
+ */
+export function handleControllerSelection(intersects, onSelect) {
+    if (intersects.length > 0) {
+        const selectedObject = intersects[0].object;
+        onSelect(selectedObject);
+    }
+}
+
+/**
+ * Adds labels as billboards to nodes.
+ * @param {THREE.Scene} scene - The Three.js scene.
+ * @param {THREE.Camera} camera - The Three.js camera.
+ * @param {Array} nodes - Array of node objects.
+ */
+export function addNodeLabels(scene, camera, nodes) {
+    const loader = new THREE.FontLoader();
+
+    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        nodes.forEach(node => {
+            const textGeometry = new THREE.TextGeometry(node.name, {
+                font: font,
+                size: 1,
+                height: 0.1,
+                curveSegments: 12,
+                bevelEnabled: false,
+            });
+
+            const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+            // Position the label above the node
+            textMesh.position.set(node.x, node.y + 3, node.z);
+            textMesh.lookAt(camera.position); // Make the label face the camera
+
+            scene.add(textMesh);
+            node.labelMesh = textMesh; // Store reference for updates
+        });
+    });
+}
+
+/**
+ * Updates label orientations to always face the camera.
+ * @param {THREE.Camera} camera - The Three.js camera.
+ * @param {Array} nodes - Array of node objects with label meshes.
+ */
+export function updateLabelOrientations(camera, nodes) {
+    nodes.forEach(node => {
+        if (node.labelMesh) {
+            node.labelMesh.lookAt(camera.position);
+        }
+    });
+}
+File: ./js/services/ragflowService.js
+// public/js/services/ragflowService.js
+
+/**
+ * RAGflowService manages interactions with the RAGFlow API for AI-powered question answering.
+ */
+export class RAGflowService {
+  /**
+   * Creates a new RAGflowService instance.
+   * @param {WebsocketService} websocketService - The WebSocket service instance.
+   */
+  constructor(websocketService) {
+      this.websocketService = websocketService;
+      this.setupWebSocketListeners();
+  }
+
+  /**
+   * Sets up WebSocket listeners specific to RAGFlow interactions.
+   */
+  setupWebSocketListeners() {
+      // Listen for RAGFlow responses from the server
+      this.websocketService.on('message', (data) => {
+          if (data.type === 'ragflowResponse') {
+              this.handleRAGFlowResponse(data);
+          }
+      });
+  }
+
+  /**
+   * Sends a query to RAGFlow via WebSocket.
+   * @param {string} query - The user's question.
+   */
+  sendQuery(query) {
+      this.websocketService.send({
+          type: 'ragflowQuery',
+          question: query
+      });
+  }
+
+  /**
+   * Handles responses from RAGFlow.
+   * @param {object} data - The response data from the server.
+   */
+  handleRAGFlowResponse(data) {
+      const { answer } = data;
+      // Dispatch a custom event to pass the answer to ChatManager
+      const event = new CustomEvent('ragflowAnswer', { detail: answer });
+      window.dispatchEvent(event);
+  }
+}
+File: ./js/services/graphDataManager.js
+// public/js/services/graphDataManager.js
+
+/**
+ * GraphDataManager handles the management and updating of graph data received from the server.
+ */
+export class GraphDataManager {
+    /**
+     * Creates a new GraphDataManager instance.
+     * @param {WebsocketService} websocketService - The WebSocket service instance.
+     */
+    constructor(websocketService) {
+        this.websocketService = websocketService;
+        this.graphData = null;
+    }
+
+    /**
+     * Requests the initial graph data from the server via WebSocket.
+     */
+    requestInitialData() {
+        this.websocketService.send({ type: 'getInitialData' });
+    }
+
+    /**
+     * Updates the internal graph data with new data received from the server.
+     * @param {object} newData - The new graph data.
+     */
+    updateGraphData(newData) {
+        this.graphData = newData;
+        console.log('Graph data updated:', this.graphData);
+    }
+
+    /**
+     * Retrieves the current graph data.
+     * @returns {object|null} The current graph data or null if not set.
+     */
+    getGraphData() {
+        return this.graphData;
+    }
+
+    // Additional methods can be added here for more complex data management
+}
+File: ./js/services/websocketService.js
+// public/js/services/websocketService.js
+
+/**
+ * WebsocketService handles the WebSocket connection and communication with the server.
+ */
+export class WebsocketService {
+    constructor() {
+        this.socket = null;
+        this.listeners = {};
+        this.connect();
+    }
+
+    /**
+     * Establishes a WebSocket connection to the server.
+     */
+    connect() {
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${wsProtocol}//${window.location.host}/ws/`; // Ensure /ws/ is appended
+        console.log('Attempting to connect to WebSocket at:', url);
+        this.socket = new WebSocket(url);
+
+        // WebSocket open event
+        this.socket.onopen = () => {
+            console.log('WebSocket connection established');
+            this.emit('open');
+        };
+
+        // WebSocket message event
+        this.socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                this.emit('message', data);
+            } catch (err) {
+                console.error('Error parsing WebSocket message:', err);
+            }
+        };
+
+        // WebSocket error event
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.emit('error', error);
+        };
+
+        // WebSocket close event with reconnection logic
+        this.socket.onclose = () => {
+            console.log('WebSocket connection closed. Attempting to reconnect in 5 seconds...');
+            this.emit('close');
+            setTimeout(() => this.connect(), 5000); // Attempt reconnection after 5 seconds
+        };
+    }
+
+    /**
+     * Registers an event listener for a specific event type.
+     * @param {string} event - The event type.
+     * @param {function} callback - The callback function to execute when the event occurs.
+     */
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    }
+
+    /**
+     * Emits an event to all registered listeners.
+     * @param {string} event - The event type.
+     * @param {any} data - The data associated with the event.
+     */
+    emit(event, data) {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(callback => callback(data));
+        }
+    }
+
+    /**
+     * Sends data to the server via WebSocket.
+     * @param {object} data - The data to send.
+     */
+    send(data) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify(data));
+        } else {
+            console.warn('WebSocket is not open. Unable to send message:', data);
+        }
+    }
+}
+File: ./js/components/webXRVisualization.js
+// public/js/components/webXRVisualization.js
+
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/controls/OrbitControls.js';
+import { initXRSession, handleXRSession } from '../xr/xrSetup.js';
+import { initXRInteraction, addNodeLabels, updateLabelOrientations } from '../xr/xrInteraction.js';
+import { isGPUAvailable, initGPU, computeOnGPU } from '../gpuUtils.js';
+
+/**
+ * WebXRVisualization class manages the 3D graph visualization with WebXR support.
+ */
+export class WebXRVisualization {
+    /**
+     * Creates a new WebXRVisualization instance.
+     * @param {GraphDataManager} graphDataManager - The GraphDataManager instance.
+     */
+    constructor(graphDataManager) {
+        this.graphDataManager = graphDataManager;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.nodeLabels = [];
+        this.labelsGroup = null;
+        this.gpu = null;
+        this.isGPUEnabled = false;
+
+        // Mesh pools for nodes and edges
+        this.nodeMeshes = new Map();
+        this.edgeMeshes = new Map();
+    }
+
+    /**
+     * Initializes the Three.js scene, camera, renderer, controls, and XR sessions.
+     */
+    initialize() {
+        this.initThreeJS();
+        this.setupGPU();
+        initXRSession(this.renderer, this.scene, this.camera);
+        initXRInteraction(this.scene, this.camera, this.renderer, this.onSelect.bind(this));
+        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        this.animate();
+    }
+
+    /**
+     * Sets up GPU acceleration if available.
+     */
+    setupGPU() {
+        if (isGPUAvailable()) {
+            this.gpu = initGPU();
+            this.isGPUEnabled = true;
+            console.log('GPU acceleration enabled.');
+        } else {
+            console.warn('GPU acceleration not available. Falling back to CPU rendering.');
+            this.isGPUEnabled = false;
+        }
+    }
+
+    /**
+     * Initializes the Three.js scene, camera, renderer, and controls.
+     */
+    initThreeJS() {
+        // Create the scene
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+        // Create the camera
+        this.camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.set(0, 0, 100);
+
+        // Create the renderer
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.xr.enabled = true; // Enable WebXR
+        document.getElementById('scene-container').appendChild(this.renderer.domElement);
+
+        // Add orbit controls for camera manipulation
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+
+        // Add ambient light to the scene
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.scene.add(ambientLight);
+
+        // Add directional light to the scene
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(50, 50, 50);
+        this.scene.add(directionalLight);
+
+        // Create a group for labels
+        this.labelsGroup = new THREE.Group();
+        this.scene.add(this.labelsGroup);
+    }
+
+    /**
+     * Handles node selection via controllers.
+     * @param {THREE.Object3D} selectedObject - The selected Three.js object.
+     */
+    onSelect(selectedObject) {
+        if (selectedObject && selectedObject.userData && selectedObject.userData.id) {
+            console.log(`Selected Node: ${selectedObject.userData.name}`);
+            // Display node information
+            const nodeInfo = {
+                id: selectedObject.userData.id,
+                name: selectedObject.userData.name,
+                // Add more properties as needed
+            };
+            // Emit a custom event to update the UI
+            const event = new CustomEvent('nodeSelected', { detail: nodeInfo });
+            window.dispatchEvent(event);
+        }
+    }
+
+    /**
+     * Updates the visualization with new graph data.
+     */
+    updateVisualization() {
+        const graphData = this.graphDataManager.getGraphData();
+        if (!graphData) return;
+
+        // Update nodes
+        graphData.nodes.forEach(node => {
+            if (this.nodeMeshes.has(node.id)) {
+                const mesh = this.nodeMeshes.get(node.id);
+                mesh.position.set(node.x, node.y, node.z);
+            } else {
+                // Create a new node mesh
+                const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(node.x, node.y, node.z);
+                mesh.userData = { id: node.id, name: node.label };
+                this.scene.add(mesh);
+                this.nodeMeshes.set(node.id, mesh);
+            }
+        });
+
+        // Remove nodes that no longer exist
+        const existingNodeIds = new Set(graphData.nodes.map(node => node.id));
+        this.nodeMeshes.forEach((mesh, nodeId) => {
+            if (!existingNodeIds.has(nodeId)) {
+                this.scene.remove(mesh);
+                this.nodeMeshes.delete(nodeId);
+            }
+        });
+
+        // Update edges
+        graphData.edges.forEach(edge => {
+            const edgeKey = `${edge.source}-${edge.target}`;
+            if (this.edgeMeshes.has(edgeKey)) {
+                const line = this.edgeMeshes.get(edgeKey);
+                const sourceMesh = this.nodeMeshes.get(edge.source);
+                const targetMesh = this.nodeMeshes.get(edge.target);
+                if (sourceMesh && targetMesh) {
+                    const positions = line.geometry.attributes.position.array;
+                    positions[0] = sourceMesh.position.x;
+                    positions[1] = sourceMesh.position.y;
+                    positions[2] = sourceMesh.position.z;
+                    positions[3] = targetMesh.position.x;
+                    positions[4] = targetMesh.position.y;
+                    positions[5] = targetMesh.position.z;
+                    line.geometry.attributes.position.needsUpdate = true;
+                }
+            } else {
+                // Create a new edge line
+                const sourceMesh = this.nodeMeshes.get(edge.source);
+                const targetMesh = this.nodeMeshes.get(edge.target);
+                if (sourceMesh && targetMesh) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(sourceMesh.position.x, sourceMesh.position.y, sourceMesh.position.z),
+                        new THREE.Vector3(targetMesh.position.x, targetMesh.position.y, targetMesh.position.z)
+                    ]);
+                    const material = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+                    const line = new THREE.Line(geometry, material);
+                    this.scene.add(line);
+                    this.edgeMeshes.set(edgeKey, line);
+                }
+            }
+        });
+
+        // Remove edges that no longer exist
+        const existingEdgeKeys = new Set(graphData.edges.map(edge => `${edge.source}-${edge.target}`));
+        this.edgeMeshes.forEach((line, edgeKey) => {
+            if (!existingEdgeKeys.has(edgeKey)) {
+                this.scene.remove(line);
+                this.edgeMeshes.delete(edgeKey);
+            }
+        });
+
+        // Add or update labels
+        this.addLabels(graphData.nodes);
+    }
+
+    /**
+     * Adds labels as billboards to nodes.
+     * @param {Array} nodes - Array of node objects.
+     */
+    addLabels(nodes) {
+        // Clear existing labels
+        while (this.labelsGroup.children.length > 0) {
+            const label = this.labelsGroup.children[0];
+            this.labelsGroup.remove(label);
+        }
+
+        // Load font and create labels
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+            nodes.forEach(node => {
+                const textGeometry = new THREE.TextGeometry(node.label, {
+                    font: font,
+                    size: 2,
+                    height: 0.1,
+                    curveSegments: 12,
+                    bevelEnabled: false,
+                });
+
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(node.x, node.y + 5, node.z);
+                textMesh.lookAt(this.camera.position); // Make the label face the camera
+
+                this.labelsGroup.add(textMesh);
+                this.nodeLabels.push(textMesh);
+            });
+        });
+    }
+
+    /**
+     * Continuously renders the scene and updates label orientations.
+     */
+    animate() {
+        const animateLoop = () => {
+            requestAnimationFrame(animateLoop);
+
+            // Update controls
+            this.controls.update();
+
+            // Update label orientations to face the camera
+            this.updateLabels();
+
+            // GPU acceleration (if enabled)
+            if (this.isGPUEnabled && this.gpu) {
+                computeOnGPU(this.gpu, { /* Pass necessary data */ });
+            }
+
+            // Render the scene
+            this.renderer.render(this.scene, this.camera);
+        };
+
+        animateLoop();
+    }
+
+    /**
+     * Updates the orientation of labels to always face the camera.
+     */
+    updateLabels() {
+        this.nodeLabels.forEach(label => {
+            label.lookAt(this.camera.position);
+        });
+    }
+
+    /**
+     * Handles window resize events by updating camera and renderer dimensions.
+     */
+    onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+}
+File: ./js/components/visualization.js
+// public/js/components/visualization.js
+
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/controls/OrbitControls.js';
+import { initXRSession, handleXRSession } from '../xr/xrSetup.js';
+import { initXRInteraction, addNodeLabels, updateLabelOrientations } from '../xr/xrInteraction.js';
+import { isGPUAvailable, initGPU, computeOnGPU } from '../gpuUtils.js';
+
+/**
+ * Visualization class handles the creation and rendering of the 3D graph using Three.js.
+ */
+export class Visualization {
+    /**
+     * Creates a new Visualization instance.
+     * @param {GraphDataManager} graphDataManager - The GraphDataManager instance.
+     */
+    constructor(graphDataManager) {
+        this.graphDataManager = graphDataManager;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.nodeLabels = [];
+        this.labelsGroup = null;
+        this.gpu = null;
+        this.isGPUEnabled = false;
+
+        // Mesh pools for nodes and edges
+        this.nodeMeshes = new Map();
+        this.edgeMeshes = new Map();
+    }
+
+    /**
+     * Initializes the Three.js scene, camera, renderer, controls, and XR sessions.
+     */
+    initialize() {
+        this.initThreeJS();
+        this.setupGPU();
+        initXRSession(this.renderer, this.scene, this.camera);
+        initXRInteraction(this.scene, this.camera, this.renderer, this.onSelect.bind(this));
+        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        this.animate();
+    }
+
+    /**
+     * Sets up GPU acceleration if available.
+     */
+    setupGPU() {
+        if (isGPUAvailable()) {
+            this.gpu = initGPU();
+            this.isGPUEnabled = true;
+            console.log('GPU acceleration enabled.');
+        } else {
+            console.warn('GPU acceleration not available. Falling back to CPU rendering.');
+            this.isGPUEnabled = false;
+        }
+    }
+
+    /**
+     * Initializes the Three.js scene, camera, renderer, and controls.
+     */
+    initThreeJS() {
+        // Create the scene
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+        // Create the camera
+        this.camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.set(0, 0, 100);
+
+        // Create the renderer
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.xr.enabled = true; // Enable WebXR
+        document.getElementById('scene-container').appendChild(this.renderer.domElement);
+
+        // Add orbit controls for camera manipulation
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+
+        // Add ambient light to the scene
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.scene.add(ambientLight);
+
+        // Add directional light to the scene
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(50, 50, 50);
+        this.scene.add(directionalLight);
+
+        // Create a group for labels
+        this.labelsGroup = new THREE.Group();
+        this.scene.add(this.labelsGroup);
+    }
+
+    /**
+     * Handles node selection via controllers.
+     * @param {THREE.Object3D} selectedObject - The selected Three.js object.
+     */
+    onSelect(selectedObject) {
+        if (selectedObject && selectedObject.userData && selectedObject.userData.id) {
+            console.log(`Selected Node: ${selectedObject.userData.name}`);
+            // Display node information
+            const nodeInfo = {
+                id: selectedObject.userData.id,
+                name: selectedObject.userData.name,
+                // Add more properties as needed
+            };
+            // Emit a custom event to update the UI
+            const event = new CustomEvent('nodeSelected', { detail: nodeInfo });
+            window.dispatchEvent(event);
+        }
+    }
+
+    /**
+     * Updates the visualization with new graph data.
+     */
+    updateVisualization() {
+        const graphData = this.graphDataManager.getGraphData();
+        if (!graphData) return;
+
+        // Update nodes
+        graphData.nodes.forEach(node => {
+            if (this.nodeMeshes.has(node.id)) {
+                const mesh = this.nodeMeshes.get(node.id);
+                mesh.position.set(node.x, node.y, node.z);
+            } else {
+                // Create a new node mesh
+                const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(node.x, node.y, node.z);
+                mesh.userData = { id: node.id, name: node.label };
+                this.scene.add(mesh);
+                this.nodeMeshes.set(node.id, mesh);
+            }
+        });
+
+        // Remove nodes that no longer exist
+        const existingNodeIds = new Set(graphData.nodes.map(node => node.id));
+        this.nodeMeshes.forEach((mesh, nodeId) => {
+            if (!existingNodeIds.has(nodeId)) {
+                this.scene.remove(mesh);
+                this.nodeMeshes.delete(nodeId);
+            }
+        });
+
+        // Update edges
+        graphData.edges.forEach(edge => {
+            const edgeKey = `${edge.source}-${edge.target}`;
+            if (this.edgeMeshes.has(edgeKey)) {
+                const line = this.edgeMeshes.get(edgeKey);
+                const sourceMesh = this.nodeMeshes.get(edge.source);
+                const targetMesh = this.nodeMeshes.get(edge.target);
+                if (sourceMesh && targetMesh) {
+                    const positions = line.geometry.attributes.position.array;
+                    positions[0] = sourceMesh.position.x;
+                    positions[1] = sourceMesh.position.y;
+                    positions[2] = sourceMesh.position.z;
+                    positions[3] = targetMesh.position.x;
+                    positions[4] = targetMesh.position.y;
+                    positions[5] = targetMesh.position.z;
+                    line.geometry.attributes.position.needsUpdate = true;
+                }
+            } else {
+                // Create a new edge line
+                const sourceMesh = this.nodeMeshes.get(edge.source);
+                const targetMesh = this.nodeMeshes.get(edge.target);
+                if (sourceMesh && targetMesh) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(sourceMesh.position.x, sourceMesh.position.y, sourceMesh.position.z),
+                        new THREE.Vector3(targetMesh.position.x, targetMesh.position.y, targetMesh.position.z)
+                    ]);
+                    const material = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+                    const line = new THREE.Line(geometry, material);
+                    this.scene.add(line);
+                    this.edgeMeshes.set(edgeKey, line);
+                }
+            }
+        });
+
+        // Remove edges that no longer exist
+        const existingEdgeKeys = new Set(graphData.edges.map(edge => `${edge.source}-${edge.target}`));
+        this.edgeMeshes.forEach((line, edgeKey) => {
+            if (!existingEdgeKeys.has(edgeKey)) {
+                this.scene.remove(line);
+                this.edgeMeshes.delete(edgeKey);
+            }
+        });
+
+        // Add or update labels
+        this.addLabels(graphData.nodes);
+    }
+
+    /**
+     * Adds labels as billboards to nodes.
+     * @param {Array} nodes - Array of node objects.
+     */
+    addLabels(nodes) {
+        // Clear existing labels
+        while (this.labelsGroup.children.length > 0) {
+            const label = this.labelsGroup.children[0];
+            this.labelsGroup.remove(label);
+        }
+
+        // Load font and create labels
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+            nodes.forEach(node => {
+                const textGeometry = new THREE.TextGeometry(node.label, {
+                    font: font,
+                    size: 2,
+                    height: 0.1,
+                    curveSegments: 12,
+                    bevelEnabled: false,
+                });
+
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(node.x, node.y + 5, node.z);
+                textMesh.lookAt(this.camera.position); // Make the label face the camera
+
+                this.labelsGroup.add(textMesh);
+                this.nodeLabels.push(textMesh);
+            });
+        });
+    }
+
+    /**
+     * Continuously renders the scene and updates label orientations.
+     */
+    animate() {
+        const animateLoop = () => {
+            requestAnimationFrame(animateLoop);
+
+            // Update controls
+            this.controls.update();
+
+            // Update label orientations to face the camera
+            this.updateLabels();
+
+            // GPU acceleration (if enabled)
+            if (this.isGPUEnabled && this.gpu) {
+                computeOnGPU(this.gpu, { /* Pass necessary data */ });
+            }
+
+            // Render the scene
+            this.renderer.render(this.scene, this.camera);
+        };
+
+        animateLoop();
+    }
+
+    /**
+     * Updates the orientation of labels to always face the camera.
+     */
+    updateLabels() {
+        this.nodeLabels.forEach(label => {
+            label.lookAt(this.camera.position);
+        });
+    }
+
+    /**
+     * Handles window resize events by updating camera and renderer dimensions.
+     */
+    onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+}
+File: ./js/components/graphSimulation.js
+// public/js/components/graphSimulation.js
+
+/**
+ * GraphSimulation is no longer needed on the client-side as the simulation is handled server-side.
+ * However, if any client-side computations or interactions are required, they can be added here.
+ */
+export class GraphSimulation {
+    constructor() {
+      // No initialization needed for server-side simulation
+      console.log('GraphSimulation initialized on client (no operations)');
+    }
+  
+    /**
+     * Placeholder compute method.
+     * No computations are performed client-side.
+     * @param {number} deltaTime - The time elapsed since the last frame.
+     */
+    compute(deltaTime) {
+      // No computations on client-side
+    }
+  
+    /**
+     * Placeholder method to get node positions.
+     * @returns {Array} Empty array as positions are managed server-side.
+     */
+    getNodePositions() {
+      return [];
+    }
+  
+    /**
+     * Placeholder method to update node data.
+     * @param {Array} nodes - Array of node objects.
+     */
+    updateNodeData(nodes) {
+      // No action needed
+    }
+  
+    /**
+     * Placeholder method to update edge data.
+     * @param {Array} edges - Array of edge objects.
+     */
+    updateEdgeData(edges) {
+      // No action needed
+    }
+  }
+  File: ./js/components/interface.js
+// public/js/components/interface.js
+
+/**
+ * Interface class manages UI elements like error messages and information panels.
+ */
+export class Interface {
+  /**
+   * Creates a new Interface instance.
+   * @param {Document} document - The DOM document.
+   */
+  constructor(document) {
+      this.document = document;
+      this.createUI();
+      this.setupEventListeners();
+  }
+
+  /**
+   * Creates necessary UI elements and appends them to the DOM.
+   */
+  createUI() {
+      // Create Node Information Panel
+      this.createNodeInfoPanel();
+  }
+
+  /**
+   * Creates a panel to display information about selected nodes.
+   */
+  createNodeInfoPanel() {
+      const infoPanel = this.document.createElement('div');
+      infoPanel.id = 'node-info-panel';
+      infoPanel.style.position = 'absolute';
+      infoPanel.style.top = '20px';
+      infoPanel.style.left = '20px';
+      infoPanel.style.width = '300px';
+      infoPanel.style.maxHeight = '40vh';
+      infoPanel.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      infoPanel.style.color = 'white';
+      infoPanel.style.padding = '15px';
+      infoPanel.style.borderRadius = '8px';
+      infoPanel.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+      infoPanel.style.overflowY = 'auto';
+      infoPanel.style.display = 'none'; // Hidden by default
+      this.document.body.appendChild(infoPanel);
+
+      this.nodeInfoPanel = infoPanel;
+  }
+
+  /**
+   * Sets up event listeners for custom events.
+   */
+  setupEventListeners() {
+      // Listen for node selection events
+      window.addEventListener('nodeSelected', (event) => {
+          const nodeInfo = event.detail;
+          this.updateNodeInfoPanel(nodeInfo);
+      });
+  }
+
+  /**
+   * Displays an error message on the screen.
+   * @param {string} message - The error message to display.
+   */
+  displayErrorMessage(message) {
+      const errorContainer = this.document.createElement('div');
+      errorContainer.style.position = 'fixed';
+      errorContainer.style.top = '50%';
+      errorContainer.style.left = '50%';
+      errorContainer.style.transform = 'translate(-50%, -50%)';
+      errorContainer.style.backgroundColor = 'rgba(255, 0, 0, 0.85)';
+      errorContainer.style.color = 'white';
+      errorContainer.style.padding = '20px';
+      errorContainer.style.borderRadius = '8px';
+      errorContainer.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.3)';
+      errorContainer.style.zIndex = '1000';
+      errorContainer.textContent = message;
+
+      this.document.body.appendChild(errorContainer);
+
+      // Remove the error message after 5 seconds
+      setTimeout(() => {
+          if (this.document.body.contains(errorContainer)) {
+              this.document.body.removeChild(errorContainer);
+          }
+      }, 5000);
+  }
+
+  /**
+   * Updates the Node Information Panel with details of the selected node.
+   * @param {object} node - The node object containing its details.
+   */
+  updateNodeInfoPanel(node) {
+      if (!node) {
+          this.nodeInfoPanel.style.display = 'none';
+          return;
+      }
+
+      this.nodeInfoPanel.innerHTML = `
+          <h3>Node Information</h3>
+          <p><strong>ID:</strong> ${node.id}</p>
+          <p><strong>Name:</strong> ${node.name}</p>
+          <!-- Add more node properties as needed -->
+      `;
+      this.nodeInfoPanel.style.display = 'block';
+  }
+}
+File: ./js/components/chatManager.js
+// public/js/components/chatManager.js
+
+/**
+ * ChatManager handles the chat interface, sending user messages, and displaying AI responses.
+ */
+export class ChatManager {
+    /**
+     * Creates a new ChatManager instance.
+     * @param {WebsocketService} websocketService - The WebSocket service instance.
+     */
+    constructor(websocketService) {
+        this.websocketService = websocketService;
+        this.chatInput = null;
+        this.sendButton = null;
+        this.chatMessages = null;
+    }
+
+    /**
+     * Initializes the chat interface by setting up DOM elements and event listeners.
+     */
+    initialize() {
+        this.chatInput = document.getElementById('chat-input');
+        this.sendButton = document.getElementById('send-button');
+        this.chatMessages = document.getElementById('chat-messages');
+
+        // Event listener for send button
+        this.sendButton.addEventListener('click', this.sendMessage.bind(this));
+
+        // Event listener for 'Enter' key in the chat input
+        this.chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                this.sendMessage();
+            }
+        });
+
+        // Listen for RAGFlow AI responses
+        window.addEventListener('ragflowAnswer', (event) => {
+            const answer = event.detail;
+            this.displayResponse(answer);
+        });
+    }
+
+    /**
+     * Sends a user message to the server via WebSocket.
+     */
+    sendMessage() {
+        const message = this.chatInput.value.trim();
+        if (message) {
+            // Display user's message
+            this.displayMessage('You', message);
+
+            // Send the message to the server
+            this.websocketService.send({
+                type: 'ragflowQuery',
+                question: message
+            });
+
+            // Clear the input field
+            this.chatInput.value = '';
+        }
+    }
+
+    /**
+     * Displays a message in the chat interface.
+     * @param {string} sender - The sender of the message ('You' or 'AI').
+     * @param {string} message - The message content.
+     */
+    displayMessage(sender, message) {
+        const messageElement = document.createElement('div');
+        messageElement.style.marginBottom = '10px';
+        messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+        this.chatMessages.appendChild(messageElement);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    /**
+     * Displays an AI response in the chat interface.
+     * @param {string} message - The AI's response.
+     */
+    displayResponse(message) {
+        this.displayMessage('AI', message);
+    }
+}
+File: ./js/threeJS/threeSetup.js
+// public/js/threeJS/threeSetup.js
+
+import * as THREE from 'three';
+
+/**
+ * Initializes the Three.js scene, camera, and renderer.
+ * @returns {object} An object containing the scene, camera, and renderer.
+ */
+export function initThreeScene() {
+    // Create the scene
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+    // Create the camera
+    const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(0, 0, 100);
+
+    // Create the renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.xr.enabled = true; // Enable WebXR
+
+    // Append the renderer to the DOM
+    document.getElementById('scene-container').appendChild(renderer.domElement);
+
+    return { scene, camera, renderer };
+}
+
+/**
+ * Creates and configures orbit controls for the camera.
+ * @param {THREE.Camera} camera - The Three.js camera.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ * @returns {OrbitControls} The configured orbit controls.
+ */
+export function createOrbitControls(camera, renderer) {
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    return controls;
+}
+
+/**
+ * Handles window resize events by updating the camera and renderer.
+ * @param {THREE.Camera} camera - The Three.js camera.
+ * @param {THREE.WebGLRenderer} renderer - The Three.js renderer.
+ */
+export function updateSceneSize(camera, renderer) {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+File: ./js/threeJS/threeGraph.js
+// public/js/threeJS/threeGraph.js
+
+import * as THREE from 'three';
+
+/**
+ * ForceGraph class manages the creation and updating of nodes and edges in the Three.js scene.
+ */
+export class ForceGraph {
+    /**
+     * Creates a new ForceGraph instance.
+     * @param {THREE.Scene} scene - The Three.js scene.
+     */
+    constructor(scene) {
+        this.scene = scene;
+        this.nodes = [];
+        this.links = [];
+        this.nodeMeshes = new Map();
+        this.linkMeshes = new Map();
+    }
+
+    /**
+     * Updates the graph with new data.
+     * @param {object} graphData - The graph data containing nodes and edges.
+     */
+    updateGraph(graphData) {
+        this.nodes = graphData.nodes;
+        this.links = graphData.edges;
+        this.renderGraph();
+    }
+
+    /**
+     * Renders the graph by creating and updating nodes and edges.
+     */
+    renderGraph() {
+        this.updateNodes();
+        this.updateLinks();
+    }
+
+    /**
+     * Updates nodes in the scene based on the graph data.
+     */
+    updateNodes() {
+        const newNodeIds = new Set(this.nodes.map(node => node.id));
+
+        // Remove nodes that no longer exist
+        this.nodeMeshes.forEach((mesh, nodeId) => {
+            if (!newNodeIds.has(nodeId)) {
+                this.scene.remove(mesh);
+                this.nodeMeshes.delete(nodeId);
+            }
+        });
+
+        // Add or update nodes
+        this.nodes.forEach(node => {
+            if (this.nodeMeshes.has(node.id)) {
+                const mesh = this.nodeMeshes.get(node.id);
+                mesh.position.set(node.x, node.y, node.z);
+                // Optionally update node properties like color or size
+            } else {
+                // Create a new node mesh
+                const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(node.x, node.y, node.z);
+                mesh.userData = { id: node.id, name: node.label };
+                this.scene.add(mesh);
+                this.nodeMeshes.set(node.id, mesh);
+            }
+        });
+    }
+
+    /**
+     * Updates edges in the scene based on the graph data.
+     */
+    updateLinks() {
+        const newLinkKeys = new Set(this.links.map(link => `${link.source}-${link.target}`));
+
+        // Remove edges that no longer exist
+        this.linkMeshes.forEach((line, linkKey) => {
+            if (!newLinkKeys.has(linkKey)) {
+                this.scene.remove(line);
+                this.linkMeshes.delete(linkKey);
+            }
+        });
+
+        // Add or update edges
+        this.links.forEach(link => {
+            const linkKey = `${link.source}-${link.target}`;
+            if (this.linkMeshes.has(linkKey)) {
+                const line = this.linkMeshes.get(linkKey);
+                const sourceMesh = this.nodeMeshes.get(link.source);
+                const targetMesh = this.nodeMeshes.get(link.target);
+                if (sourceMesh && targetMesh) {
+                    const positions = line.geometry.attributes.position.array;
+                    positions[0] = sourceMesh.position.x;
+                    positions[1] = sourceMesh.position.y;
+                    positions[2] = sourceMesh.position.z;
+                    positions[3] = targetMesh.position.x;
+                    positions[4] = targetMesh.position.y;
+                    positions[5] = targetMesh.position.z;
+                    line.geometry.attributes.position.needsUpdate = true;
+                }
+            } else {
+                // Create a new edge line
+                const sourceMesh = this.nodeMeshes.get(link.source);
+                const targetMesh = this.nodeMeshes.get(link.target);
+                if (sourceMesh && targetMesh) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints([
+                        new THREE.Vector3(sourceMesh.position.x, sourceMesh.position.y, sourceMesh.position.z),
+                        new THREE.Vector3(targetMesh.position.x, targetMesh.position.y, targetMesh.position.z)
+                    ]);
+                    const material = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true });
+                    const line = new THREE.Line(geometry, material);
+                    this.scene.add(line);
+                    this.linkMeshes.set(linkKey, line);
+                }
+            }
+        });
+    }
+}
+File: ./js/gpuUtils.js
+// public/js/gpuUtils.js
+
+/**
+ * Checks if the GPU is available for acceleration.
+ * @returns {boolean} True if GPU is available, false otherwise.
+ */
+export function isGPUAvailable() {
+  try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      return !!gl;
+  } catch (e) {
+      console.error('GPU availability check failed:', e);
+      return false;
+  }
+}
+
+/**
+* Initializes GPU computation utilities.
+* @returns {object} An object containing GPU-related methods.
+*/
+export function initGPU() {
+  // Placeholder for GPU computation initialization
+  console.log('Initializing GPU utilities.');
+
+  // Implement GPU-related initializations here, such as setting up compute shaders
+  // For this example, we'll return an empty object
+  return {
+      compute: (data) => {
+          // Implement GPU computation logic here
+          console.log('Performing GPU computation with data:', data);
+      }
+  };
+}
+
+/**
+* Performs computations on the GPU.
+* @param {object} gpu - The GPU utilities object.
+* @param {object} data - The data to compute.
+* @returns {boolean} True if computation was successful, false otherwise.
+*/
+export function computeOnGPU(gpu, data) {
+  if (gpu && typeof gpu.compute === 'function') {
+      gpu.compute(data);
+      return true;
+  } else {
+      console.warn('GPU compute function is not available.');
+      return false;
+  }
+}
