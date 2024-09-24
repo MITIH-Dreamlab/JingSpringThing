@@ -2,17 +2,19 @@
 
 use crate::models::metadata::Metadata;
 use crate::config::Settings;
+use crate::services::perplexity_service::{PerplexityService, PerplexityServiceImpl, ApiClientImpl};
 use serde::{Deserialize, Serialize};
 use dotenv::dotenv;
 use std::env;
 use reqwest::Client;
 use async_trait::async_trait;
-use log::{info, debug, error};
+use log::{info, debug};
 use regex::Regex;
 use sha1::{Sha1, Digest};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+// Removed unused import: use tokio::sync::RwLock;
 
 /// Represents a file fetched from GitHub.
 #[derive(Serialize, Deserialize, Clone)]
@@ -34,11 +36,140 @@ pub struct ProcessedFile {
     pub content: String,
 }
 
-/// Trait defining the GitHub service behaviour.
+/// Trait defining the GitHub service behavior.
 #[async_trait]
 pub trait GitHubService: Send + Sync {
     /// Fetches Markdown files from the specified GitHub repository.
     async fn fetch_files(&self) -> Result<Vec<GithubFile>, Box<dyn std::error::Error + Send + Sync>>;
+}
+
+/// Represents a GitHub service that uses actual GitHub API calls.
+pub struct RealGitHubService {
+    client: Client,
+    token: String,
+    owner: String,
+    repo: String,
+    base_path: String,
+}
+
+impl RealGitHubService {
+    /// Creates a new instance of `RealGitHubService` by loading configuration from environment variables.
+    ///
+    /// # Panics
+    ///
+    /// Panics if required environment variables are not set.
+    pub fn new() -> Self {
+        dotenv().ok();
+        let token = env::var("GITHUB_ACCESS_TOKEN").expect("GITHUB_ACCESS_TOKEN must be set in .env");
+        let owner = env::var("GITHUB_OWNER").expect("GITHUB_OWNER must be set in .env");
+        let repo = env::var("GITHUB_REPO").expect("GITHUB_REPO must be set in .env");
+        let base_path = env::var("GITHUB_DIRECTORY").expect("GITHUB_DIRECTORY must be set in .env");
+
+        Self {
+            client: Client::new(),
+            token,
+            owner,
+            repo,
+            base_path,
+        }
+    }
+
+    /// Fetches the contents of a specific directory from the GitHub repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The directory path within the repository to fetch.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of JSON values representing the directory contents or an error.
+    async fn fetch_directory_contents(&self, path: &str) -> Result<Vec<serde_json::Value>, Box<dyn std::error::Error + Send + Sync>> {
+        let url = format!("https://api.github.com/repos/{}/{}/contents/{}", self.owner, self.repo, path);
+        debug!("Fetching contents from GitHub: {}", url);
+
+        let response = self.client.get(&url)
+            .header("Authorization", format!("token {}", self.token))
+            .header("User-Agent", "rust-github-api")
+            .send()
+            .await?;
+
+        debug!("GitHub API response status: {}", response.status());
+
+        let response_body = response.text().await?.to_string(); // Convert to String
+        debug!("GitHub API response body: {}", response_body);
+
+        let contents: Vec<serde_json::Value> = serde_json::from_str(&response_body)?;
+        Ok(contents)
+    }
+
+    /// Fetches the content of a specific file from GitHub using its download URL.
+    ///
+    /// # Arguments
+    ///
+    /// * `download_url` - The download URL of the file to fetch.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the file content as a string or an error.
+    async fn fetch_file_content(&self, download_url: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let content = self.client.get(download_url)
+            .header("Authorization", format!("token {}", self.token))
+            .header("User-Agent", "rust-github-api")
+            .send()
+            .await?
+            .text()
+            .await?;
+        Ok(content)
+    }
+}
+
+#[async_trait]
+impl GitHubService for RealGitHubService {
+    /// Fetches all Markdown files from the GitHub repository recursively.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of `GithubFile` or an error.
+    async fn fetch_files(&self) -> Result<Vec<GithubFile>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut github_files = Vec::new();
+        let mut directories_to_process = vec![self.base_path.clone()];
+
+        // Recursively fetch files from all directories
+        while let Some(current_path) = directories_to_process.pop() {
+            let contents = self.fetch_directory_contents(&current_path).await?;
+
+            for item in contents {
+                let name = item["name"].as_str().unwrap_or("");
+                let item_type = item["type"].as_str().unwrap_or("");
+                let path = item["path"].as_str().unwrap_or("");
+
+                if item_type == "dir" {
+                    // If the item is a directory, add it to the list to be processed
+                    directories_to_process.push(path.to_string());
+                } else if item_type == "file" && name.ends_with(".md") {
+                    // If the item is a Markdown file, fetch its content
+                    if let Some(download_url) = item["download_url"].as_str() {
+                        debug!("Fetching content for file: {}", name);
+                        let content = self.fetch_file_content(download_url).await?;
+                        let sha = item["sha"].as_str().unwrap_or("").to_string();
+
+                        // Add the file to the list of GitHub files
+                        github_files.push(GithubFile {
+                            name: name.to_string(),
+                            content,
+                            sha,
+                        });
+                        debug!("Added file to github_files: {}", name);
+                    }
+                } else {
+                    debug!("Skipping non-markdown file: {}", name);
+                }
+            }
+        }
+
+        debug!("Fetched {} markdown files from GitHub", github_files.len());
+        Ok(github_files)
+    }
 }
 
 /// Service responsible for handling file operations, including fetching from GitHub and processing.
@@ -63,66 +194,53 @@ impl FileService {
         let github_files = github_service.fetch_files().await?;
         debug!("Fetched {} files from GitHub", github_files.len());
 
-        // Step 2: Process the fetched files using PerplexityService
+        // Step 2: Process the fetched files
         let processed_files = Self::process_files(github_files, settings).await?;
         debug!("Processed {} files", processed_files.len());
 
         Ok(processed_files)
     }
 
-    /// Processes the fetched GitHub files by stripping double brackets and associating them with topics.
-    ///
-    /// # Arguments
-    ///
-    /// * `github_files` - A vector of `GithubFile` fetched from GitHub.
-    /// * `settings` - Application settings containing configuration data.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a vector of `ProcessedFile` on success or an error on failure.
+    /// Processes the fetched GitHub files. This includes:
+    /// 1. Checking if a file needs processing.
+    /// 2. Stripping Logseq-style double brackets.
+    /// 3. Associating content with topics.
+    /// 4. Enhancing content using the PerplexityService.
+    /// 5. Updating local metadata.
     async fn process_files(
         github_files: Vec<GithubFile>,
         settings: &Settings,
     ) -> Result<Vec<ProcessedFile>, Box<dyn std::error::Error + Send + Sync>> {
         let mut processed_files = Vec::new();
-
-        // Load existing local metadata to determine which files need processing
         let local_metadata = Self::load_local_metadata()?;
         debug!("Loaded {} metadata entries", local_metadata.len());
 
-        // Initialize PerplexityService
-        let perplexity_service = &settings.perplexity;
+        // Create an instance of your PerplexityService implementation
+        let perplexity_service = PerplexityServiceImpl;
+
+        // Create an instance of your ApiClient
+        let api_client = ApiClientImpl::new();
 
         for file in github_files {
-            // Determine if the file should be processed based on its metadata
             if Self::should_process_file(&file, &local_metadata) {
                 debug!("Processing file: {}", file.name);
 
-                // Strip double brackets [[ ]] from the content
                 let stripped_content = Self::strip_double_brackets(&file.content);
-
-                // Associate the stripped content with relevant topics
                 let processed_content = Self::process_against_topics(&stripped_content, &settings.topics);
 
-                // Here, integrate with PerplexityService to enhance the content
-                // For illustration, we'll assume a function `enhance_content` exists
-                let enhanced_content = Self::enhance_content(&processed_content, settings).await?;
-
-                // Create a `ProcessedFile` instance
-                let processed_file = ProcessedFile {
-                    file_name: file.name.clone(),
-                    content: enhanced_content.clone(),
-                };
-                processed_files.push(processed_file);
-
-                // Update local metadata with the new processed content
+                // Use the PerplexityService to process the content
+                let processed_file = perplexity_service.process_file(processed_content, settings, &api_client).await?; 
+                
+                // Update local metadata 
                 let new_metadata = Metadata {
                     file_name: file.name.clone(),
                     last_modified: chrono::Utc::now(),
-                    processed_file: enhanced_content.clone(),
-                    original_file: file.content.clone(),
+                    processed_file: processed_file.content.clone(), // Use processed content
+                    original_file: file.content,
                 };
                 Self::save_file_metadata(new_metadata)?;
+
+                processed_files.push(processed_file);
             } else {
                 debug!("Skipping file: {}", file.name);
             }
@@ -227,74 +345,6 @@ impl FileService {
         processed_content
     }
 
-    /// Enhances the content using the Perplexity AI API.
-    ///
-    /// # Arguments
-    ///
-    /// * `content` - The content to enhance.
-    /// * `settings` - Application settings containing Perplexity configuration.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the enhanced content or an error.
-    async fn enhance_content(
-        content: &str,
-        settings: &Settings,
-    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        // Initialize the API client
-        let api_client = ApiClient::new();
-
-        // Prepare the API request
-        let api_request = PerplexityRequest {
-            model: settings.perplexity.model.clone(),
-            messages: vec![
-                Message {
-                    role: "system".to_string(),
-                    content: settings.prompt.clone(),
-                },
-                Message {
-                    role: "user".to_string(),
-                    content: content.to_string(),
-                },
-            ],
-            max_tokens: Some(settings.perplexity.max_tokens),
-            temperature: Some(settings.perplexity.temperature),
-            top_p: Some(settings.perplexity.top_p),
-            return_citations: Some(false),
-            stream: Some(false),
-            presence_penalty: Some(settings.perplexity.presence_penalty),
-            frequency_penalty: Some(settings.perplexity.frequency_penalty),
-        };
-
-        // Call the Perplexity API
-        let response = api_client
-            .post_json(&settings.perplexity.api_base_url, &api_request, &settings.perplexity.api_key)
-            .await?;
-
-        // Parse the API response
-        let enhanced_content = Self::parse_perplexity_response(&response)?;
-
-        Ok(enhanced_content)
-    }
-
-    /// Parses the Perplexity API response to extract the enhanced content.
-    ///
-    /// # Arguments
-    ///
-    /// * `response_text` - The raw JSON response from the API as a string.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the extracted content or an error.
-    fn parse_perplexity_response(response_text: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        let parsed_response: PerplexityResponse = serde_json::from_str(response_text)?;
-        if let Some(choice) = parsed_response.choices.first() {
-            Ok(choice.message.content.clone())
-        } else {
-            Err("No content found in Perplexity API response".into())
-        }
-    }
-
     /// Saves the processed Markdown file to the persistent volume.
     ///
     /// # Arguments
@@ -358,327 +408,5 @@ impl FileService {
         debug!("Updated metadata file at: {}", metadata_path);
 
         Ok(())
-    }
-}
-
-/// Represents a GitHub service that uses actual GitHub API calls.
-pub struct RealGitHubService {
-    client: Client,
-    token: String,
-    owner: String,
-    repo: String,
-    base_path: String,
-}
-
-impl RealGitHubService {
-    /// Creates a new instance of `RealGitHubService` by loading configuration from environment variables.
-    ///
-    /// # Panics
-    ///
-    /// Panics if required environment variables are not set.
-    pub fn new() -> Self {
-        dotenv().ok();
-        let token = env::var("GITHUB_ACCESS_TOKEN").expect("GITHUB_ACCESS_TOKEN must be set in .env");
-        let owner = env::var("GITHUB_OWNER").expect("GITHUB_OWNER must be set in .env");
-        let repo = env::var("GITHUB_REPO").expect("GITHUB_REPO must be set in .env");
-        let base_path = env::var("GITHUB_DIRECTORY").expect("GITHUB_DIRECTORY must be set in .env");
-
-        Self {
-            client: Client::new(),
-            token,
-            owner,
-            repo,
-            base_path,
-        }
-    }
-
-    /// Fetches the contents of a specific directory from the GitHub repository.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The directory path within the repository to fetch.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a vector of JSON values representing the directory contents or an error.
-    async fn fetch_directory_contents(&self, path: &str) -> Result<Vec<serde_json::Value>, Box<dyn std::error::Error + Send + Sync>> {
-        let url = format!("https://api.github.com/repos/{}/{}/contents/{}", self.owner, self.repo, path);
-        debug!("Fetching contents from GitHub: {}", url);
-
-        let response = self.client.get(&url)
-            .header("Authorization", format!("token {}", self.token))
-            .header("User-Agent", "rust-github-api")
-            .send()
-            .await?;
-
-        debug!("GitHub API response status: {}", response.status());
-
-        let response_body = response.text().await?;
-        debug!("GitHub API response body: {}", response_body);
-
-        let contents: Vec<serde_json::Value> = serde_json::from_str(&response_body)?;
-        Ok(contents)
-    }
-
-    /// Fetches the content of a specific file from GitHub using its download URL.
-    ///
-    /// # Arguments
-    ///
-    /// * `download_url` - The download URL of the file to fetch.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the file content as a string or an error.
-    async fn fetch_file_content(&self, download_url: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        let content = self.client.get(download_url)
-            .header("Authorization", format!("token {}", self.token))
-            .header("User-Agent", "rust-github-api")
-            .send()
-            .await?
-            .text()
-            .await?;
-        Ok(content)
-    }
-}
-
-#[async_trait]
-impl GitHubService for RealGitHubService {
-    /// Fetches all Markdown files from the GitHub repository recursively.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a vector of `GithubFile` or an error.
-    async fn fetch_files(&self) -> Result<Vec<GithubFile>, Box<dyn std::error::Error + Send + Sync>> {
-        let mut github_files = Vec::new();
-        let mut directories_to_process = vec![self.base_path.clone()];
-
-        // Recursively fetch files from all directories
-        while let Some(current_path) = directories_to_process.pop() {
-            let contents = self.fetch_directory_contents(&current_path).await?;
-
-            for item in contents {
-                let name = item["name"].as_str().unwrap_or("");
-                let item_type = item["type"].as_str().unwrap_or("");
-                let path = item["path"].as_str().unwrap_or("");
-
-                if item_type == "dir" {
-                    // If the item is a directory, add it to the list to be processed
-                    directories_to_process.push(path.to_string());
-                } else if item_type == "file" && name.ends_with(".md") {
-                    // If the item is a Markdown file, fetch its content
-                    if let Some(download_url) = item["download_url"].as_str() {
-                        debug!("Fetching content for file: {}", name);
-                        let content = self.fetch_file_content(download_url).await?;
-                        let sha = item["sha"].as_str().unwrap_or("").to_string();
-
-                        // Add the file to the list of GitHub files
-                        github_files.push(GithubFile {
-                            name: name.to_string(),
-                            content,
-                            sha,
-                        });
-                        debug!("Added file to github_files: {}", name);
-                    }
-                } else {
-                    debug!("Skipping non-markdown file: {}", name);
-                }
-            }
-        }
-
-        debug!("Fetched {} markdown files from GitHub", github_files.len());
-        Ok(github_files)
-    }
-}
-
-/// Represents the structure of the Perplexity API request.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PerplexityRequest {
-    pub model: String,
-    pub messages: Vec<Message>,
-    pub max_tokens: Option<u32>,
-    pub temperature: Option<f32>,
-    pub top_p: Option<f32>,
-    pub return_citations: Option<bool>,
-    pub stream: Option<bool>,
-    pub presence_penalty: Option<f32>,
-    pub frequency_penalty: Option<f32>,
-}
-
-/// Represents a message in the Perplexity API request.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Message {
-    pub role: String,
-    pub content: String,
-}
-
-/// Represents the structure of the Perplexity API response.
-#[derive(Debug, Deserialize)]
-pub struct PerplexityResponse {
-    pub id: Option<String>,
-    pub model: Option<String>,
-    pub object: Option<String>,
-    pub created: Option<u64>,
-    pub choices: Vec<Choice>,
-    pub usage: Option<Usage>,
-}
-
-/// Represents a choice in the Perplexity API response.
-#[derive(Debug, Deserialize)]
-pub struct Choice {
-    #[serde(default)]
-    pub index: u32,
-    pub finish_reason: Option<String>,
-    pub message: Message,
-    pub delta: Option<Delta>,
-}
-
-/// Represents a delta in the Perplexity API response.
-#[derive(Debug, Deserialize)]
-pub struct Delta {
-    pub content: Option<String>,
-}
-
-/// Represents the usage statistics in the Perplexity API response.
-#[derive(Debug, Deserialize)]
-pub struct Usage {
-    pub prompt_tokens: u32,
-    pub completion_tokens: u32,
-    pub total_tokens: u32,
-}
-
-/// Trait defining the Perplexity service behaviour.
-#[async_trait]
-pub trait PerplexityService: Send + Sync {
-    /// Processes a file's content using the Perplexity AI API.
-    ///
-    /// # Arguments
-    ///
-    /// * `file_content` - The original Markdown content of the file.
-    /// * `settings` - Application settings containing Perplexity configuration.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the `ProcessedFile` on success or an error on failure.
-    async fn process_file(
-        &self,
-        file_content: String,
-        settings: &Settings,
-    ) -> Result<ProcessedFile, Box<dyn std::error::Error + Send + Sync>>;
-}
-
-/// Service responsible for interacting with the Perplexity AI API.
-pub struct RealPerplexityService {
-    client: Client,
-}
-
-impl RealPerplexityService {
-    /// Creates a new instance of `RealPerplexityService`.
-    pub fn new() -> Self {
-        Self {
-            client: Client::new(),
-        }
-    }
-
-    /// Sends a request to the Perplexity API and retrieves the response.
-    ///
-    /// # Arguments
-    ///
-    /// * `request` - The `PerplexityRequest` to send.
-    /// * `api_key` - The API key for authentication.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the raw JSON response as a string or an error.
-    async fn send_request(&self, request: &PerplexityRequest, api_key: &str) -> Result<String, reqwest::Error> {
-        let response = self.client.post(&format!("{}/v1/chat/completions", request.model))
-            .header("Authorization", format!("Bearer {}", api_key))
-            .header("Content-Type", "application/json")
-            .json(request)
-            .send()
-            .await?
-            .text()
-            .await?;
-        Ok(response)
-    }
-
-    /// Parses the Perplexity API response to extract the content.
-    ///
-    /// # Arguments
-    ///
-    /// * `response_text` - The raw JSON response from the API as a string.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the extracted content or an error.
-    fn parse_response(response_text: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        let parsed_response: PerplexityResponse = serde_json::from_str(response_text)?;
-        if let Some(choice) = parsed_response.choices.first() {
-            Ok(choice.message.content.clone())
-        } else {
-            Err("No content found in Perplexity API response".into())
-        }
-    }
-}
-
-#[async_trait]
-impl PerplexityService for RealPerplexityService {
-    /// Processes a file's content using the Perplexity AI API.
-    ///
-    /// # Arguments
-    ///
-    /// * `file_content` - The original Markdown content of the file.
-    /// * `settings` - Application settings containing Perplexity configuration.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the `ProcessedFile` on success or an error on failure.
-    async fn process_file(
-        &self,
-        file_content: String,
-        settings: &Settings,
-    ) -> Result<ProcessedFile, Box<dyn std::error::Error + Send + Sync>> {
-        // Prepare the API request
-        let api_request = PerplexityRequest {
-            model: settings.perplexity.model.clone(),
-            messages: vec![
-                Message {
-                    role: "system".to_string(),
-                    content: settings.prompt.clone(),
-                },
-                Message {
-                    role: "user".to_string(),
-                    content: file_content.clone(),
-                },
-            ],
-            max_tokens: Some(settings.perplexity.max_tokens),
-            temperature: Some(settings.perplexity.temperature),
-            top_p: Some(settings.perplexity.top_p),
-            return_citations: Some(false),
-            stream: Some(false),
-            presence_penalty: Some(settings.perplexity.presence_penalty),
-            frequency_penalty: Some(settings.perplexity.frequency_penalty),
-        };
-
-        // Send the request to the Perplexity API
-        let response_text = self.send_request(&api_request, &settings.perplexity.api_key).await?;
-
-        // Parse the response to extract the enhanced content
-        let enhanced_content = Self::parse_response(&response_text)?;
-
-        Ok(ProcessedFile {
-            file_name: "enhanced.md".to_string(), // You may want to set this appropriately
-            content: enhanced_content,
-        })
-    }
-}
-
-#[async_trait]
-impl PerplexityService for RealPerplexityService {
-    async fn process_file(
-        &self,
-        file_content: String,
-        settings: &Settings,
-    ) -> Result<ProcessedFile, Box<dyn std::error::Error + Send + Sync>> {
-        self.process_file(file_content, settings).await
     }
 }

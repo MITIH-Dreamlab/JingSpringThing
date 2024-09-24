@@ -4,10 +4,12 @@ use crate::AppState;
 use crate::models::graph::GraphData;
 use crate::models::node::Node;
 use crate::models::edge::Edge;
-use log::{info, error};
+use log::info;
 use std::collections::HashMap;
 use tokio::fs;
-use serde_json::Value;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use crate::utils::gpu_compute::GPUCompute;
 
 /// Service responsible for building and managing the graph data structure.
 pub struct GraphService;
@@ -19,7 +21,8 @@ impl GraphService {
     /// 1. Reads all processed Markdown files from the designated directory.
     /// 2. Parses each file to extract nodes and their relationships.
     /// 3. Constructs nodes and edges based on bidirectional references.
-    /// 4. Returns the complete `GraphData` structure.
+    /// 4. Uses GPUCompute to calculate force-directed layout.
+    /// 5. Returns the complete `GraphData` structure.
     ///
     /// # Arguments
     ///
@@ -105,6 +108,8 @@ impl GraphService {
 
         info!("Graph data built with {} nodes and {} edges", graph.nodes.len(), graph.edges.len());
 
+        // Use GPUCompute to calculate force-directed layout
+        Self::calculate_layout(&state.gpu_compute, &mut graph).await?;
         Ok(graph)
     }
 
@@ -128,5 +133,42 @@ impl GraphService {
             }
         }
         links
+    }
+
+    /// Calculates the force-directed layout using GPUCompute.
+    ///
+    /// # Arguments
+    ///
+    /// * `gpu_compute` - Reference to the GPUCompute instance.
+    /// * `graph` - Mutable reference to the GraphData to be updated.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or failure.
+    async fn calculate_layout(gpu_compute: &Arc<RwLock<GPUCompute>>, graph: &mut GraphData) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // Set the graph data in GPUCompute
+        let mut gpu_compute = gpu_compute.write().await; // Acquire write lock
+        gpu_compute.set_graph_data(graph)?;
+        
+        // Perform force calculations
+        gpu_compute.compute_forces()?;
+
+        // Update node positions
+        gpu_compute.update_positions()?;
+
+        // Retrieve updated positions from GPUCompute
+        let updated_nodes = gpu_compute.get_updated_positions().await?;
+
+        // Update graph nodes with new positions
+        for (i, node) in graph.nodes.iter_mut().enumerate() {
+            node.x = updated_nodes[i].x;
+            node.y = updated_nodes[i].y;
+            node.z = updated_nodes[i].z;
+            node.vx = updated_nodes[i].vx;
+            node.vy = updated_nodes[i].vy;
+            node.vz = updated_nodes[i].vz;
+        }
+
+        Ok(())
     }
 }

@@ -1,0 +1,2168 @@
+File: ./config.rs
+// config.rs
+
+use serde::Deserialize;
+use config::{Config, ConfigError, File, Environment};
+use dotenv::dotenv;
+use std::path::Path;
+use std::fs::File as StdFile;
+use std::io::{BufRead, BufReader};
+use log::{info, error};
+
+/// Represents the application settings loaded from configuration files and environment variables.
+#[derive(Debug, Deserialize)]
+pub struct Settings {
+    /// The prompt used for AI interactions.
+    pub prompt: String,
+    /// A list of topics loaded from a CSV file.
+    #[serde(skip)]
+    pub topics: Vec<String>,
+    /// Configuration settings for Perplexity AI integration.
+    pub perplexity: PerplexityConfig,
+    /// Configuration settings for RAGFlow integration.
+    pub ragflow: RAGFlowConfig,
+    /// Configuration settings for GitHub integration.
+    pub github: GitHubConfig,
+    /// Default configuration settings.
+    pub default: DefaultConfig,
+}
+
+/// Configuration for Perplexity AI API integration.
+#[derive(Debug, Deserialize)]
+pub struct PerplexityConfig {
+    /// API key for authenticating with Perplexity AI.
+    pub api_key: String,
+    /// Model name to be used with Perplexity AI.
+    pub model: String,
+    /// Base URL for Perplexity AI API.
+    pub api_base_url: String,
+    /// Maximum number of tokens for responses.
+    pub max_tokens: u32,
+    /// Sampling temperature for response generation.
+    pub temperature: f32,
+    /// Top-p sampling parameter.
+    pub top_p: f32,
+    /// Penalty for presence of new tokens.
+    pub presence_penalty: f32,
+    /// Penalty for frequency of existing tokens.
+    pub frequency_penalty: f32,
+}
+
+/// Configuration for RAGFlow integration.
+#[derive(Debug, Deserialize)]
+pub struct RAGFlowConfig {
+    /// API key for authenticating with RAGFlow.
+    pub api_key: String,
+    /// Base URL for RAGFlow API.
+    pub api_base_url: String,
+}
+
+/// Configuration for GitHub API integration.
+#[derive(Debug, Deserialize)]
+pub struct GitHubConfig {
+    /// Personal Access Token for GitHub API.
+    pub access_token: String,
+    /// GitHub repository owner.
+    pub owner: String,
+    /// GitHub repository name.
+    pub repo: String,
+    /// Directory within the repository to fetch files from.
+    pub directory: String,
+}
+
+/// Default configuration settings.
+#[derive(Debug, Deserialize)]
+pub struct DefaultConfig {
+    /// Maximum number of concurrent API requests.
+    pub max_concurrent_requests: u32,
+    /// Maximum number of retries for failed API requests.
+    pub max_retries: u32,
+    /// Delay between retries in seconds.
+    pub retry_delay: u64,
+    /// Timeout for API client in seconds.
+    pub api_client_timeout: u64,
+}
+
+impl Settings {
+    /// Creates a new `Settings` instance by loading configuration from files and environment variables.
+    pub fn new() -> Result<Self, ConfigError> {
+        // Load environment variables from .env file.
+        dotenv().ok();
+
+        info!("Current working directory: {:?}", std::env::current_dir());
+
+        let mut builder = Config::builder();
+
+        // Load default settings from settings.toml in the current directory.
+        let base_settings_path = Path::new("settings.toml");
+        if base_settings_path.exists() {
+            info!("Loading default settings from {:?}", base_settings_path);
+            builder = builder.add_source(File::from(base_settings_path).required(true));
+        } else {
+            error!("Default settings file not found at {:?}", base_settings_path);
+            return Err(ConfigError::NotFound("settings.toml".into()));
+        }
+
+        // Load environment variables, overriding settings from files.
+        builder = builder.add_source(Environment::default().separator("__"));
+        info!("Loading environment variables");
+
+        let config_map = builder.build()?;
+        info!("Raw configuration: {:#?}", config_map);
+
+        // Deserialize into Settings struct.
+        let mut settings: Settings = config_map.try_deserialize()?;
+
+        // Load topics from CSV file using a relative path.
+        settings.topics = Self::load_topics_from_csv("data/topics.csv")?;
+        info!("Loaded topics: {:?}", settings.topics);
+
+        info!("Final parsed configuration: {:#?}", settings);
+
+        Ok(settings)
+    }
+
+    /// Loads topics from a CSV file.
+    fn load_topics_from_csv(file_path: &str) -> Result<Vec<String>, ConfigError> {
+        let file = StdFile::open(file_path).map_err(|e| {
+            error!("Failed to open topics.csv: {}", e);
+            ConfigError::Message(format!(
+                "Failed to open topics.csv: {}. Make sure the file exists in the 'data' directory.",
+                e
+            ))
+        })?;
+
+        let reader = BufReader::new(file);
+        let topics: Vec<String> = reader
+            .lines()
+            .filter_map(Result::ok)
+            .map(|line| line.trim().to_string())
+            .filter(|line| !line.is_empty())
+            .collect();
+
+        if topics.is_empty() {
+            error!("No topics found in topics.csv");
+            Err(ConfigError::Message(
+                "No topics found in topics.csv".to_string(),
+            ))
+        } else {
+            Ok(topics)
+        }
+    }
+}
+File: ./utils/force_calculation.wgsl
+// force_calculation.wgsl
+
+// Structure representing a node with position and velocity.
+struct Node {
+    position: vec2<f32>,
+    velocity: vec2<f32>,
+}
+
+// Structure representing an edge between two nodes.
+struct Edge {
+    source: u32,
+    target: u32,
+    weight: f32,
+}
+
+// Buffer containing all nodes.
+[[block]]
+struct NodesBuffer {
+    nodes: array<Node>;
+}
+
+// Buffer containing all edges.
+[[block]]
+struct EdgesBuffer {
+    edges: array<Edge>;
+}
+
+// Uniform buffer containing simulation parameters.
+[[group(0), binding(2)]]
+var<uniform> simulation_params: SimulationParams;
+
+// Parameters for the simulation.
+struct SimulationParams {
+    repulsion_strength: f32,
+    attraction_strength: f32,
+    damping: f32,
+    delta_time: f32,
+}
+
+// Nodes buffer for reading and writing node data.
+[[group(0), binding(0)]]
+var<storage, read_write> nodes_buffer: NodesBuffer;
+
+// Edges buffer for reading edge data.
+[[group(0), binding(1)]]
+var<storage, read> edges_buffer: EdgesBuffer;
+
+// Main compute shader function.
+[[stage(compute), workgroup_size(64)]]
+fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
+    let node_id = global_id.x;
+    let n_nodes = arrayLength(&nodes_buffer.nodes);
+
+    if (node_id < n_nodes) {
+        var node = nodes_buffer.nodes[node_id];
+        var force = vec2<f32>(0.0, 0.0);
+
+        // Repulsive force between nodes.
+        for (var i = 0u; i < n_nodes; i = i + 1u) {
+            if (i != node_id) {
+                let other_node = nodes_buffer.nodes[i];
+                let direction = node.position - other_node.position;
+                let distance_sq = dot(direction, direction) + 0.01;
+                let repulsive_force = simulation_params.repulsion_strength / distance_sq;
+                force = force + normalize(direction) * repulsive_force;
+            }
+        }
+
+        // Attractive force along edges.
+        let n_edges = arrayLength(&edges_buffer.edges);
+        for (var j = 0u; j < n_edges; j = j + 1u) {
+            let edge = edges_buffer.edges[j];
+            if (edge.source == node_id || edge.target == node_id) {
+                let other_id = if (edge.source == node_id) { edge.target } else { edge.source };
+                let other_node = nodes_buffer.nodes[other_id];
+                let direction = other_node.position - node.position;
+                let attractive_force = simulation_params.attraction_strength * edge.weight;
+                force = force + normalize(direction) * attractive_force;
+            }
+        }
+
+        // Apply damping to velocity.
+        node.velocity = (node.velocity + force * simulation_params.delta_time) * simulation_params.damping;
+
+        // Update node's position.
+        node.position = node.position + node.velocity * simulation_params.delta_time;
+
+        // Write back to the buffer.
+        nodes_buffer.nodes[node_id] = node;
+    }
+}
+File: ./utils/update_positions.wgsl
+// update_positions.wgsl
+
+// Structure representing a node with position and velocity.
+struct Node {
+    position: vec2<f32>,
+    velocity: vec2<f32>,
+}
+
+// Buffer containing all nodes.
+[[block]]
+struct NodesBuffer {
+    nodes: array<Node>;
+}
+
+// Uniform buffer containing delta time for the simulation.
+[[group(0), binding(1)]]
+var<uniform> delta_time: f32;
+
+// Nodes buffer for reading and writing node data.
+[[group(0), binding(0)]]
+var<storage, read_write> nodes_buffer: NodesBuffer;
+
+// Main compute shader function.
+[[stage(compute), workgroup_size(64)]]
+fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
+    let node_id = global_id.x;
+    let n_nodes = arrayLength(&nodes_buffer.nodes);
+
+    if (node_id < n_nodes) {
+        var node = nodes_buffer.nodes[node_id];
+
+        // Update node's position based on its velocity.
+        node.position = node.position + node.velocity * delta_time;
+
+        // Write back to the buffer.
+        nodes_buffer.nodes[node_id] = node;
+    }
+}
+File: ./utils/mod.rs
+// mod.rs
+
+pub mod gpu_compute;
+pub mod websocket_manager;
+File: ./utils/gpu_compute.rs
+// gpu_compute.rs
+
+use wgpu::{Device, Queue, Buffer, ShaderModule, BindGroup, ComputePipeline, BindGroupLayout};
+use wgpu::util::DeviceExt; // Needed for create_buffer_init
+use std::io::Error;
+use log::{info, error}; // For logging
+use crate::models::graph::GraphData;
+use crate::models::node::{Node, GPUNode};
+
+/// Manages GPU computations for force-directed graph layout using WebGPU.
+pub struct GPUCompute {
+    device: Device,
+    queue: Queue,
+    nodes_buffer: Buffer,
+    edges_buffer: Buffer,
+    simulation_params_buffer: Buffer,
+    bind_group: BindGroup,
+    compute_pipeline: ComputePipeline,
+    num_nodes: u32,
+    num_edges: u32,
+}
+
+impl GPUCompute {
+    /// Creates a new instance of GPUCompute.
+    pub async fn new() -> Result<Self, Error> {
+        // ... (rest of the new function remains unchanged)
+    }
+
+    /// Sets the graph data for GPU computation.
+    pub fn set_graph_data(&mut self, graph: &GraphData) -> Result<(), Error> {
+        self.num_nodes = graph.nodes.len() as u32;
+        self.num_edges = graph.edges.len() as u32;
+
+        // Convert Node to GPUNode
+        let gpu_nodes: Vec<GPUNode> = graph.nodes.iter().map(|node| node.to_gpu_node()).collect();
+
+        // Resize and update nodes buffer
+        self.nodes_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Nodes Buffer"),
+            contents: bytemuck::cast_slice(&gpu_nodes),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::COPY_SRC,
+        });
+
+        // Resize and update edges buffer
+        self.edges_buffer = self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Edges Buffer"),
+            contents: bytemuck::cast_slice(&graph.edges),
+            usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        });
+
+        // Update bind group with new buffers
+        self.bind_group = self.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("Compute Bind Group"),
+            layout: &self.compute_pipeline.get_bind_group_layout(0),
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: self.nodes_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: self.edges_buffer.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: self.simulation_params_buffer.as_entire_binding(),
+                },
+            ],
+        });
+
+        Ok(())
+    }
+
+    /// Performs force calculations on the GPU.
+    pub fn compute_forces(&self) -> Result<(), Error> {
+        // ... (rest of the compute_forces function remains unchanged)
+    }
+
+    /// Updates node positions based on computed velocities.
+    pub fn update_positions(&self) -> Result<(), Error> {
+        // ... (rest of the update_positions function remains unchanged)
+    }
+
+    /// Retrieves the updated node positions from the GPU.
+    pub async fn get_updated_positions(&self) -> Result<Vec<Node>, Error> {
+        let buffer_size = std::mem::size_of::<GPUNode>() * self.num_nodes as usize;
+        let staging_buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Staging Buffer"),
+            size: buffer_size as u64,
+            usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        });
+
+        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Retrieval Encoder"),
+        });
+
+        encoder.copy_buffer_to_buffer(&self.nodes_buffer, 0, &staging_buffer, 0, buffer_size as u64);
+
+        self.queue.submit(Some(encoder.finish()));
+
+        let buffer_slice = staging_buffer.slice(..);
+        let (sender, receiver) = futures_intrusive::channel::shared::oneshot_channel();
+        buffer_slice.map_async(wgpu::MapMode::Read, move |v| sender.send(v).unwrap());
+
+        self.device.poll(wgpu::Maintain::Wait);
+
+        // Await the receiver to get the mapping result.
+        receiver.receive().await.unwrap().map_err(|e| {
+            error!("Failed to map staging buffer: {:?}", e);
+            Error::new(std::io::ErrorKind::Other, "Failed to map staging buffer")
+        })?;
+
+        let data = buffer_slice.get_mapped_range();
+        let gpu_nodes: Vec<GPUNode> = bytemuck::cast_slice(&data).to_vec();
+        drop(data);
+        staging_buffer.unmap();
+
+        // Convert GPUNode back to Node
+        let nodes: Vec<Node> = gpu_nodes.iter().map(|gpu_node| {
+            let mut node = Node::default();
+            node.update_from_gpu_node(gpu_node);
+            node
+        }).collect();
+
+        Ok(nodes)
+    }
+}File: ./utils/websocket_manager.rs
+// websocket_manager.rs
+
+use actix_web::{web, Error, HttpRequest, HttpResponse};
+use actix_web_actors::ws;
+use actix::prelude::*;
+use crate::AppState;
+use serde_json::json;
+use log::{info, error};
+
+/// Manages WebSocket connections and broadcasts updates to connected clients.
+pub struct WebSocketManager {
+    pub sessions: Vec<Addr<WebSocketSession>>,
+}
+
+impl WebSocketManager {
+    /// Creates a new WebSocketManager instance.
+    pub fn new() -> Self {
+        WebSocketManager {
+            sessions: Vec::new(),
+        }
+    }
+
+    /// Sets up a WebSocket route handler.
+    pub async fn handle_websocket(req: HttpRequest, stream: web::Payload, state: web::Data<AppState>) -> Result<HttpResponse, Error> {
+        let session = WebSocketSession::new(state.clone());
+        let resp = ws::start(session, &req, stream)?;
+        Ok(resp)
+    }
+
+    /// Broadcasts a message to all connected WebSocket clients.
+    pub fn broadcast_message(&self, message: &str) {
+        for session in &self.sessions {
+            session.do_send(BroadcastMessage(message.to_string()));
+        }
+    }
+}
+
+/// Represents a WebSocket session with a client.
+pub struct WebSocketSession {
+    state: web::Data<AppState>,
+}
+
+impl WebSocketSession {
+    /// Creates a new WebSocketSession instance.
+    fn new(state: web::Data<AppState>) -> Self {
+        WebSocketSession { state }
+    }
+}
+
+impl Actor for WebSocketSession {
+    type Context = ws::WebsocketContext<Self>;
+
+    /// Called when the WebSocket session is started.
+    fn started(&mut self, ctx: &mut Self::Context) {
+        // Add the session's address to the WebSocketManager's sessions list.
+        let addr = ctx.address();
+        self.state.websocket_manager.sessions.push(addr);
+        info!("WebSocket session started. Total sessions: {}", self.state.websocket_manager.sessions.len());
+    }
+
+    /// Called when the WebSocket session is stopped.
+    fn stopped(&mut self, ctx: &mut Self::Context) {
+        // Remove the session from the manager.
+        let addr = ctx.address();
+        self.state.websocket_manager.sessions.retain(|session| session != &addr);
+        info!("WebSocket session stopped. Total sessions: {}", self.state.websocket_manager.sessions.len());
+    }
+}
+
+/// Message for broadcasting data to WebSocket clients.
+#[derive(Message)]
+#[rtype(result = "()")]
+struct BroadcastMessage(String);
+
+impl Handler<BroadcastMessage> for WebSocketSession {
+    type Result = ();
+
+    /// Handles the broadcast message by sending it to the client.
+    fn handle(&mut self, msg: BroadcastMessage, ctx: &mut Self::Context) {
+        ctx.text(msg.0);
+    }
+}
+
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocketSession {
+    /// Handles incoming WebSocket messages from the client.
+    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+        match msg {
+            Ok(ws::Message::Ping(msg)) => {
+                ctx.pong(&msg);
+            },
+            Ok(ws::Message::Pong(_)) => {
+                // Optionally handle pong responses.
+            },
+            Ok(ws::Message::Text(text)) => {
+                // Handle incoming text messages if necessary.
+                info!("Received message from client: {}", text);
+                // Echo the message back for demonstration purposes.
+                ctx.text(format!("Echo: {}", text));
+            },
+            Ok(ws::Message::Binary(bin)) => {
+                // Handle binary messages if necessary.
+                ctx.binary(bin);
+            },
+            Ok(ws::Message::Close(reason)) => {
+                info!("WebSocket closed: {:?}", reason);
+                ctx.stop();
+            },
+            _ => (),
+        }
+    }
+}
+File: ./models/graph.rs
+// graph.rs
+
+use super::node::Node;
+use super::edge::Edge;
+use serde::{Deserialize, Serialize};
+
+/// Represents the graph data structure containing nodes and edges.
+#[derive(Default, Serialize, Deserialize, Clone)]
+pub struct GraphData {
+    /// List of nodes in the graph.
+    pub nodes: Vec<Node>,
+    /// List of edges connecting the nodes.
+    pub edges: Vec<Edge>,
+}
+File: ./models/node.rs
+// node.rs
+
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use bytemuck::{Pod, Zeroable};
+
+/// Represents a node in the graph.
+#[derive(Default, Serialize, Deserialize, Clone)]
+pub struct Node {
+    /// Unique identifier for the node.
+    pub id: String,
+    /// Display label for the node.
+    pub label: String,
+    /// Additional metadata associated with the node.
+    pub metadata: HashMap<String, String>,
+    /// Position coordinates for visualisation.
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    /// Velocity for simulation purposes.
+    #[serde(skip)]
+    pub vx: f32,
+    #[serde(skip)]
+    pub vy: f32,
+    #[serde(skip)]
+    pub vz: f32,
+}
+
+/// GPU-compatible representation of a node.
+#[repr(C)]
+#[derive(Clone, Copy, Pod, Zeroable)]
+pub struct GPUNode {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub vx: f32,
+    pub vy: f32,
+    pub vz: f32,
+}
+
+impl From<&Node> for GPUNode {
+    fn from(node: &Node) -> Self {
+        Self {
+            x: node.x,
+            y: node.y,
+            z: node.z,
+            vx: node.vx,
+            vy: node.vy,
+            vz: node.vz,
+        }
+    }
+}
+
+impl Node {
+    pub fn to_gpu_node(&self) -> GPUNode {
+        GPUNode::from(self)
+    }
+
+    pub fn update_from_gpu_node(&mut self, gpu_node: &GPUNode) {
+        self.x = gpu_node.x;
+        self.y = gpu_node.y;
+        self.z = gpu_node.z;
+        self.vx = gpu_node.vx;
+        self.vy = gpu_node.vy;
+        self.vz = gpu_node.vz;
+    }
+}
+File: ./models/mod.rs
+// mod.rs
+
+pub mod graph;
+pub mod node;
+pub mod edge;
+pub mod metadata;
+File: ./models/metadata.rs
+// metadata.rs
+
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+/// Stores metadata about a processed file.
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct Metadata {
+    /// Name of the file.
+    pub file_name: String,
+    /// Last modified timestamp.
+    pub last_modified: DateTime<Utc>,
+    /// Content of the processed file.
+    pub processed_file: String,
+    /// Original content of the file.
+    pub original_file: String,
+}
+File: ./models/edge.rs
+// edge.rs
+
+use serde::{Serialize, Deserialize};
+
+/// Represents an edge connecting two nodes in the graph.
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Edge {
+    /// ID of the source node.
+    pub source: String,
+    /// ID of the target node.
+    pub target: String,
+    /// Weight of the edge.
+    pub weight: f32,
+}
+
+impl Edge {
+    /// Creates a new `Edge` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `source` - ID of the source node.
+    /// * `target` - ID of the target node.
+    /// * `weight` - Weight of the edge.
+    ///
+    /// # Returns
+    ///
+    /// A new `Edge` instance.
+    pub fn new(source: String, target: String, weight: f32) -> Self {
+        Edge { source, target, weight }
+    }
+}
+File: ./main.rs
+// src/main.rs
+
+use actix_web::{web, App, HttpServer, middleware};
+use crate::handlers::{file_handler, graph_handler, ragflow_handler};
+use crate::config::Settings;
+use crate::AppState;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use std::collections::HashMap;
+use crate::services::file_service::{GitHubService, RealGitHubService, PerplexityService, RealPerplexityService};
+use crate::models::graph::GraphData;
+use crate::utils::websocket_manager::WebSocketManager;
+use crate::utils::gpu_compute::GPUCompute;
+
+mod app_state;
+mod config;
+mod handlers;
+mod models;
+mod services;
+mod utils;
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    // Load environment variables.
+    dotenv::dotenv().ok();
+
+    // Initialise logger.
+    env_logger::init();
+
+    log::info!("Starting WebXR Graph Server");
+
+    // Load settings.
+    let settings = Settings::new().expect("Failed to load settings");
+
+    // Initialise shared application state.
+    let file_cache = Arc::new(RwLock::new(HashMap::new()));
+    let graph_data = Arc::new(RwLock::new(GraphData::default()));
+    let github_service: Arc<dyn GitHubService + Send + Sync> = Arc::new(RealGitHubService::new());
+    let perplexity_service: Arc<dyn PerplexityService + Send + Sync> = Arc::new(RealPerplexityService::new());
+    let websocket_manager = Arc::new(WebSocketManager::new());
+    
+    // Initialize GPUCompute
+    let gpu_compute = Arc::new(GPUCompute::new().await.expect("Failed to initialize GPUCompute"));
+
+    let app_state = web::Data::new(AppState::new(
+        graph_data,
+        file_cache,
+        settings,
+        github_service,
+        perplexity_service,
+        websocket_manager,
+        gpu_compute,
+    ));
+
+    // Start HTTP server.
+    HttpServer::new(move || {
+        App::new()
+            .app_data(app_state.clone())
+            .wrap(middleware::Logger::default())
+            // Register file handler routes.
+            .service(
+                web::scope("/api/files")
+                    .route("/fetch", web::get().to(file_handler::fetch_and_process_files))
+            )
+            // Register graph handler routes.
+            .service(
+                web::scope("/api/graph")
+                    .route("/data", web::get().to(graph_handler::get_graph_data))
+            )
+            // Register RAGFlow handler routes.
+            .service(
+                web::scope("/api/chat")
+                    .route("/message", web::post().to(ragflow_handler::send_message))
+                    .route("/init", web::post().to(ragflow_handler::init_chat))
+                    .route("/history/{conversation_id}", web::get().to(ragflow_handler::get_chat_history))
+            )
+            // Serve static files (e.g., frontend files).
+            .service(
+                actix_files::Files::new("/", "./public").index_file("index.html")
+            )
+            // WebSocket route.
+            .route("/ws", web::get().to(WebSocketManager::handle_websocket))
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
+}
+File: ./app_state.rs
+// app_state.rs
+
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+
+use crate::models::graph::GraphData;
+use crate::config::Settings;
+use crate::services::file_service::GitHubService; // Import GitHubService
+use crate::services::perplexity_service::PerplexityServiceImpl; // Import PerplexityServiceImpl 
+use crate::utils::websocket_manager::WebSocketManager;
+use crate::utils::gpu_compute::GPUCompute;
+
+/// Holds the shared application state accessible across different parts of the application.
+pub struct AppState {
+    /// Shared graph data protected by a read-write lock.
+    pub graph_data: Arc<RwLock<GraphData>>,
+    /// Cache for file contents protected by a read-write lock.
+    pub file_cache: Arc<RwLock<HashMap<String, String>>>,
+    /// Application settings.
+    pub settings: Settings,
+    /// GitHub service for interacting with GitHub API.
+    pub github_service: Arc<dyn GitHubService + Send + Sync>,
+    /// Perplexity service for processing files.  
+    // NOTE: We're using the concrete type now, not the trait object.
+    pub perplexity_service: PerplexityServiceImpl, 
+    /// WebSocket manager for handling WebSocket connections.
+    pub websocket_manager: Arc<WebSocketManager>,
+    /// GPU Compute for graph calculations protected by a read-write lock.
+    pub gpu_compute: Arc<RwLock<GPUCompute>>, 
+}
+
+impl AppState {
+    /// Creates a new `AppState` instance.
+    pub fn new(
+        graph_data: Arc<RwLock<GraphData>>,
+        file_cache: Arc<RwLock<HashMap<String, String>>>,
+        settings: Settings,
+        github_service: Arc<dyn GitHubService + Send + Sync>,
+        perplexity_service: PerplexityServiceImpl, // Concrete type
+        websocket_manager: Arc<WebSocketManager>,
+        gpu_compute: Arc<RwLock<GPUCompute>>,
+    ) -> Self {
+        Self {
+            graph_data,
+            file_cache,
+            settings,
+            github_service,
+            perplexity_service, // Assign the concrete type
+            websocket_manager,
+            gpu_compute,
+        }
+    }
+}File: ./handlers/file_handler.rs
+// src/handlers/file_handler.rs
+
+use actix_web::{web, HttpResponse};
+use crate::AppState;
+use crate::services::file_service::{FileService, ProcessedFile};
+use crate::services::graph_service::GraphService;
+use log::{info, error, debug};
+use serde_json::json;
+
+/// Handler for fetching and processing Markdown files from GitHub.
+///
+/// This function performs the following steps:
+/// 1. Fetches Markdown files from a private GitHub repository using the GitHubService.
+/// 2. Processes each file using the PerplexityService to enhance content.
+/// 3. Updates the file cache with the processed content.
+/// 4. Builds or refreshes the graph data structure based on the processed files.
+/// 5. Returns a JSON response containing the names of the processed files.
+///
+/// # Arguments
+///
+/// * `state` - Shared application state.
+///
+/// # Returns
+///
+/// An HTTP response indicating success or failure.
+pub async fn fetch_and_process_files(state: web::Data<AppState>) -> HttpResponse {
+    info!("Initiating file fetch and processing");
+    
+    // Step 1: Fetch files from GitHub
+    match FileService::fetch_and_process_files(&*state.github_service, &state.settings).await {
+        Ok(processed_files) => {
+            // Generate unique names for processed files
+            let file_names: Vec<String> = processed_files.iter()
+                .map(|pf| pf.file_name.clone())
+                .collect();
+
+            info!("Successfully processed {} files", processed_files.len());
+
+            // Step 2: Update the file cache with processed content
+            {
+                let mut file_cache = state.file_cache.write().await;
+                for processed_file in &processed_files {
+                    file_cache.insert(processed_file.file_name.clone(), processed_file.content.clone());
+                    debug!("Updated file cache with: {}", processed_file.file_name);
+                }
+            }
+
+            // Step 3: Update graph data structure based on processed files
+            match GraphService::build_graph(&state).await {
+                Ok(graph_data) => {
+                    let mut graph = state.graph_data.write().await;
+                    *graph = graph_data.clone();
+                    info!("Graph data structure updated successfully");
+
+                    // Broadcast the updated graph to connected WebSocket clients
+                    state.websocket_manager.broadcast_message(&json!({
+                        "type": "graphUpdate",
+                        "data": graph_data,
+                    }).to_string());
+                },
+                Err(e) => {
+                    error!("Failed to build graph data: {}", e);
+                    return HttpResponse::InternalServerError().json(format!("Failed to build graph data: {}", e));
+                }
+            }
+
+            // Step 4: Respond with the list of processed file names
+            HttpResponse::Ok().json(json!({
+                "status": "success",
+                "processed_files": file_names
+            }))
+        },
+        Err(e) => {
+            error!("Error processing files: {:?}", e);
+            HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Error processing files: {:?}", e)
+            }))
+        }
+    }
+}
+File: ./handlers/mod.rs
+// handlers/mod.rs
+
+pub mod file_handler;
+pub mod graph_handler;
+pub mod ragflow_handler;
+File: ./handlers/graph_handler.rs
+// src/handlers/graph_handler.rs
+
+use actix_web::{web, HttpResponse, Responder};
+use crate::AppState;
+use crate::services::graph_service::GraphService;
+use serde::Serialize;
+use log::{info, error};
+
+/// Struct to serialize GraphData for HTTP responses.
+#[derive(Serialize)]
+pub struct GraphResponse {
+    /// List of nodes in the graph.
+    pub nodes: Vec<crate::models::node::Node>,
+    /// List of edges connecting the nodes.
+    pub edges: Vec<crate::models::edge::Edge>,
+}
+
+/// Handler to retrieve the current graph data.
+///
+/// This function performs the following steps:
+/// 1. Reads the shared graph data from the application state.
+/// 2. Serializes the graph data into JSON format.
+/// 3. Returns the serialized graph data as an HTTP response.
+///
+/// # Arguments
+///
+/// * `state` - Shared application state.
+///
+/// # Returns
+///
+/// An HTTP response containing the graph data or an error.
+pub async fn get_graph_data(state: web::Data<AppState>) -> impl Responder {
+    info!("Received request for graph data");
+
+    // Step 1: Acquire read access to the shared graph data.
+    let graph = state.graph_data.read().await;
+
+    // Step 2: Prepare the response struct.
+    let response = GraphResponse {
+        nodes: graph.nodes.clone(),
+        edges: graph.edges.clone(),
+    };
+
+    // Step 3: Respond with the serialized graph data.
+    HttpResponse::Ok().json(response)
+}
+File: ./handlers/ragflow_handler.rs
+use actix_web::{web, HttpResponse};
+use crate::AppState;
+use serde::{Deserialize, Serialize};
+use crate::services::ragflow_service::{RAGFlowService, Message};
+use log::{info, error};
+
+/// Response structure for sending messages.
+#[derive(Serialize)]
+pub struct SendMessageResponse {
+    /// Status of the message sending operation.
+    pub status: String,
+    /// Response from the RAGFlow service.
+    pub response: String,
+}
+
+/// Response structure for initiating a chat.
+#[derive(Serialize)]
+pub struct InitChatResponse {
+    /// Status of the chat initiation.
+    pub status: String,
+    /// ID of the newly created conversation.
+    pub conversation_id: String,
+}
+
+/// Response structure for retrieving chat history.
+#[derive(Serialize)]
+pub struct ChatHistoryResponse {
+    /// Status of the chat history retrieval.
+    pub status: String,
+    /// List of messages in the conversation.
+    pub history: Vec<Message>,
+}
+
+/// Handler for sending a message to the RAGFlow service.
+///
+/// This function performs the following steps:
+/// 1. Extracts the conversation ID and message content from the request.
+/// 2. Sends the message to the RAGFlow service.
+/// 3. Returns the response from the RAGFlow service.
+///
+/// # Arguments
+///
+/// * `state` - Shared application state.
+/// * `msg` - JSON payload containing the message.
+///
+/// # Returns
+///
+/// An HTTP response containing the RAGFlow service's response or an error.
+pub async fn send_message(state: web::Data<AppState>, msg: web::Json<Message>) -> HttpResponse {
+    let conversation_id = msg.0.conversation_id.clone().unwrap_or_else(|| "default".to_string());
+    let message_content = msg.0.message.clone();
+
+    info!("Sending message to RAGFlow: {}", message_content);
+
+    match RAGFlowService::send_message(conversation_id.clone(), message_content).await {
+        Ok(response) => HttpResponse::Ok().json(SendMessageResponse {
+            status: "success".to_string(),
+            response,
+        }),
+        Err(e) => {
+            error!("Error sending message: {}", e);
+            HttpResponse::InternalServerError().json(SendMessageResponse {
+                status: "error".to_string(),
+                response: "Failed to send message".to_string(),
+            })
+        }
+    }
+}
+
+/// Handler for initiating a new chat conversation.
+///
+/// This function performs the following steps:
+/// 1. Receives a user ID to associate with the new conversation.
+/// 2. Creates a new conversation using the RAGFlow service.
+/// 3. Returns the new conversation ID.
+///
+/// # Arguments
+///
+/// * `state` - Shared application state.
+/// * `user_id` - JSON payload containing the user ID.
+///
+/// # Returns
+///
+/// An HTTP response containing the new conversation ID or an error.
+pub async fn init_chat(state: web::Data<AppState>, user_id: web::Json<String>) -> HttpResponse {
+    let user_id = user_id.into_inner();
+
+    info!("Initializing chat for user: {}", user_id);
+
+    match RAGFlowService::create_conversation(user_id).await {
+        Ok(conversation_id) => HttpResponse::Ok().json(InitChatResponse {
+            status: "success".to_string(),
+            conversation_id,
+        }),
+        Err(e) => {
+            error!("Error initiating chat: {}", e);
+            HttpResponse::InternalServerError().json(InitChatResponse {
+                status: "error".to_string(),
+                conversation_id: "".to_string(),
+            })
+        }
+    }
+}
+
+/// Handler for retrieving chat history.
+///
+/// This function performs the following steps:
+/// 1. Extracts the conversation ID from the URL path.
+/// 2. Retrieves the chat history from the RAGFlow service.
+/// 3. Returns the chat history.
+///
+/// # Arguments
+///
+/// * `state` - Shared application state.
+/// * `path` - URL path parameters containing the conversation ID.
+///
+/// # Returns
+///
+/// An HTTP response containing the chat history or an error.
+pub async fn get_chat_history(state: web::Data<AppState>, path: web::Path<String>) -> HttpResponse {
+    let conversation_id = path.into_inner();
+
+    info!("Retrieving chat history for conversation: {}", conversation_id);
+
+    match RAGFlowService::get_chat_history(conversation_id).await {
+        Ok(history) => HttpResponse::Ok().json(ChatHistoryResponse {
+            status: "success".to_string(),
+            history,
+        }),
+        Err(e) => {
+            error!("Error retrieving chat history: {}", e);
+            HttpResponse::InternalServerError().json(ChatHistoryResponse {
+                status: "error".to_string(),
+                history: Vec::new(),
+            })
+        }
+    }
+}
+File: ./services/perplexity_service.rs
+use std::io;
+use regex::Regex;
+use serde::{Serialize, Deserialize};
+use reqwest::Client;
+use tokio::time::{sleep, Duration};
+use tokio::sync::Semaphore;
+use log::error;
+use thiserror::Error;
+use futures::stream::{self, StreamExt};
+use lazy_static::lazy_static;
+use std::env;
+use pulldown_cmark::{Parser, Event, Tag};
+use async_trait::async_trait;
+use config::ConfigError;
+
+use crate::config::Settings;
+use crate::services::file_service::ProcessedFile;
+
+#[derive(Error, Debug)]
+pub enum PerplexityError {
+    #[error("IO error: {0}")]
+    Io(#[from] io::Error),
+    #[error("HTTP request error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("API error: {0}")]
+    Api(String),
+    #[error("Serialization error: {0}")]
+    Serialization(#[from] serde_json::Error),
+    #[error("Environment variable error: {0}")]
+    EnvVar(#[from] env::VarError),
+    #[error("Configuration error: {0}")]
+    Config(#[from] ConfigError),
+}
+
+lazy_static! {
+    static ref API_CLIENT: Client = Client::builder()
+        .timeout(Duration::from_secs(
+            env::var("API_CLIENT_TIMEOUT")
+                .unwrap_or_else(|_| "30".to_string())
+                .parse()
+                .expect("API_CLIENT_TIMEOUT must be a valid u64")
+        ))
+        .build()
+        .expect("Failed to build API client");
+
+    static ref REQUEST_SEMAPHORE: Semaphore = Semaphore::new(
+        env::var("MAX_CONCURRENT_REQUESTS")
+            .unwrap_or_else(|_| "5".to_string())
+            .parse::<usize>()
+            .expect("MAX_CONCURRENT_REQUESTS must be a valid usize")
+    );
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PerplexityRequest {
+    pub model: String,
+    pub messages: Vec<Message>,
+    pub max_tokens: Option<u32>,
+    pub temperature: Option<f32>,
+    pub top_p: Option<f32>,
+    pub return_citations: Option<bool>,
+    pub stream: Option<bool>,
+    pub presence_penalty: Option<f32>,
+    pub frequency_penalty: Option<f32>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Message {
+    pub role: String,
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PerplexityResponse {
+    pub id: Option<String>,
+    pub model: Option<String>,
+    pub object: Option<String>,
+    pub created: Option<u64>,
+    pub choices: Vec<Choice>,
+    pub usage: Option<Usage>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Choice {
+    #[serde(default)]
+    pub index: u32,
+    pub finish_reason: Option<String>,
+    pub message: Message,
+    pub delta: Option<Delta>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Delta {
+    pub content: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Usage {
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    pub total_tokens: u32,
+}
+
+#[async_trait]
+pub trait ApiClient: Send + Sync {
+    async fn post_json(
+        &self,
+        url: &str,
+        body: &PerplexityRequest,
+        api_key: &str,
+    ) -> Result<String, PerplexityError>;
+}
+
+pub struct ApiClientImpl {
+    client: Client,
+}
+
+impl ApiClientImpl {
+    /// Creates a new instance of `ApiClientImpl`.
+    pub fn new() -> Self {
+        Self {
+            client: Client::new(),
+        }
+    }
+}
+
+#[async_trait]
+impl ApiClient for ApiClientImpl {
+    async fn post_json(
+        &self,
+        url: &str,
+        body: &PerplexityRequest,
+        api_key: &str,
+    ) -> Result<String, PerplexityError> {
+        let response = self
+            .client
+            .post(url)
+            .header("Authorization", format!("Bearer {}", api_key))
+            .json(body)
+            .send()
+            .await?
+            .text()
+            .await?;
+        Ok(response)
+    }
+}
+
+/// Processes Markdown content by enhancing it using the Perplexity API.
+///
+/// # Arguments
+///
+/// * `file_content` - The original Markdown content.
+/// * `settings` - Application settings containing prompts and topics.
+/// * `api_client` - An instance implementing the `ApiClient` trait.
+///
+/// # Returns
+///
+/// A `Result` containing the processed Markdown content or an error.
+pub async fn process_markdown(file_content: &str, settings: &Settings, api_client: &dyn ApiClient) -> Result<String, PerplexityError> {
+    let blocks = split_markdown_blocks(file_content);
+
+    let results = stream::iter(blocks.into_iter())
+        .map(|block| {
+            let prompt = settings.prompt.clone();
+            let topics = settings.topics.clone();
+            let content = file_content.to_string();
+            async move {
+                let trimmed_block = block.trim().to_string();
+                let context = select_context_blocks(&content, &trimmed_block);
+
+                let api_response = call_perplexity_api(&prompt, &context, &topics, api_client, &settings.perplexity).await?;
+                let processed_block = process_markdown_block(&trimmed_block, &prompt, &topics, &api_response);
+                Ok::<String, PerplexityError>(processed_block)
+            }
+        })
+        .buffer_unordered(
+            env::var("MAX_CONCURRENT_REQUESTS")
+                .unwrap_or_else(|_| "5".to_string())
+                .parse::<usize>()
+                .unwrap_or(5)
+        )
+        .collect::<Vec<Result<String, PerplexityError>>>()
+        .await;
+
+    let processed_content = results.into_iter()
+        .collect::<Result<Vec<String>, PerplexityError>>()?
+        .join("\n");
+
+    Ok(processed_content)
+}
+
+/// Sends a request to the Perplexity API and retrieves the response.
+///
+/// # Arguments
+///
+/// * `prompt` - The system prompt for the AI.
+/// * `context` - Relevant context extracted from the Markdown content.
+/// * `topics` - List of relevant topics.
+/// * `api_client` - An instance implementing the `ApiClient` trait.
+/// * `perplexity_config` - Configuration settings for the Perplexity API.
+///
+/// # Returns
+///
+/// A `Result` containing the AI's response or an error.
+pub async fn call_perplexity_api(
+    prompt: &str,
+    context: &[String],
+    topics: &[String],
+    api_client: &dyn ApiClient,
+    perplexity_config: &crate::config::PerplexityConfig,
+) -> Result<String, PerplexityError> {
+    let _permit = REQUEST_SEMAPHORE.acquire().await.unwrap();
+
+    let max_retries: u32 = env::var("MAX_RETRIES").unwrap_or_else(|_| "3".to_string()).parse().unwrap_or(3);
+    let retry_delay: u64 = env::var("RETRY_DELAY").unwrap_or_else(|_| "5".to_string()).parse().unwrap_or(5);
+
+    let system_message = format!(
+        "{}\nRelevant category topics are: {}.",
+        prompt.trim(),
+        topics.join(", ")
+    );
+
+    let request = PerplexityRequest {
+        model: perplexity_config.model.clone(),
+        messages: vec![
+            Message {
+                role: "system".to_string(),
+                content: system_message,
+            },
+            Message {
+                role: "user".to_string(),
+                content: format!(
+                    "Context:\n{}",
+                    context.join("\n")
+                ),
+            },
+        ],
+        max_tokens: Some(perplexity_config.max_tokens),
+        temperature: Some(perplexity_config.temperature),
+        top_p: Some(perplexity_config.top_p),
+        return_citations: Some(false),
+        stream: Some(false),
+        presence_penalty: Some(perplexity_config.presence_penalty),
+        frequency_penalty: Some(perplexity_config.frequency_penalty),
+    };
+
+    for attempt in 1..=max_retries {
+        match api_client.post_json(&perplexity_config.api_base_url, &request, &perplexity_config.api_key).await {
+            Ok(response_text) => {
+                return parse_perplexity_response(&response_text);
+            }
+            Err(e) => {
+                error!("API request encountered an error: {} on attempt {} of {}", e, attempt, max_retries);
+                if attempt < max_retries {
+                    sleep(Duration::from_secs(retry_delay)).await;
+                    continue;
+                } else {
+                    return Err(e);
+                }
+            }
+        }
+    }
+
+    Err(PerplexityError::Api("Max retries reached, API request failed".to_string()))
+}
+
+/// Parses the response from the Perplexity API.
+///
+/// # Arguments
+///
+/// * `response_text` - The raw response text from the API.
+///
+/// # Returns
+///
+/// A `Result` containing the AI's response content or an error.
+fn parse_perplexity_response(response_text: &str) -> Result<String, PerplexityError> {
+    match serde_json::from_str::<PerplexityResponse>(response_text) {
+        Ok(parsed_response) => {
+            if let Some(message) = parsed_response.choices.first().map(|choice| &choice.message) {
+                Ok(message.content.clone())
+            } else {
+                Err(PerplexityError::Api("No content in API response".to_string()))
+            }
+        }
+        Err(e) => {
+            error!("Failed to parse API response: {}", e);
+            error!("Raw response: {}", response_text);
+            Err(PerplexityError::Serialization(e))
+        }
+    }
+}
+
+/// Splits the Markdown content into meaningful blocks based on headings and list items.
+///
+/// # Arguments
+///
+/// * `content` - The full Markdown content.
+///
+/// # Returns
+///
+/// A vector of Markdown blocks as strings.
+fn split_markdown_blocks(content: &str) -> Vec<String> {
+    let parser = Parser::new(content);
+    let mut blocks = Vec::new();
+    let mut current_block = String::new();
+
+    for event in parser {
+        match event {
+            Event::Start(tag) => match tag {
+                Tag::Heading(_, _, _) | Tag::Item => {
+                    if !current_block.is_empty() {
+                        blocks.push(current_block.clone());
+                        current_block.clear();
+                    }
+                },
+                _ => {},
+            },
+            Event::Text(text) => {
+                current_block.push_str(&text);
+            },
+            Event::End(tag) => match tag {
+                Tag::Paragraph | Tag::Heading(_, _, _) | Tag::Item => {
+                    if !current_block.is_empty() {
+                        blocks.push(current_block.clone());
+                        current_block.clear();
+                    }
+                },
+                _ => {},
+            },
+            _ => {},
+        }
+    }
+
+    if !current_block.is_empty() {
+        blocks.push(current_block);
+    }
+
+    blocks
+}
+
+/// Selects relevant context blocks for processing.
+///
+/// Currently, this function returns the active block, but can be enhanced to include surrounding context.
+///
+/// # Arguments
+///
+/// * `_content` - The full Markdown content.
+/// * `active_block` - The block currently being processed.
+///
+/// # Returns
+///
+/// A vector of context blocks as strings.
+pub fn select_context_blocks(_content: &str, active_block: &str) -> Vec<String> {
+    vec![active_block.to_string()]
+}
+
+/// Cleans LogSeq-style links by removing double brackets.
+///
+/// # Arguments
+///
+/// * `input` - The input string containing LogSeq links.
+///
+/// # Returns
+///
+/// A new string with double brackets removed.
+pub fn clean_logseq_links(input: &str) -> String {
+    let re = Regex::new(r"\[\[(.*?)\]\]").unwrap();
+    re.replace_all(input, "$1").to_string()
+}
+
+/// Processes a single Markdown block by appending AI-generated content.
+///
+/// # Arguments
+///
+/// * `input` - The original Markdown block.
+/// * `prompt` - The system prompt for the AI.
+/// * `topics` - List of relevant topics.
+/// * `api_response` - The AI-generated response.
+///
+/// # Returns
+///
+/// A new string containing the processed Markdown block.
+pub fn process_markdown_block(input: &str, prompt: &str, topics: &[String], api_response: &str) -> String {
+    let cleaned_input = clean_logseq_links(input);
+
+    format!(
+        "- ```\n{}```\nPrompt: {}\nTopics: {}\nResponse: {}",
+        cleaned_input.trim_start_matches("- ").trim_end(),
+        prompt,
+        topics.join(", "),
+        api_response
+    )
+}
+
+#[async_trait]
+pub trait PerplexityService: Send + Sync { 
+    /// Processes a file's content using the Perplexity API.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_content` - The original Markdown content.
+    /// * `settings` - Application settings.
+    /// * `api_client` - An instance implementing the `ApiClient` trait.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the processed file or an error.
+    async fn process_file(file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError>;
+}
+
+/// Implementation of the PerplexityService.
+pub struct PerplexityServiceImpl;
+
+#[async_trait]
+impl PerplexityService for PerplexityServiceImpl {
+    async fn process_file(file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError> {
+        let processed_content = process_markdown(&file_content, settings, api_client).await?;
+        Ok(ProcessedFile { file_name: "processed.md".to_string(), content: processed_content })
+    }
+}
+File: ./services/file_service.rs
+// src/services/file_service.rs
+
+use crate::models::metadata::Metadata;
+use crate::config::Settings;
+use crate::services::perplexity_service::{PerplexityService, PerplexityServiceImpl, ApiClientImpl};
+use serde::{Deserialize, Serialize};
+use dotenv::dotenv;
+use std::env;
+use reqwest::Client;
+use async_trait::async_trait;
+use log::{info, debug};
+use regex::Regex;
+use sha1::{Sha1, Digest};
+use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+// Removed unused import: use tokio::sync::RwLock;
+
+/// Represents a file fetched from GitHub.
+#[derive(Serialize, Deserialize, Clone)]
+pub struct GithubFile {
+    /// Name of the file (e.g., "example.md").
+    pub name: String,
+    /// Content of the file in Markdown format.
+    pub content: String,
+    /// SHA hash of the file content from GitHub.
+    pub sha: String,
+}
+
+/// Represents a processed file after applying transformations.
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProcessedFile {
+    /// Name of the processed file.
+    pub file_name: String,
+    /// Processed content of the file.
+    pub content: String,
+}
+
+/// Trait defining the GitHub service behavior.
+#[async_trait]
+pub trait GitHubService: Send + Sync {
+    /// Fetches Markdown files from the specified GitHub repository.
+    async fn fetch_files(&self) -> Result<Vec<GithubFile>, Box<dyn std::error::Error + Send + Sync>>;
+}
+
+/// Represents a GitHub service that uses actual GitHub API calls.
+pub struct RealGitHubService {
+    client: Client,
+    token: String,
+    owner: String,
+    repo: String,
+    base_path: String,
+}
+
+impl RealGitHubService {
+    /// Creates a new instance of `RealGitHubService` by loading configuration from environment variables.
+    ///
+    /// # Panics
+    ///
+    /// Panics if required environment variables are not set.
+    pub fn new() -> Self {
+        dotenv().ok();
+        let token = env::var("GITHUB_ACCESS_TOKEN").expect("GITHUB_ACCESS_TOKEN must be set in .env");
+        let owner = env::var("GITHUB_OWNER").expect("GITHUB_OWNER must be set in .env");
+        let repo = env::var("GITHUB_REPO").expect("GITHUB_REPO must be set in .env");
+        let base_path = env::var("GITHUB_DIRECTORY").expect("GITHUB_DIRECTORY must be set in .env");
+
+        Self {
+            client: Client::new(),
+            token,
+            owner,
+            repo,
+            base_path,
+        }
+    }
+
+    /// Fetches the contents of a specific directory from the GitHub repository.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - The directory path within the repository to fetch.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of JSON values representing the directory contents or an error.
+    async fn fetch_directory_contents(&self, path: &str) -> Result<Vec<serde_json::Value>, Box<dyn std::error::Error + Send + Sync>> {
+        let url = format!("https://api.github.com/repos/{}/{}/contents/{}", self.owner, self.repo, path);
+        debug!("Fetching contents from GitHub: {}", url);
+
+        let response = self.client.get(&url)
+            .header("Authorization", format!("token {}", self.token))
+            .header("User-Agent", "rust-github-api")
+            .send()
+            .await?;
+
+        debug!("GitHub API response status: {}", response.status());
+
+        let response_body = response.text().await?.to_string(); // Convert to String
+        debug!("GitHub API response body: {}", response_body);
+
+        let contents: Vec<serde_json::Value> = serde_json::from_str(&response_body)?;
+        Ok(contents)
+    }
+
+    /// Fetches the content of a specific file from GitHub using its download URL.
+    ///
+    /// # Arguments
+    ///
+    /// * `download_url` - The download URL of the file to fetch.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the file content as a string or an error.
+    async fn fetch_file_content(&self, download_url: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+        let content = self.client.get(download_url)
+            .header("Authorization", format!("token {}", self.token))
+            .header("User-Agent", "rust-github-api")
+            .send()
+            .await?
+            .text()
+            .await?;
+        Ok(content)
+    }
+}
+
+#[async_trait]
+impl GitHubService for RealGitHubService {
+    /// Fetches all Markdown files from the GitHub repository recursively.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of `GithubFile` or an error.
+    async fn fetch_files(&self) -> Result<Vec<GithubFile>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut github_files = Vec::new();
+        let mut directories_to_process = vec![self.base_path.clone()];
+
+        // Recursively fetch files from all directories
+        while let Some(current_path) = directories_to_process.pop() {
+            let contents = self.fetch_directory_contents(&current_path).await?;
+
+            for item in contents {
+                let name = item["name"].as_str().unwrap_or("");
+                let item_type = item["type"].as_str().unwrap_or("");
+                let path = item["path"].as_str().unwrap_or("");
+
+                if item_type == "dir" {
+                    // If the item is a directory, add it to the list to be processed
+                    directories_to_process.push(path.to_string());
+                } else if item_type == "file" && name.ends_with(".md") {
+                    // If the item is a Markdown file, fetch its content
+                    if let Some(download_url) = item["download_url"].as_str() {
+                        debug!("Fetching content for file: {}", name);
+                        let content = self.fetch_file_content(download_url).await?;
+                        let sha = item["sha"].as_str().unwrap_or("").to_string();
+
+                        // Add the file to the list of GitHub files
+                        github_files.push(GithubFile {
+                            name: name.to_string(),
+                            content,
+                            sha,
+                        });
+                        debug!("Added file to github_files: {}", name);
+                    }
+                } else {
+                    debug!("Skipping non-markdown file: {}", name);
+                }
+            }
+        }
+
+        debug!("Fetched {} markdown files from GitHub", github_files.len());
+        Ok(github_files)
+    }
+}
+
+/// Service responsible for handling file operations, including fetching from GitHub and processing.
+pub struct FileService;
+
+impl FileService {
+    /// Fetches Markdown files from GitHub and processes them.
+    ///
+    /// # Arguments
+    ///
+    /// * `github_service` - An instance of a service that implements the `GitHubService` trait.
+    /// * `settings` - Application settings containing configuration data.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of `ProcessedFile` on success or an error on failure.
+    pub async fn fetch_and_process_files(
+        github_service: &dyn GitHubService,
+        settings: &Settings,
+    ) -> Result<Vec<ProcessedFile>, Box<dyn std::error::Error + Send + Sync>> {
+        // Step 1: Fetch files from GitHub
+        let github_files = github_service.fetch_files().await?;
+        debug!("Fetched {} files from GitHub", github_files.len());
+
+        // Step 2: Process the fetched files
+        let processed_files = Self::process_files(github_files, settings).await?;
+        debug!("Processed {} files", processed_files.len());
+
+        Ok(processed_files)
+    }
+
+    /// Processes the fetched GitHub files. This includes:
+    /// 1. Checking if a file needs processing.
+    /// 2. Stripping Logseq-style double brackets.
+    /// 3. Associating content with topics.
+    /// 4. Enhancing content using the PerplexityService.
+    /// 5. Updating local metadata.
+    async fn process_files(
+        github_files: Vec<GithubFile>,
+        settings: &Settings,
+    ) -> Result<Vec<ProcessedFile>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut processed_files = Vec::new();
+        let local_metadata = Self::load_local_metadata()?;
+        debug!("Loaded {} metadata entries", local_metadata.len());
+
+        // Create an instance of your PerplexityService implementation
+        let perplexity_service = PerplexityServiceImpl;
+
+        // Create an instance of your ApiClient
+        let api_client = ApiClientImpl::new();
+
+        for file in github_files {
+            if Self::should_process_file(&file, &local_metadata) {
+                debug!("Processing file: {}", file.name);
+
+                let stripped_content = Self::strip_double_brackets(&file.content);
+                let processed_content = Self::process_against_topics(&stripped_content, &settings.topics);
+
+                // Use the PerplexityService to process the content
+                let processed_file = PerplexityServiceImpl::process_file(processed_content, settings, &api_client)
+                .await?;
+
+                // Update local metadata 
+                let new_metadata = Metadata {
+                    file_name: file.name.clone(),
+                    last_modified: chrono::Utc::now(),
+                    processed_file: processed_file.content.clone(), // Use processed content
+                    original_file: file.content,
+                };
+                Self::save_file_metadata(new_metadata)?;
+
+                processed_files.push(processed_file);
+            } else {
+                debug!("Skipping file: {}", file.name);
+            }
+        }
+
+        Ok(processed_files)
+    }
+
+    /// Determines whether a file should be processed based on its metadata.
+    ///
+    /// # Arguments
+    ///
+    /// * `file` - A reference to the `GithubFile` to evaluate.
+    /// * `local_metadata` - A reference to the local metadata hashmap.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the file should be processed; otherwise, `false`.
+    fn should_process_file(file: &GithubFile, local_metadata: &HashMap<String, Metadata>) -> bool {
+        // Check if the first line indicates it's a public file
+        let first_line = file.content.lines().next().unwrap_or("").trim();
+        if first_line != "public:: true" {
+            return false;
+        }
+
+        // Calculate SHA1 hashes to determine if the file has been modified
+        let local_sha = local_metadata.get(&file.name).map(|m| Self::calculate_sha1(&m.original_file));
+        let github_sha = Self::calculate_sha1(&file.content);
+
+        // Process the file if it's new or has been modified
+        local_sha.map_or(true, |local| local != github_sha)
+    }
+
+    /// Calculates the SHA1 hash of the given content.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The string content to hash.
+    ///
+    /// # Returns
+    ///
+    /// A hexadecimal string representation of the SHA1 hash.
+    fn calculate_sha1(content: &str) -> String {
+        let mut hasher = Sha1::new();
+        hasher.update(content.as_bytes());
+        format!("{:x}", hasher.finalize())
+    }
+
+    /// Loads local metadata from a JSON file.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a hashmap of metadata or an error.
+    fn load_local_metadata() -> Result<HashMap<String, Metadata>, Box<dyn std::error::Error + Send + Sync>> {
+        // Define the path to the metadata file
+        let metadata_path = "/app/data/markdown/metadata.json";
+
+        // Check if the metadata file exists
+        if Path::new(metadata_path).exists() {
+            // Read the metadata file
+            let metadata_content = fs::read_to_string(metadata_path)?;
+            // Deserialize the JSON content into a hashmap
+            let metadata: HashMap<String, Metadata> = serde_json::from_str(&metadata_content)?;
+            Ok(metadata)
+        } else {
+            // If the metadata file doesn't exist, return an empty hashmap
+            Ok(HashMap::new())
+        }
+    }
+
+    /// Strips double brackets [[ ]] from the content using regular expressions.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The string content from which to remove double brackets.
+    ///
+    /// # Returns
+    ///
+    /// A new string with double brackets removed.
+    fn strip_double_brackets(content: &str) -> String {
+        let re = Regex::new(r"\[\[(.*?)\]\]").unwrap();
+        re.replace_all(content, "$1").to_string()
+    }
+
+    /// Associates the processed content with relevant topics based on the topics list.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The stripped content of the file.
+    /// * `topics` - A slice of topic strings to associate with the content.
+    ///
+    /// # Returns
+    ///
+    /// A new string with topic associations appended.
+    fn process_against_topics(content: &str, topics: &[String]) -> String {
+        let mut processed_content = content.to_string();
+        for topic in topics {
+            if content.contains(topic) {
+                processed_content.push_str(&format!("\nRelated to topic: {}", topic));
+            }
+        }
+        processed_content
+    }
+
+    /// Saves the processed Markdown file to the persistent volume.
+    ///
+    /// # Arguments
+    ///
+    /// * `metadata` - The `Metadata` instance containing file information.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or failure.
+    pub fn save_file_metadata(metadata: Metadata) -> Result<(), std::io::Error> {
+        info!("Saving metadata for file: {}", metadata.file_name);
+
+        // Define the path where the processed Markdown file will be saved
+        let markdown_path = format!("/app/data/markdown/{}", metadata.file_name);
+
+        // Ensure the markdown directory exists; if not, create it
+        if let Some(parent) = Path::new(&markdown_path).parent() {
+            fs::create_dir_all(parent)?;
+            debug!("Ensured directory exists: {}", parent.display());
+        }
+
+        // Write the processed content to the Markdown file
+        fs::write(&markdown_path, &metadata.processed_file)?;
+        debug!("Written processed content to: {}", markdown_path);
+
+        // Update the metadata JSON file
+        Self::update_metadata_file(&metadata)?;
+
+        Ok(())
+    }
+
+    /// Updates the metadata JSON file with the latest file metadata.
+    ///
+    /// # Arguments
+    ///
+    /// * `metadata` - The `Metadata` instance to be saved.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or failure.
+    fn update_metadata_file(metadata: &Metadata) -> Result<(), std::io::Error> {
+        // Define the path to the metadata file
+        let metadata_path = "/app/data/markdown/metadata.json";
+
+        // Load existing metadata
+        let mut metadata_map = if Path::new(metadata_path).exists() {
+            let content = fs::read_to_string(metadata_path)?;
+            serde_json::from_str::<HashMap<String, Metadata>>(&content)?
+        } else {
+            HashMap::new()
+        };
+
+        // Update the metadata map with the new metadata
+        metadata_map.insert(metadata.file_name.clone(), metadata.clone());
+
+        // Serialize the updated metadata map to JSON
+        let updated_content = serde_json::to_string_pretty(&metadata_map)?;
+
+        // Write the updated metadata back to the metadata file
+        fs::write(metadata_path, updated_content)?;
+        debug!("Updated metadata file at: {}", metadata_path);
+
+        Ok(())
+    }
+}
+File: ./services/graph_service.rs
+// src/services/graph_service.rs
+
+use crate::AppState;
+use crate::models::graph::GraphData;
+use crate::models::node::Node;
+use crate::models::edge::Edge;
+use log::info;
+use std::collections::HashMap;
+use tokio::fs;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use crate::utils::gpu_compute::GPUCompute;
+
+/// Service responsible for building and managing the graph data structure.
+pub struct GraphService;
+
+impl GraphService {
+    /// Builds the graph data structure from processed Markdown files.
+    /// 
+    /// This function performs the following steps:
+    /// 1. Reads all processed Markdown files from the designated directory.
+    /// 2. Parses each file to extract nodes and their relationships.
+    /// 3. Constructs nodes and edges based on bidirectional references.
+    /// 4. Uses GPUCompute to calculate force-directed layout.
+    /// 5. Returns the complete `GraphData` structure.
+    ///
+    /// # Arguments
+    ///
+    /// * `state` - Shared application state containing settings and file cache.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the `GraphData` on success or an error on failure.
+    pub async fn build_graph(state: &AppState) -> Result<GraphData, Box<dyn std::error::Error + Send + Sync>> {
+        info!("Building graph data from processed files");
+
+        // Define the directory where processed Markdown files are stored.
+        let markdown_dir = "/app/data/markdown";
+
+        // Read the directory entries.
+        let mut entries = fs::read_dir(markdown_dir).await?;
+
+        let mut graph = GraphData::default();
+        let mut node_map: HashMap<String, Node> = HashMap::new();
+        let mut edge_set: HashMap<(String, String), bool> = HashMap::new();
+
+        // Iterate over each file in the directory.
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("md") {
+                let file_name = path.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+                let content = fs::read_to_string(&path).await?;
+
+                // Parse the content to extract links and other metadata.
+                let links = Self::extract_links(&content);
+
+                // Create or update the node in the node_map.
+                node_map.entry(file_name.clone()).or_insert(Node {
+                    id: file_name.clone(),
+                    label: file_name.clone(),
+                    metadata: HashMap::new(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                    vx: 0.0,
+                    vy: 0.0,
+                    vz: 0.0,
+                });
+
+                // Iterate over each link to create edges.
+                for link in links {
+                    if link != file_name {
+                        // Ensure both source and target nodes exist.
+                        node_map.entry(link.clone()).or_insert(Node {
+                            id: link.clone(),
+                            label: link.clone(),
+                            metadata: HashMap::new(),
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                            vx: 0.0,
+                            vy: 0.0,
+                            vz: 0.0,
+                        });
+
+                        // To avoid duplicate edges, use a sorted tuple as the key.
+                        let (source, target) = if file_name < link.clone() {
+                            (file_name.clone(), link.clone())
+                        } else {
+                            (link.clone(), file_name.clone())
+                        };
+
+                        edge_set.entry((source.clone(), target.clone())).or_insert(true);
+
+                        // Add edge to graph.edges.
+                        graph.edges.push(Edge {
+                            source: source.clone(),
+                            target: target.clone(),
+                            weight: 1.0, // You can adjust weight based on criteria.
+                        });
+                    }
+                }
+            }
+        }
+
+        // Populate the nodes in the graph.
+        graph.nodes = node_map.into_iter().map(|(_, node)| node).collect();
+
+        info!("Graph data built with {} nodes and {} edges", graph.nodes.len(), graph.edges.len());
+
+        // Use GPUCompute to calculate force-directed layout
+        Self::calculate_layout(&state.gpu_compute, &mut graph).await?;
+        Ok(graph)
+    }
+
+    /// Extracts links from the Markdown content.
+    /// 
+    /// This function looks for `[[Link]]` patterns and extracts the link targets.
+    ///
+    /// # Arguments
+    ///
+    /// * `content` - The Markdown content as a string.
+    ///
+    /// # Returns
+    ///
+    /// A vector of link targets as strings.
+    fn extract_links(content: &str) -> Vec<String> {
+        let mut links = Vec::new();
+        let re = regex::Regex::new(r"\[\[(.*?)\]\]").unwrap();
+        for cap in re.captures_iter(content) {
+            if let Some(link) = cap.get(1) {
+                links.push(link.as_str().to_string());
+            }
+        }
+        links
+    }
+
+    /// Calculates the force-directed layout using GPUCompute.
+    ///
+    /// # Arguments
+    ///
+    /// * `gpu_compute` - Reference to the GPUCompute instance.
+    /// * `graph` - Mutable reference to the GraphData to be updated.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` indicating success or failure.
+    async fn calculate_layout(gpu_compute: &Arc<RwLock<GPUCompute>>, graph: &mut GraphData) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        // Set the graph data in GPUCompute
+        let mut gpu_compute = gpu_compute.write().await; // Acquire write lock
+        gpu_compute.set_graph_data(graph)?;
+        
+        // Perform force calculations
+        gpu_compute.compute_forces()?;
+
+        // Update node positions
+        gpu_compute.update_positions()?;
+
+        // Retrieve updated positions from GPUCompute
+        let updated_nodes = gpu_compute.get_updated_positions().await?;
+
+        // Update graph nodes with new positions
+        for (i, node) in graph.nodes.iter_mut().enumerate() {
+            node.x = updated_nodes[i].x;
+            node.y = updated_nodes[i].y;
+            node.z = updated_nodes[i].z;
+            node.vx = updated_nodes[i].vx;
+            node.vy = updated_nodes[i].vy;
+            node.vz = updated_nodes[i].vz;
+        }
+
+        Ok(())
+    }
+}
+File: ./services/mod.rs
+pub mod file_service;
+pub mod graph_service;
+pub mod ragflow_service;
+pub mod perplexity_service;File: ./services/ragflow_service.rs
+// src/services/ragflow_service.rs
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct Message {
+    pub conversation_id: Option<String>,
+    pub message: String,
+    pub content: String,
+}
+
+pub struct RAGFlowService;
+
+impl RAGFlowService {
+    pub async fn create_conversation(user_id: String) -> Result<String, reqwest::Error> {
+        // Placeholder implementation
+        Ok(format!("Conversation created for user: {}", user_id))
+    }
+
+    pub async fn send_message(conversation_id: String, message: String) -> Result<String, reqwest::Error> {
+        // Placeholder implementation
+        Ok(format!("Message sent to conversation {}: {}", conversation_id, message))
+    }
+
+    pub async fn get_chat_history(conversation_id: String) -> Result<Vec<Message>, reqwest::Error> {
+        // Placeholder implementation
+        Ok(vec![Message {
+            conversation_id: Some(conversation_id.clone()),
+            message: String::new(), // Empty string as a placeholder
+            content: format!("Chat history for conversation: {}", conversation_id)
+        }])
+    }
+}
+File: ./lib.rs
+pub mod app_state;
+pub mod config;
+pub mod handlers;
+pub mod models;
+pub mod services;
+pub mod utils;
+
+// Re-export commonly used types
+pub use app_state::AppState;
+pub use models::graph::GraphData;
+pub use models::edge::Edge;
+pub use models::node::Node;
+pub use models::metadata::Metadata;
+pub use services::file_service::{FileService, GitHubService, GithubFile, ProcessedFile};
+pub use services::perplexity_service::{
+    PerplexityRequest,
+    PerplexityError,
+    call_perplexity_api,
+    process_markdown,
+    PerplexityService,
+    clean_logseq_links,
+    process_markdown_block,
+    select_context_blocks,
+    PerplexityResponse,
+    Message as PerplexityMessage,
+    Choice,
+    Delta,
+    Usage,
+};
+
+// Re-export config
+pub use config::Settings;
+
+// Re-export GPUCompute
+pub use utils::gpu_compute::GPUCompute;

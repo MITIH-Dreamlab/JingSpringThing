@@ -2,7 +2,7 @@
 
 use actix_web::{web, HttpResponse};
 use crate::AppState;
-use crate::services::file_service::{FileService, ProcessedFile};
+use crate::services::file_service::FileService;
 use crate::services::graph_service::GraphService;
 use log::{info, error, debug};
 use serde_json::json;
@@ -49,7 +49,7 @@ pub async fn fetch_and_process_files(state: web::Data<AppState>) -> HttpResponse
             match GraphService::build_graph(&state).await {
                 Ok(graph_data) => {
                     let mut graph = state.graph_data.write().await;
-                    *graph = graph_data;
+                    *graph = graph_data.clone();
                     info!("Graph data structure updated successfully");
 
                     // Broadcast the updated graph to connected WebSocket clients

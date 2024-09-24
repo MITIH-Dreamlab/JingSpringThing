@@ -3,13 +3,15 @@
 use actix_web::{web, App, HttpServer, middleware};
 use crate::handlers::{file_handler, graph_handler, ragflow_handler};
 use crate::config::Settings;
-use crate::AppState;
+use crate::app_state::AppState;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use std::collections::HashMap;
-use crate::services::file_service::GitHubService;
+use crate::services::file_service::{GitHubService, RealGitHubService};
+use crate::services::perplexity_service::{PerplexityService, PerplexityServiceImpl}; 
 use crate::models::graph::GraphData;
 use crate::utils::websocket_manager::WebSocketManager;
+use crate::utils::gpu_compute::GPUCompute;
 
 mod app_state;
 mod config;
@@ -34,16 +36,22 @@ async fn main() -> std::io::Result<()> {
     // Initialise shared application state.
     let file_cache = Arc::new(RwLock::new(HashMap::new()));
     let graph_data = Arc::new(RwLock::new(GraphData::default()));
-    let github_service = Arc::new(GitHubService::new());
+    let github_service: Arc<dyn GitHubService + Send + Sync> = Arc::new(RealGitHubService::new());
+    let perplexity_service: PerplexityServiceImpl = PerplexityServiceImpl::new();
     let websocket_manager = Arc::new(WebSocketManager::new());
+    
+    // Initialize GPUCompute
+    let gpu_compute = Arc::new(RwLock::new(GPUCompute::new().await.expect("Failed to initialize GPUCompute"))); 
 
-    let app_state = web::Data::new(AppState {
-        settings,
-        file_cache,
+    let app_state = web::Data::new(AppState::new(
         graph_data,
+        file_cache,
+        settings,
         github_service,
+        perplexity_service,
         websocket_manager,
-    });
+        gpu_compute,
+    ));
 
     // Start HTTP server.
     HttpServer::new(move || {

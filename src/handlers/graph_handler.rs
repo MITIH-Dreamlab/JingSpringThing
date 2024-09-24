@@ -2,9 +2,8 @@
 
 use actix_web::{web, HttpResponse, Responder};
 use crate::AppState;
-use crate::services::graph_service::GraphService;
 use serde::Serialize;
-use log::{info, error};
+use log::info;
 
 /// Struct to serialize GraphData for HTTP responses.
 #[derive(Serialize)]

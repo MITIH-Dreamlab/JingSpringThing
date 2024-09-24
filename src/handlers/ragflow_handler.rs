@@ -1,19 +1,8 @@
-// src/handlers/ragflow_handler.rs
-
 use actix_web::{web, HttpResponse};
 use crate::AppState;
 use serde::{Deserialize, Serialize};
-use crate::services::ragflow_service::RAGFlowService;
+use crate::services::ragflow_service::{RAGFlowService, Message};
 use log::{info, error};
-
-/// Represents a chat message.
-#[derive(Deserialize, Serialize)]
-pub struct Message {
-    /// Optional conversation ID to associate the message with a specific chat.
-    pub conversation_id: Option<String>,
-    /// Content of the message.
-    pub message: String,
-}
 
 /// Response structure for sending messages.
 #[derive(Serialize)]
@@ -58,8 +47,8 @@ pub struct ChatHistoryResponse {
 ///
 /// An HTTP response containing the RAGFlow service's response or an error.
 pub async fn send_message(state: web::Data<AppState>, msg: web::Json<Message>) -> HttpResponse {
-    let conversation_id = msg.conversation_id.clone().unwrap_or_else(|| "default".to_string());
-    let message_content = msg.message.clone();
+    let conversation_id = msg.0.conversation_id.clone().unwrap_or_else(|| "default".to_string());
+    let message_content = msg.0.message.clone();
 
     info!("Sending message to RAGFlow: {}", message_content);
 

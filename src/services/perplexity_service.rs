@@ -1,5 +1,3 @@
-// services/perplexity_service.rs
-
 use std::io;
 use regex::Regex;
 use serde::{Serialize, Deserialize};
@@ -393,7 +391,6 @@ pub fn process_markdown_block(input: &str, prompt: &str, topics: &[String], api_
         api_response
     )
 }
-
 #[async_trait]
 pub trait PerplexityService: Send + Sync {
     /// Processes a file's content using the Perplexity API.
@@ -407,16 +404,23 @@ pub trait PerplexityService: Send + Sync {
     /// # Returns
     ///
     /// A `Result` containing the processed file or an error.
-    async fn process_file(file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError>;
+    async fn process_file(&self, file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError>; // Added &self
 }
 
 /// Implementation of the PerplexityService.
 pub struct PerplexityServiceImpl;
 
+impl PerplexityServiceImpl {
+    pub fn new() -> Self { // Added new function
+        Self {}
+    }
+}
+
+
 #[async_trait]
 impl PerplexityService for PerplexityServiceImpl {
-    async fn process_file(file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError> {
+    async fn process_file(&self, file_content: String, settings: &Settings, api_client: &dyn ApiClient) -> Result<ProcessedFile, PerplexityError> {
         let processed_content = process_markdown(&file_content, settings, api_client).await?;
-        Ok(ProcessedFile { content: processed_content })
+        Ok(ProcessedFile { file_name: "processed.md".to_string(), content: processed_content }) // Return Ok(...)
     }
 }

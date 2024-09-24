@@ -1,22 +1,23 @@
 // websocket_manager.rs
 
+
 use actix_web::{web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use actix::prelude::*;
 use crate::AppState;
-use serde_json::json;
-use log::{info, error};
+use log::info;
+use std::sync::{Mutex}; // Import Mutex
 
 /// Manages WebSocket connections and broadcasts updates to connected clients.
 pub struct WebSocketManager {
-    pub sessions: Vec<Addr<WebSocketSession>>,
+    pub sessions: Mutex<Vec<Addr<WebSocketSession>>>, // Use Mutex to wrap the sessions vector
 }
 
 impl WebSocketManager {
     /// Creates a new WebSocketManager instance.
     pub fn new() -> Self {
         WebSocketManager {
-            sessions: Vec::new(),
+            sessions: Mutex::new(Vec::new()), // Initialize the Mutex with an empty vector
         }
     }
 
@@ -29,7 +30,8 @@ impl WebSocketManager {
 
     /// Broadcasts a message to all connected WebSocket clients.
     pub fn broadcast_message(&self, message: &str) {
-        for session in &self.sessions {
+        let sessions = self.sessions.lock().unwrap(); // Lock the Mutex to access the sessions vector
+        for session in &*sessions { // Iterate over the sessions
             session.do_send(BroadcastMessage(message.to_string()));
         }
     }
@@ -54,16 +56,16 @@ impl Actor for WebSocketSession {
     fn started(&mut self, ctx: &mut Self::Context) {
         // Add the session's address to the WebSocketManager's sessions list.
         let addr = ctx.address();
-        self.state.websocket_manager.sessions.push(addr);
-        info!("WebSocket session started. Total sessions: {}", self.state.websocket_manager.sessions.len());
+        self.state.websocket_manager.sessions.lock().unwrap().push(addr); // Lock the mutex
+        info!("WebSocket session started. Total sessions: {}", self.state.websocket_manager.sessions.lock().unwrap().len()); // Lock the mutex
     }
 
     /// Called when the WebSocket session is stopped.
     fn stopped(&mut self, ctx: &mut Self::Context) {
         // Remove the session from the manager.
         let addr = ctx.address();
-        self.state.websocket_manager.sessions.retain(|session| session != &addr);
-        info!("WebSocket session stopped. Total sessions: {}", self.state.websocket_manager.sessions.len());
+        self.state.websocket_manager.sessions.lock().unwrap().retain(|session| session != &addr); // Lock the mutex
+        info!("WebSocket session stopped. Total sessions: {}", self.state.websocket_manager.sessions.lock().unwrap().len()); // Lock the mutex
     }
 }
 
