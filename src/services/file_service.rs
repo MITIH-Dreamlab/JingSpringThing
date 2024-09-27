@@ -1,7 +1,7 @@
 // src/services/file_service.rs
 
 use crate::models::metadata::Metadata;
-use crate::config::{Settings, GitHubConfig};
+use crate::config::Settings;
 use crate::services::perplexity_service::{PerplexityService, PerplexityServiceImpl, ApiClientImpl};
 use serde::{Deserialize, Serialize};
 use reqwest::Client;
@@ -12,6 +12,7 @@ use sha1::{Sha1, Digest};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+// Removed unused import: use tokio::sync::RwLock;
 
 /// Represents a file fetched from GitHub.
 #[derive(Serialize, Deserialize, Clone)]
@@ -50,8 +51,18 @@ pub struct RealGitHubService {
 }
 
 impl RealGitHubService {
-    /// Creates a new instance of `RealGitHubService` using the provided GitHubConfig.
-    pub fn new(config: GitHubConfig) -> Self {
+    /// Creates a new instance of `RealGitHubService` by loading configuration from environment variables.
+    ///
+    /// # Panics
+    ///
+    /// Panics if required environment variables are not set.
+    pub fn new() -> Self {
+        dotenv().ok();
+        let token = env::var("GITHUB_ACCESS_TOKEN").expect("GITHUB_ACCESS_TOKEN must be set in .env");
+        let owner = env::var("GITHUB_OWNER").expect("GITHUB_OWNER must be set in .env");
+        let repo = env::var("GITHUB_REPO").expect("GITHUB_REPO must be set in .env");
+        let base_path = env::var("GITHUB_DIRECTORY").expect("GITHUB_DIRECTORY must be set in .env");
+
         Self {
             client: Client::new(),
             token: config.github_access_token,

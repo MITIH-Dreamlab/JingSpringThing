@@ -29,8 +29,7 @@ rustls-pemfile = "1.0"
 sha1 = "0.10.5"
 wgpu = "0.15"
 bytemuck = { version = "1.12", features = ["derive"] }
-futures-intrusive = "0.4"
-anyhow = "1.0"
+futures-intrusive = "0.4" 
 
 [dev-dependencies]
 mockall = "0.11"

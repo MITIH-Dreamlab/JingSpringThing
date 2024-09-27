@@ -1,3 +1,5 @@
+// src/services/ragflow_service.rs
+
 use serde::{Deserialize, Serialize};
 use reqwest::{Client, StatusCode};
 use log::{debug, error};
@@ -29,19 +31,9 @@ impl From<reqwest::Error> for RAGFlowError {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
-    pub role: String,
+    pub conversation_id: Option<String>,
+    pub message: String,
     pub content: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ChatResponse {
-    pub retcode: i32,
-    pub data: ChatResponseData,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ChatResponseData {
-    pub message: Vec<Message>,
 }
 
 pub struct RAGFlowService {
@@ -104,22 +96,12 @@ impl RAGFlowService {
         }
     }
 
-    pub async fn get_chat_history(&self, conversation_id: String) -> Result<ChatResponse, RAGFlowError> {
-        debug!("Fetching chat history for conversation: {}", conversation_id);
-        let url = format!("{}api/chat/history/{}", self.base_url, conversation_id);
-        let response = self.client.get(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .send()
-            .await?;
-
-        if response.status().is_success() {
-            let result: ChatResponse = response.json().await?;
-            Ok(result)
-        } else {
-            let status = response.status();
-            let error_message = response.text().await?;
-            error!("Failed to fetch chat history. Status: {}, Error: {}", status, error_message);
-            Err(RAGFlowError::StatusError(status, error_message))
-        }
+    pub async fn get_chat_history(conversation_id: String) -> Result<Vec<Message>, reqwest::Error> {
+        // Placeholder implementation
+        Ok(vec![Message {
+            conversation_id: Some(conversation_id.clone()),
+            message: String::new(), // Empty string as a placeholder
+            content: format!("Chat history for conversation: {}", conversation_id)
+        }])
     }
 }
