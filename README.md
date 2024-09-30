@@ -31,66 +31,142 @@ The project comprises a Rust-based server running in a Docker container and a Ja
 ```mermaid
 classDiagram
     class App {
-        -websocketService: WebsocketService
-        -graphDataManager: GraphDataManager
-        -visualization: Visualization
-        -chatManager: ChatManager
-        -interface: Interface
-        -ragflowService: RAGflowService
-        +start()
-        -initializeEventListeners()
-        -toggleFullscreen()
+        - websocketService: WebsocketService
+        - graphDataManager: GraphDataManager
+        - visualization: WebXRVisualization
+        - chatManager: ChatManager
+        - interface: Interface
+        - ragflowService: RAGflowService
+        + start()
+        - initializeEventListeners()
+        - toggleFullscreen()
     }
 
     class WebsocketService {
-        -socket: WebSocket
-        -listeners: Object
-        -reconnectAttempts: number
-        -maxReconnectAttempts: number
-        -reconnectInterval: number
-        +connect()
-        +on(event: string, callback: function)
-        +emit(event: string, data: any)
-        +send(data: object)
-        -reconnect()
+        - socket: WebSocket
+        - listeners: Object
+        - reconnectAttempts: number
+        - maxReconnectAttempts: number
+        - reconnectInterval: number
+        + connect()
+        + on(event: string, callback: function)
+        + emit(event: string, data: any)
+        + send(data: object)
+        - reconnect()
     }
 
     class GraphDataManager {
-        -websocketService: WebsocketService
-        +requestInitialData()
-        +updateGraphData(data: object)
+        - websocketService: WebsocketService
+        - graphData: GraphData
+        + requestInitialData()
+        + updateGraphData(newData: GraphData)
+        + getGraphData(): GraphData
     }
 
-    class Visualization {
-        -graphDataManager: GraphDataManager
-        +initialize()
-        +updateVisualization()
+    class WebXRVisualization {
+        - graphDataManager: GraphDataManager
+        - scene: THREE.Scene
+        - camera: THREE.PerspectiveCamera
+        - renderer: THREE.WebGLRenderer
+        - controls: OrbitControls
+        - composer: EffectComposer
+        - gpu: GPUUtilities (optional)
+        - nodeMeshes: Map<string, THREE.Mesh>
+        - edgeMeshes: Map<string, THREE.Line>
+        - hologramGroup: THREE.Group
+        - particleSystem: THREE.Points
+        + initialize()
+        + updateVisualization()
+        - initThreeJS()
+        - setupGPU()
+        - initPostProcessing()
+        - addLights()
+        - createHologramStructure()
+        - createParticleSystem()
+        - onSelect(selectedObject: THREE.Object3D)
+        - animate()
+        - rotateHologram()
+        - updateParticles()
+        - onWindowResize()
+        - getNodeColor(node: Node): THREE.Color
+        - updateNodes(nodes: Node[])
+        - updateEdges(edges: Edge[])
     }
 
     class ChatManager {
-        -websocketService: WebsocketService
-        +initialize()
-        +displayResponse(message: string)
+        - websocketService: WebsocketService
+        - chatInput: HTMLInputElement
+        - sendButton: HTMLButtonElement
+        - chatMessages: HTMLElement
+        + initialize()
+        - sendMessage()
+        - displayMessage(sender: string, message: string)
+        + displayResponse(message: string)
     }
 
     class Interface {
-        -document: Document
-        +displayErrorMessage(message: string)
+        - document: Document
+        - nodeInfoPanel: HTMLElement
+        + displayErrorMessage(message: string)
+        + updateNodeInfoPanel(node: Node)
+        - createNodeInfoPanel()
+        - setupEventListeners()
     }
 
     class RAGflowService {
-        -websocketService: WebsocketService
+        - websocketService: WebsocketService
+        + sendQuery(query: string)
+        - handleRAGFlowResponse(data: object)
+        - setupWebSocketListeners()
     }
 
+    class GraphData {
+        + nodes: Node[]
+        + edges: Edge[]
+    }
+
+    class Node {
+        + id: string
+        + label: string
+        + x: number
+        + y: number
+        + z: number
+        + metadata: any
+    }
+
+    class Edge {
+        + source: string
+        + target_node: string
+        + weight: number
+        + hyperlinks: number
+    }
+
+    class GPUCompute {
+        - device: Device
+        - queue: Queue
+        - nodes_buffer: Buffer
+        - edges_buffer: Buffer
+        + set_graph_data(graphData: GraphData)
+        + compute_forces()
+        + get_updated_positions(): Node[]
+    }
+    
     App --> WebsocketService
     App --> GraphDataManager
-    App --> Visualization
+    App --> WebXRVisualization
     App --> ChatManager
     App --> Interface
     App --> RAGflowService
     GraphDataManager --> WebsocketService
+    GraphDataManager --> GraphData
+    WebXRVisualization --> GraphDataManager
+    WebXRVisualization --> Node
+    WebXRVisualization --> Edge
+    WebXRVisualization --> GPUCompute
     ChatManager --> WebsocketService
     RAGflowService --> WebsocketService
+    GraphData --> Node
+    GraphData --> Edge
 ```
 
 ### Sequence Diagram
