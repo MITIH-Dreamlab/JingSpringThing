@@ -22,6 +22,12 @@ This application transforms a LogSeq personal knowledge base into an interactive
 - **Automatic GitHub PR Submissions** for processed content updates
 - **Comprehensive Metadata Management** for both processed and raw files
 
+## Inspiration
+
+Prof Rob Aspin (Lancester) 
+![image](https://github.com/user-attachments/assets/63e89ea8-dc8f-40f1-9d45-220346eb69ef)
+
+
 ## Architecture
 
 The project comprises a Rust-based server running in a Docker container and a JavaScript client-side application. The architecture has been enhanced to support GPU acceleration, efficient real-time updates, and immersive AR experiences.
