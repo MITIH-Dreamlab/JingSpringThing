@@ -6,60 +6,91 @@ use dotenv::dotenv;
 use std::path::Path;
 use std::fs::File as StdFile;
 use std::io::{BufRead, BufReader};
-use log::{info, error, debug};
+use log::{info, error};
 use std::env;
 
+/// Represents the application settings loaded from configuration files 
+/// and environment variables.
 #[derive(Debug, Deserialize)]
 pub struct Settings {
+    /// The prompt used for AI interactions.
     pub prompt: String,
+    /// A list of topics loaded from a CSV file.
     #[serde(skip)]
     pub topics: Vec<String>,
+    /// Configuration settings for Perplexity AI integration.
     pub perplexity: PerplexityConfig,
-    #[serde(default)]
+    /// Configuration settings for RAGFlow integration.
+    #[serde(default)] 
     pub ragflow: RAGFlowConfig,
-    #[serde(default)]
+    /// Configuration settings for GitHub integration.
+    #[serde(default)] 
     pub github: GitHubConfig,
+    /// Default configuration settings.
     pub default: DefaultConfig,
 }
 
+/// Configuration for Perplexity AI API integration.
 #[derive(Debug, Deserialize, Clone)]
 pub struct PerplexityConfig {
-    pub perplexity_api_key: String,
-    pub perplexity_model: String,
-    pub perplexity_api_base_url: String,
-    pub perplexity_max_tokens: u32,
-    pub perplexity_temperature: f32,
-    pub perplexity_top_p: f32,
-    pub perplexity_presence_penalty: f32,
-    pub perplexity_frequency_penalty: f32,
+    /// API key for authenticating with Perplexity AI.
+    pub api_key: String,
+    /// Model name to be used with Perplexity AI.
+    pub model: String,
+    /// Base URL for Perplexity AI API.
+    pub api_base_url: String,
+    /// Maximum number of tokens for responses.
+    pub max_tokens: u32,
+    /// Sampling temperature for response generation.
+    pub temperature: f32,
+    /// Top-p sampling parameter.
+    pub top_p: f32,
+    /// Penalty for presence of new tokens.
+    pub presence_penalty: f32,
+    /// Penalty for frequency of existing tokens.
+    pub frequency_penalty: f32,
 }
 
+/// Configuration for RAGFlow integration.
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct RAGFlowConfig {
-    pub ragflow_api_key: String,
-    pub ragflow_api_base_url: String,
+    /// API key for authenticating with RAGFlow.
+    pub api_key: String,
+    /// Base URL for RAGFlow API.
+    pub api_base_url: String,
 }
 
+/// Configuration for GitHub API integration.
 #[derive(Debug, Deserialize, Clone, Default)]
 pub struct GitHubConfig {
-    pub github_access_token: String,
-    pub github_owner: String,
-    pub github_repo: String,
-    pub github_directory: String,
+    /// Personal Access Token for GitHub API.
+    pub access_token: String,
+    /// GitHub repository owner.
+    pub owner: String,
+    /// GitHub repository name.
+    pub repo: String,
+    /// Directory within the repository to fetch files from.
+    pub directory: String,
 }
 
+/// Default configuration settings.
 #[derive(Debug, Deserialize)]
 pub struct DefaultConfig {
+    /// Maximum number of concurrent API requests.
     pub max_concurrent_requests: u32,
+    /// Maximum number of retries for failed API requests.
     pub max_retries: u32,
+    /// Delay between retries in seconds.
     pub retry_delay: u64,
+    /// Timeout for API client in seconds.
     pub api_client_timeout: u64,
 }
 
 impl Settings {
-    /// Creates a new `Settings` instance by loading configurations from files and environment variables.
+    /// Creates a new `Settings` instance by loading configuration from 
+    /// files and environment variables.
     pub fn new() -> Result<Self, ConfigError> {
-        // Load environment variables from .env file if it exists
+        // Load environment variables from .env file.
         dotenv().ok();
         debug!("Loaded .env file");
 
@@ -69,7 +100,7 @@ impl Settings {
         // Initialize the configuration builder
         let mut builder = Config::builder();
 
-        // Path to the default settings file
+        // Load default settings from settings.toml in the current directory.
         let base_settings_path = Path::new("settings.toml");
         if base_settings_path.exists() {
             info!("Loading default settings from {:?}", base_settings_path);
@@ -79,261 +110,104 @@ impl Settings {
             return Err(ConfigError::NotFound("settings.toml".into()));
         }
 
-        // Add environment variables to the configuration, using '_' as a separator
-        builder = builder.add_source(Environment::default().separator("_"));
+        // Load environment variables, overriding settings from files.
+        builder = builder.add_source(Environment::default().separator("__"));
         info!("Loading environment variables");
 
         // Build the configuration
         let config = builder.build()?;
         info!("Raw configuration: {:#?}", config);
 
-        // Clone the config before deserializing to retain ownership for later use
-        let config_clone = config.clone();
-        let mut settings: Settings = config_clone.try_deserialize()?;
+        // Deserialize into Settings struct.
+        let mut settings: Settings = config_map.try_deserialize()?;
 
-        // Load and override specific configurations from environment variables or other sources
-        settings.load_github_config(&config)?;
-        settings.load_ragflow_config(&config)?;
-        settings.load_perplexity_config(&config)?;
-        settings.load_default_config(&config)?;
-        settings.load_topics_from_csv("data/topics.csv")?;
+        // Manually override settings with environment variables if present
+        // GitHub Config
+        if let Ok(access_token) = env::var("GITHUB__ACCESS_TOKEN") {
+            settings.github.access_token = access_token;
+        }
+        if let Ok(owner) = env::var("GITHUB__OWNER") {
+            settings.github.owner = owner;
+        }
+        if let Ok(repo) = env::var("GITHUB__REPO") {
+            settings.github.repo = repo;
+        }
+        if let Ok(directory) = env::var("GITHUB__DIRECTORY") {
+            settings.github.directory = directory;
+        }
+        // RAGFlow Config
+        if let Ok(api_key) = env::var("RAGFLOW__API_KEY") {
+            settings.ragflow.api_key = api_key;
+        }
+        if let Ok(base_url) = env::var("RAGFLOW__BASE_URL") {
+            settings.ragflow.api_base_url = base_url;
+        }
+        // Perplexity Config
+        if let Ok(api_key) = env::var("PERPLEXITY__API_KEY") {
+            settings.perplexity.api_key = api_key;
+        }
+        if let Ok(model) = env::var("PERPLEXITY__MODEL") {
+            settings.perplexity.model = model;
+        }
+        if let Ok(api_base_url) = env::var("PERPLEXITY__API_URL") {
+            settings.perplexity.api_base_url = api_base_url;
+        }
+        if let Ok(max_tokens) = env::var("PERPLEXITY__MAX_TOKENS").map(|s| s.parse::<u32>()) {
+            if let Ok(max_tokens) = max_tokens {
+                settings.perplexity.max_tokens = max_tokens;
+            }
+        }
+        if let Ok(temperature) = env::var("PERPLEXITY__TEMPERATURE").map(|s| s.parse::<f32>()) {
+            if let Ok(temperature) = temperature {
+                settings.perplexity.temperature = temperature;
+            }
+        }
+        if let Ok(top_p) = env::var("PERPLEXITY__TOP_P").map(|s| s.parse::<f32>()) {
+            if let Ok(top_p) = top_p {
+                settings.perplexity.top_p = top_p;
+            }
+        }
+        if let Ok(presence_penalty) = env::var("PERPLEXITY__PRESENCE_PENALTY").map(|s| s.parse::<f32>()) {
+            if let Ok(presence_penalty) = presence_penalty {
+                settings.perplexity.presence_penalty = presence_penalty;
+            }
+        }
+        if let Ok(frequency_penalty) = env::var("PERPLEXITY__FREQUENCY_PENALTY").map(|s| s.parse::<f32>()) {
+            if let Ok(frequency_penalty) = frequency_penalty {
+                settings.perplexity.frequency_penalty = frequency_penalty;
+            }
+        }
 
+        // Load topics from CSV file using a relative path.
+        settings.topics = Self::load_topics_from_csv("data/topics.csv")?;
         info!("Loaded topics: {:?}", settings.topics);
         info!("Final parsed configuration: {:#?}", settings);
 
         Ok(settings)
     }
 
-    /// Loads and updates the GitHub configuration.
-    fn load_github_config(&mut self, config: &Config) -> Result<(), ConfigError> {
-        debug!("Loading GitHub config...");
-
-        // Attempt to load each GitHub configuration from environment variables first, then from the config file
-        let access_token = env::var("GITHUB_ACCESS_TOKEN")
-            .or_else(|_| config.get_string("github.github_access_token"))
-            .unwrap_or_default();
-
-        let github_owner = env::var("GITHUB_OWNER")
-            .or_else(|_| config.get_string("github.github_owner"))
-            .unwrap_or_default();
-
-        let github_repo = env::var("GITHUB_REPO")
-            .or_else(|_| config.get_string("github.github_repo"))
-            .unwrap_or_default();
-
-        let github_directory = env::var("GITHUB_DIRECTORY")
-            .or_else(|_| config.get_string("github.github_directory"))
-            .unwrap_or_default();
-
-        // Update the `github` field of `Settings`
-        self.github = GitHubConfig {
-            github_access_token: access_token,
-            github_owner,
-            github_repo,
-            github_directory,
-        };
-
-        debug!("Loaded GitHub config: {:?}", self.github);
-
-        // Validate that the GitHub access token is present
-        if self.github.github_access_token.is_empty() {
-            error!("GitHub Access Token is empty");
-            return Err(ConfigError::NotFound("github.github_access_token".into()));
-        }
-
-        Ok(())
-    }
-
-    /// Loads and updates the RAGFlow configuration.
-    fn load_ragflow_config(&mut self, config: &Config) -> Result<(), ConfigError> {
-        debug!("Loading RAGFlow config...");
-
-        // Attempt to load RAGFlow API key and base URL from environment variables first, then from the config file
-        let api_key = env::var("RAGFLOW_API_KEY")
-            .or_else(|_| config.get_string("ragflow.ragflow_api_key"))
-            .unwrap_or_default();
-
-        let base_url = env::var("RAGFLOW_API_BASE_URL") // Ensure the environment variable name matches your setup
-            .or_else(|_| config.get_string("ragflow.ragflow_api_base_url"))
-            .unwrap_or_default();
-
-        // Update the `ragflow` field of `Settings`
-        self.ragflow = RAGFlowConfig {
-            ragflow_api_key: api_key,
-            ragflow_api_base_url: base_url,
-        };
-
-        debug!("Loaded RAGFlow config: {:?}", self.ragflow);
-
-        // Validate that the RAGFlow API key is present
-        if self.ragflow.ragflow_api_key.is_empty() {
-            error!("RAGFlow API key is empty");
-            return Err(ConfigError::NotFound("ragflow.ragflow_api_key".into()));
-        }
-
-        Ok(())
-    }
-
-    /// Loads and updates the Perplexity configuration.
-    fn load_perplexity_config(&mut self, config: &Config) -> Result<(), ConfigError> {
-        debug!("Loading Perplexity config...");
-
-        // Attempt to load each Perplexity configuration from environment variables first, then from the config file
-        let api_key = env::var("PERPLEXITY_API_KEY")
-            .or_else(|_| config.get_string("perplexity.perplexity_api_key"))
-            .unwrap_or_default();
-
-        let perplexity_model = env::var("PERPLEXITY_MODEL")
-            .or_else(|_| config.get_string("perplexity.perplexity_model"))
-            .unwrap_or_default();
-
-        let perplexity_api_base_url = env::var("PERPLEXITY_API_URL") // Ensure the environment variable name matches your setup
-            .or_else(|_| config.get_string("perplexity.perplexity_api_base_url"))
-            .unwrap_or_default();
-
-        let perplexity_max_tokens = env::var("PERPLEXITY_MAX_TOKENS")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_int("perplexity.perplexity_max_tokens").unwrap_or(4096) as u32);
-
-        let perplexity_temperature = env::var("PERPLEXITY_TEMPERATURE")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_float("perplexity.perplexity_temperature").unwrap_or(0.7) as f32);
-
-        let perplexity_top_p = env::var("PERPLEXITY_TOP_P")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_float("perplexity.perplexity_top_p").unwrap_or(1.0) as f32);
-
-        let perplexity_presence_penalty = env::var("PERPLEXITY_PRESENCE_PENALTY")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_float("perplexity.perplexity_presence_penalty").unwrap_or(0.0) as f32);
-
-        let perplexity_frequency_penalty = env::var("PERPLEXITY_FREQUENCY_PENALTY")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_float("perplexity.perplexity_frequency_penalty").unwrap_or(0.0) as f32);
-
-        // Update the `perplexity` field of `Settings`
-        self.perplexity = PerplexityConfig {
-            perplexity_api_key: api_key,
-            perplexity_model,
-            perplexity_api_base_url,
-            perplexity_max_tokens,
-            perplexity_temperature,
-            perplexity_top_p,
-            perplexity_presence_penalty,
-            perplexity_frequency_penalty,
-        };
-
-        debug!("Loaded Perplexity config: {:?}", self.perplexity);
-
-        // Validate that the Perplexity API key is present
-        if self.perplexity.perplexity_api_key.is_empty() {
-            error!("Perplexity API key is empty");
-            return Err(ConfigError::NotFound("perplexity.perplexity_api_key".into()));
-        }
-
-        Ok(())
-    }
-
-    /// Loads and updates the Default configuration.
-    fn load_default_config(&mut self, config: &Config) -> Result<(), ConfigError> {
-        debug!("Loading Default config...");
-
-        // Attempt to load each Default configuration from environment variables first, then from the config file
-        let max_concurrent_requests = env::var("DEFAULT_MAX_CONCURRENT_REQUESTS")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_int("default.max_concurrent_requests").unwrap_or(10) as u32);
-
-        let max_retries = env::var("DEFAULT_MAX_RETRIES")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_int("default.max_retries").unwrap_or(3) as u32);
-
-        let retry_delay = env::var("DEFAULT_RETRY_DELAY")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_int("default.retry_delay").unwrap_or(1000) as u64);
-
-        let api_client_timeout = env::var("DEFAULT_API_CLIENT_TIMEOUT")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or_else(|| config.get_int("default.api_client_timeout").unwrap_or(5000) as u64);
-
-        // Update the `default` field of `Settings`
-        self.default = DefaultConfig {
-            max_concurrent_requests,
-            max_retries,
-            retry_delay,
-            api_client_timeout,
-        };
-
-        debug!("Loaded Default config: {:?}", self.default);
-
-        Ok(())
-    }
-
-    /// Loads topics from a CSV file and updates the `topics` field.
-    fn load_topics_from_csv(&mut self, file_path: &str) -> Result<(), ConfigError> {
-        debug!("Loading topics from CSV at path: {}", file_path);
-
-        // Log the absolute path
-        let absolute_path = std::fs::canonicalize(file_path).map_err(|e| {
-            error!("Failed to get absolute path for {}: {}", file_path, e);
-            ConfigError::Message(format!("Failed to get absolute path: {}", e))
-        })?;
-        debug!("Absolute path of topics.csv: {:?}", absolute_path);
-
-        // Check if the file exists
-        if !absolute_path.exists() {
-            error!("topics.csv does not exist at {:?}", absolute_path);
-            return Err(ConfigError::Message(format!("topics.csv does not exist at {:?}", absolute_path)));
-        }
-
-        // Attempt to open the CSV file
-        let file = StdFile::open(&absolute_path).map_err(|e| {
-            error!("Failed to open topics.csv at {:?}: {}", absolute_path, e);
+    /// Loads topics from a CSV file.
+    fn load_topics_from_csv(file_path: &str) -> Result<Vec<String>, ConfigError> {
+        let file = StdFile::open(file_path).map_err(|e| {
+            error!("Failed to open topics.csv: {}", e);
             ConfigError::Message(format!(
-                "Failed to open topics.csv at {:?}: {}. Make sure the file exists and has correct permissions.",
-                absolute_path, e
+                "Failed to open topics.csv: {}. Make sure the file exists in the 'data' directory.",
+                e
             ))
         })?;
 
         let reader = BufReader::new(file);
         let topics: Vec<String> = reader
             .lines()
-            .enumerate()
-            .filter_map(|(i, line)| {
-                match line {
-                    Ok(l) => {
-                        let trimmed = l.trim().to_string();
-                        if trimmed.is_empty() {
-                            debug!("Skipping empty line {} in topics.csv", i + 1);
-                            None
-                        } else {
-                            Some(trimmed)
-                        }
-                    },
-                    Err(e) => {
-                        error!("Error reading line {} from topics.csv: {}", i + 1, e);
-                        None
-                    }
-                }
-            })
+            .filter_map(Result::ok)
+            .map(|line| line.trim().to_string())
+            .filter(|line| !line.is_empty())
             .collect();
 
-        // Update the `topics` field of `Settings`
-        self.topics = topics;
-
-        // Validate that at least one topic was loaded
-        if self.topics.is_empty() {
-            error!("No topics found in topics.csv at {:?}", absolute_path);
+        if topics.is_empty() {
+            error!("No topics found in topics.csv");
             Err(ConfigError::Message(
-                format!("No topics found in topics.csv at {:?}", absolute_path)
+                "No topics found in topics.csv".to_string(),
             ))
         } else {
             debug!("Successfully loaded {} topics from {:?}", self.topics.len(), absolute_path);

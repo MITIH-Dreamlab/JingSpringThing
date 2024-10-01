@@ -113,7 +113,7 @@ impl GraphService {
         debug!("Sample node data: {:?}", graph.nodes.first());
         debug!("Sample edge data: {:?}", graph.edges.first());
 
-        // Calculate layout using GPU if available, otherwise fall back to CPU
+        // Use GPUCompute to calculate force-directed layout
         Self::calculate_layout(&state.gpu_compute, &mut graph).await?;
         
         debug!("Final sample node data after layout calculation: {:?}", graph.nodes.first());
@@ -143,11 +143,11 @@ impl GraphService {
         links
     }
 
-    /// Calculates the force-directed layout using GPUCompute if available, otherwise falls back to CPU.
+    /// Calculates the force-directed layout using GPUCompute.
     ///
     /// # Arguments
     ///
-    /// * `gpu_compute` - Optional reference to the GPUCompute instance.
+    /// * `gpu_compute` - Reference to the GPUCompute instance.
     /// * `graph` - Mutable reference to the GraphData to be updated.
     ///
     /// # Returns

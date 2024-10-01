@@ -4,7 +4,8 @@
 
 ![Old Graph Visualization](https://github.com/user-attachments/assets/fcbd6eb1-e2a1-4fea-a3df-4303b17e2b48)
 
-![Old Architecture Diagram](https://github.com/user-attachments/assets/873809d5-d8bd-44c3-884c-ce9418e273ef)
+![image](https://github.com/user-attachments/assets/8dc7ed03-1d2d-42cf-a321-75f74c9c1453)
+
 
 ## Project Overview
 
@@ -21,6 +22,12 @@ This application transforms a LogSeq personal knowledge base into an interactive
 - **Spacemouse Support** for intuitive navigation in immersive environments
 - **Automatic GitHub PR Submissions** for processed content updates
 - **Comprehensive Metadata Management** for both processed and raw files
+
+## Inspiration
+
+Prof Rob Aspin (Lancester) 
+![image](https://github.com/user-attachments/assets/63e89ea8-dc8f-40f1-9d45-220346eb69ef)
+
 
 ## Architecture
 

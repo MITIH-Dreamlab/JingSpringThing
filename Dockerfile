@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y \
     libegl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust
+# Install Rust using rustup
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
@@ -48,8 +48,8 @@ RUN rustup default stable
 
 WORKDIR /usr/src/app
 
-# Copy the Cargo.toml and Cargo.lock files
-COPY Cargo.toml Cargo.lock ./ 
+# Copy the Cargo.toml and Cargo.lock files to leverage Docker cache
+COPY Cargo.toml Cargo.lock ./
 
 # Copy the source code
 COPY src ./src 
@@ -60,7 +60,7 @@ COPY settings.toml ./
 # Build the Rust application in release mode for optimized performance
 RUN cargo build --release
 
-# Stage 3: Create the Final Image
+# Final stage: Create a minimal runtime image
 FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Install necessary runtime dependencies, nginx, and GPU libraries
@@ -90,6 +90,9 @@ COPY --from=frontend-builder /app/data/public/dist /app/data/public/dist
 
 # Copy settings.toml from the backend-builder stage
 COPY --from=backend-builder /usr/src/app/settings.toml /app/settings.toml
+
+# Copy the data directory
+COPY data /app/data
 
 # Set up a persistent volume for Markdown files to ensure data persistence
 VOLUME ["/app/data/markdown"]
