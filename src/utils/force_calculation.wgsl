@@ -23,10 +23,11 @@ struct EdgesBuffer {
 
 // Parameters for the simulation.
 struct SimulationParams {
+    iterations: u32,
     repulsion_strength: f32,
     attraction_strength: f32,
     damping: f32,
-    delta_time: f32,
+    padding: u32,
 }
 
 // Uniform buffer containing simulation parameters.
@@ -96,10 +97,10 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
         }
 
         // Apply damping to velocity.
-        node.velocity = (node.velocity + force * simulation_params.delta_time) * simulation_params.damping;
+        node.velocity = (node.velocity + force) * simulation_params.damping;
 
         // Update node's position.
-        node.position = node.position + node.velocity * simulation_params.delta_time;
+        node.position = node.position + node.velocity;
 
         // Ensure final position and velocity are valid
         if (!is_valid_float3(node.position)) {

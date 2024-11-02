@@ -1,13 +1,9 @@
-
 # WebXR Graph Visualization of Logseq Knowledge Graphs with RAGFlow Integration
 
 ![WebXR Graph Visualization](https://github.com/user-attachments/assets/39dd3101-d616-46d6-8d7a-1d02998eb8d9)
 
 Inspired by Prof Rob Aspin's work 
 https://github.com/trebornipsa
-
-Integrates Sonata rust wrapper for Piper
-https://github.com/mush42/sonata
 
 ![P1080785_1728030359430_0](https://github.com/user-attachments/assets/3ecac4a3-95d7-4c75-a3b2-e93deee565d6)
 
@@ -34,7 +30,10 @@ https://github.com/mush42/sonata
 - **Spacemouse Support:** Offers intuitive navigation within immersive environments.
 - **Automatic GitHub PR Submissions:** Streamlines the process of updating processed content back to GitHub.
 - **Comprehensive Metadata Management:** Handles both processed and raw JSON metadata for enhanced data representation.
+- **OpenAI Integration:** Provides text-to-speech capabilities for enhanced accessibility.
 
+[Rest of the README content remains unchanged...]
+=======
 ## Architecture
 
 The project comprises a **Rust-based server** running within a Docker container and a **JavaScript client-side application**. The architecture emphasizes GPU acceleration, efficient real-time updates, and immersive AR experiences.

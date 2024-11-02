@@ -3,7 +3,7 @@
 import { createApp } from 'vue';
 import ControlPanel from './components/ControlPanel.vue';
 import ChatManager from './components/chatManager.vue';
-import { WebXRVisualization } from './components/webXRVisualization.js';
+import { WebXRVisualization } from './components/visualization/core.js';  // Updated import path
 import WebsocketService from './services/websocketService.js';
 import { GraphDataManager } from './services/graphDataManager.js';
 import { isGPUAvailable, initGPU } from './gpuUtils.js';
@@ -75,10 +75,12 @@ class App {
                 ControlPanel,
                 ChatManager
             },
-            data() {
+            setup: () => {
+                // Provide the services directly in setup
                 return {
-                    websocketService: null,
-                    visualization: null
+                    websocketService: this.websocketService,
+                    visualization: this.visualization,
+                    graphDataManager: this.graphDataManager
                 };
             },
             template: `
@@ -95,42 +97,46 @@ class App {
             methods: {
                 handleControlChange(data) {
                     console.log('Control changed:', data.name, data.value);
-                    this.updateVisualization(data);
-                },
-                updateVisualization(change) {
                     if (this.visualization) {
-                        console.log('Updating visualization:', change);
-                        this.visualization.updateVisualFeatures({ [change.name]: change.value });
+                        console.log('Updating visualization:', data);
+                        
+                        // Handle force-directed graph parameters
+                        if (data.name === 'forceDirectedIterations' || 
+                            data.name === 'forceDirectedRepulsion' || 
+                            data.name === 'forceDirectedAttraction') {
+                            this.updateForceDirectedParams(data.name, data.value);
+                        } else {
+                            // Pass name and value separately to updateVisualFeatures
+                            this.visualization.updateVisualFeatures(data.name, data.value);
+                        }
                     } else {
                         console.error('Cannot update visualization: not initialized');
                     }
                 },
-                toggleFullscreen() {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch((err) => {
-                            console.error(`Error attempting to enable fullscreen: ${err.message}`);
-                        });
+                updateForceDirectedParams(name, value) {
+                    if (this.graphDataManager) {
+                        // Update the force-directed parameters in the graph data manager
+                        this.graphDataManager.updateForceDirectedParams(name, value);
+                        
+                        // Trigger a recalculation of the graph layout
+                        this.graphDataManager.recalculateLayout();
+                        
+                        // Update the visualization with the new layout
+                        this.visualization.updateVisualization();
                     } else {
-                        if (document.exitFullscreen) {
-                            document.exitFullscreen().catch((err) => {
-                                console.error(`Error attempting to exit fullscreen: ${err.message}`);
-                            });
-                        }
+                        console.error('Cannot update force-directed parameters: GraphDataManager not initialized');
+                    }
+                },
+                toggleFullscreen() {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        document.documentElement.requestFullscreen();
                     }
                 },
                 enableSpacemouse() {
-                    if (this.visualization) {
-                        enableSpacemouse(this.visualization.handleSpacemouseInput.bind(this.visualization));
-                    } else {
-                        console.error('Cannot enable Spacemouse: Visualization not initialized');
-                    }
+                    enableSpacemouse();
                 }
-            },
-            mounted() {
-                // Assign the initialized services to the Vue app's data properties
-                this.websocketService = app.config.globalProperties.$websocketService;
-                this.visualization = app.config.globalProperties.$visualization;
-                console.log('Vue app mounted with WebSocketService and Visualization:', this.websocketService, this.visualization);
             }
         });
 
@@ -142,20 +148,17 @@ class App {
             console.warn('Vue Warning:', msg, trace);
         };
 
-        if (this.websocketService) {
-            app.config.globalProperties.$websocketService = this.websocketService;
-        } else {
-            console.error('WebsocketService not available for Vue app');
-        }
-
-        if (this.visualization) {
-            app.config.globalProperties.$visualization = this.visualization;
-        } else {
-            console.error('Visualization not available for Vue app');
-        }
+        // Make services available globally to the app
+        app.config.globalProperties.$websocketService = this.websocketService;
+        app.config.globalProperties.$visualization = this.visualization;
+        app.config.globalProperties.$graphDataManager = this.graphDataManager;
 
         app.mount('#app');
-        console.log('Vue App mounted');
+        console.log('Vue App mounted with services:', {
+            websocketService: this.websocketService,
+            visualization: this.visualization,
+            graphDataManager: this.graphDataManager
+        });
     }
 
     setupEventListeners() {
@@ -225,17 +228,30 @@ class App {
     handleWebSocketMessage(data) {
         console.log('Handling WebSocket message:', data);
         switch (data.type) {
+            case 'initial_data':
+                console.log('Received initial data:', data);
+                if (data.graph_data && this.graphDataManager) {
+                    this.graphDataManager.updateGraphData(data.graph_data);
+                    if (this.visualization) {
+                        this.visualization.updateVisualization();
+                    }
+                }
+                if (data.settings) {
+                    if (this.visualization) {
+                        this.visualization.updateSettings(data.settings);
+                    }
+                    window.dispatchEvent(new CustomEvent('serverSettings', {
+                        detail: data.settings
+                    }));
+                }
+                break;
             case 'graphUpdate':
                 console.log('Received graph update:', data.graphData);
                 if (this.graphDataManager) {
                     this.graphDataManager.updateGraphData(data.graphData);
-                } else {
-                    console.error('GraphDataManager not initialized, cannot update graph data');
-                }
-                if (this.visualization) {
-                    this.visualization.updateVisualization();
-                } else {
-                    console.error('Cannot update visualization: not initialized');
+                    if (this.visualization) {
+                        this.visualization.updateVisualization();
+                    }
                 }
                 break;
             case 'ttsMethodSet':

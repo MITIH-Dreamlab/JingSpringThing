@@ -8,13 +8,12 @@ use tokio::time::{interval, Duration};
 
 use crate::app_state::AppState;
 use crate::config::Settings;
-use crate::handlers::{file_handler, graph_handler, ragflow_handler};
+use crate::handlers::{file_handler, graph_handler, ragflow_handler, visualization_handler};
 use crate::models::graph::GraphData;
 use crate::services::file_service::{GitHubService, RealGitHubService, FileService};
 use crate::services::perplexity_service::PerplexityServiceImpl;
 use crate::services::ragflow_service::RAGFlowService;
 use crate::services::speech_service::SpeechService;
-use crate::services::sonata_service::SonataService;
 use crate::services::graph_service::GraphService;
 use crate::utils::websocket_manager::WebSocketManager;
 use crate::utils::gpu_compute::GPUCompute;
@@ -29,7 +28,8 @@ mod utils;
 async fn initialize_graph_data(app_state: &web::Data<AppState>) -> std::io::Result<()> {
     log::info!("Initializing graph data...");
     
-    match FileService::fetch_and_process_files(&*app_state.github_service, app_state.settings.clone()).await {
+    let mut metadata_map = HashMap::new();
+    match FileService::fetch_and_process_files(&*app_state.github_service, app_state.settings.clone(), &mut metadata_map).await {
         Ok(processed_files) => {
             log::info!("Successfully processed {} files", processed_files.len());
 
@@ -94,23 +94,25 @@ async fn main() -> std::io::Result<()> {
 
     let settings = match Settings::new() {
         Ok(s) => {
-            log::debug!("Successfully loaded settings: {:?}", s);
+            log::debug!("Successfully loaded settings");
             Arc::new(RwLock::new(s))
         },
         Err(e) => {
             log::error!("Failed to load settings: {:?}", e);
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to load settings: {:?}", e)));
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to initialize settings: {:?}", e)));
         }
     };
 
     let file_cache = Arc::new(RwLock::new(HashMap::new()));
     let graph_data = Arc::new(RwLock::new(GraphData::default()));
     
-    let github_service: Arc<dyn GitHubService + Send + Sync> = match RealGitHubService::new(settings.clone()).await {
-        Ok(service) => Arc::new(service),
-        Err(e) => {
-            log::error!("Failed to initialize GitHub service: {:?}", e);
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to initialize GitHub service: {:?}", e)));
+    let github_service: Arc<dyn GitHubService + Send + Sync> = {
+        match RealGitHubService::new(settings.clone()).await {
+            Ok(service) => Arc::new(service),
+            Err(e) => {
+                log::error!("Failed to initialize GitHubService: {:?}", e);
+                return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to initialize GitHubService: {:?}", e)));
+            }
         }
     };
     
@@ -148,14 +150,7 @@ async fn main() -> std::io::Result<()> {
         }
     };
 
-    let sonata_service = match SonataService::new(settings.clone()).await {
-        Ok(service) => Arc::new(service),
-        Err(e) => {
-            log::error!("Failed to initialize SonataService: {:?}", e);
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to initialize SonataService: {:?}", e)));
-        }
-    };
-    let speech_service = Arc::new(SpeechService::new(sonata_service.clone(), websocket_manager.clone(), settings.clone()));
+    let speech_service = Arc::new(SpeechService::new(websocket_manager.clone(), settings.clone()));
     if let Err(e) = speech_service.initialize().await {
         log::error!("Failed to initialize SpeechService: {:?}", e);
         return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to initialize SpeechService: {:?}", e)));
@@ -212,6 +207,10 @@ async fn main() -> std::io::Result<()> {
                     .route("/init", web::post().to(ragflow_handler::init_chat))
                     .route("/message", web::post().to(ragflow_handler::send_message))
                     .route("/history", web::get().to(ragflow_handler::get_chat_history))
+            )
+            .service(
+                web::scope("/api/visualization")
+                    .route("/settings", web::get().to(visualization_handler::get_visualization_settings))
             )
             .route("/ws", web::get().to(WebSocketManager::handle_websocket))
             .route("/test_speech", web::get().to(test_speech_service))
